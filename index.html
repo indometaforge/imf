@@ -178,6 +178,14 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .li.li-drag{cursor:default}
 .li.is-dragging{opacity:.35;background:var(--acc3)}
 .li.drag-target{border:2px solid var(--acc);background:var(--acc3);border-radius:var(--rs)}
+
+.mc-err-banner{background:var(--erbg);color:var(--er);font-size:12px;padding:8px 12px;border-bottom:.5px solid #fecaca;line-height:1.6}
+.mc.has-err>.mc-hd{border:.5px solid var(--er);border-radius:var(--rs) var(--rs) 0 0;background:#fff5f5}
+.offline-bar{display:none;position:fixed;top:var(--hh);left:0;right:0;background:#fef2f2;border-bottom:1px solid #fecaca;padding:6px 16px;font-size:12px;color:#dc2626;text-align:center;z-index:90}
+.shift-tile{background:#fff;border-radius:var(--rs);border:.5px solid var(--bdr);padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;transition:box-shadow .15s}
+.shift-tile:active{box-shadow:0 0 0 2px var(--acc)}
+.shift-tile-ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.print-btn{background:var(--hdr);color:#fff;border:none;padding:9px 18px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
 </style>
 </head>
 <body>
@@ -200,7 +208,7 @@ const PSEED=[
   {no:'10_2101_008',name:'1ST SPEED GEAR',cust:'MLR',rate:243.87},{no:'10_2101_001',name:'MAIN SHAFT NEW',cust:'MLR',rate:400.55},{no:'10_2101_005',name:'4TH SPEED GEAR',cust:'MLR',rate:134.84},{no:'10_2100_021',name:'CLUSTER GEAR REG.',cust:'MLR',rate:603.08},{no:'12_2300_002',name:'RC GEAR COMM',cust:'MLR',rate:228.00},{no:'11_2300_002',name:'RC GEAR PASS',cust:'MLR',rate:256.34},{no:'11_2101_007',name:'2ND SPEED GEAR',cust:'MLR',rate:196.23},{no:'10_2101_006',name:'3RD SPEED GEAR',cust:'MLR',rate:155.23},{no:'11_2300_001',name:'IDLER GEAR PASS',cust:'MLR',rate:276.40},{no:'11_2300_001B',name:'IDLER GEAR COMM',cust:'MLR',rate:280.00},{no:'11_2301_001',name:'FD GEAR PASS',cust:'MLR',rate:382.20},{no:'12_2301_001',name:'FD GEAR COMM',cust:'MLR',rate:420.97}
 ];
 
-const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,actStage:'',actReports:{},editingActualId:null,pf:''};
+const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:''};
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const nowTS=()=>new Date().toISOString();
@@ -290,7 +298,7 @@ function go(scr,prev){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   const el=document.getElementById('s-'+scr);if(el){el.classList.add('on');window.scrollTo(0,0)}
   ['home','plan','actual','reports','masters'].forEach(t=>{
-    const a=t===scr||(t==='plan'&&['plan','plan-today','plan-next','view-plan'].includes(scr))||(t==='actual'&&['actual-hub','actual','view-actuals'].includes(scr))||(t==='masters'&&scr.startsWith('m-'));
+    const a=t===scr||(t==='plan'&&['plan','plan-today','plan-next','view-plan','plan-day'].includes(scr))||(t==='actual'&&['actual-hub','actual','view-actuals'].includes(scr))||(t==='masters'&&scr.startsWith('m-'));
     const nb=document.getElementById('nb-'+t),sb=document.getElementById('sb-'+t);
     if(nb)nb.classList.toggle('on',a);if(sb)sb.classList.toggle('on',a);
   });
@@ -335,6 +343,7 @@ function getPerm(screen){
   return p[screen]||'hidden';
 }
 function isAdmin(){return S.sess&&S.sess.role==='admin'}
+function isTanmay(){return S.sess&&S.sess.name==='Tanmay Indani';}
 function canBackdate(){if(!S.sess)return false;if(S.sess.role==='admin')return true;if(S.sess.role==='manager'){const u=S.users.find(u=>u.id===S.sess.userId);return u?.allowBackdate===true;}return false;}
 function viewOnlyBanner(screen){
   const p=getPerm(screen);
@@ -382,13 +391,34 @@ function renderApp(){
     {id:'reports',svg:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',l:'Reports',s:getPerm('reports')!=='hidden'},
     {id:'masters',svg:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',l:'Masters',s:isA}
   ].filter(n=>n.s);
-  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><div class="sb-mark">IMF</div><div class="sb-co">Indo Metaforge Pvt Ltd</div><div class="sb-tag">Production Tracker</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div></div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
+  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><div class="sb-mark">IMF</div><div class="sb-co">Indo Metaforge Pvt Ltd</div><div class="sb-tag">Production Tracker</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
   renderHome();
 }
 function snav(id){if(id==='home'){go('home');renderHome()}else if(id==='plan'){go('plan');renderPlanHub()}else if(id==='actual'){go('actual-hub');renderActualHub()}else if(id==='reports'){go('reports');renderReports()}else if(id==='masters'){go('masters');renderMasters()}}
 
 function getActiveSh(){const h=new Date().getHours()*60+new Date().getMinutes();const toM=t=>{const[hh,mm]=t.split(':').map(Number);return hh*60+mm};for(const[k,v]of Object.entries(S.shifts)){const s=toM(v.start),e=toM(v.end);if(s<e){if(h>=s&&h<e)return v}else{if(h>=s||h<e)return v}}return Object.values(S.shifts)[0]}
 
+function checkPlanAlert(){
+  if(!S.sess)return'';
+  const role=S.sess.role;
+  if(role!=='admin'&&role!=='manager')return'';
+  const now=new Date();if(now.getHours()<18)return'';
+  const tom=tomStr();
+  const missing=[];
+  ['soft','ht','hard'].forEach(stage=>{
+    Object.keys(S.shifts).forEach(shift=>{
+      if(!S.plans.some(p=>p.date===tom&&p.stage===stage&&p.shift===shift)){
+        missing.push(slbl(stage)+' · '+(S.shifts[shift]?.label||shift));
+      }
+    });
+  });
+  if(!missing.length)return`<div style="background:var(--okbg);border:.5px solid var(--ok);border-radius:var(--rs);padding:11px 14px;margin-bottom:12px;font-size:13px;color:var(--ok);font-weight:500">✅ Tomorrow's plan is fully filled</div>`;
+  return`<div style="background:#fef2f2;border:.5px solid #fecaca;border-radius:var(--rs);padding:11px 14px;margin-bottom:12px;cursor:pointer" onclick="go('plan-day');renderPlanDay()">
+    <div style="font-weight:700;color:#dc2626;margin-bottom:4px">⚠️ Tomorrow's plan incomplete</div>
+    <div style="font-size:11px;color:#dc2626">${missing.join(' · ')}</div>
+    <div style="font-size:11px;color:var(--mut);margin-top:4px">Tap to fill →</div>
+  </div>`;
+}
 function renderHome(){
   const td=dateStr();const ta=S.actuals.filter(a=>a.date===td);
   let tt=0,tac=0,tr=0;ta.forEach(a=>(a.machineReports||[]).forEach(m=>{if(m.used){(m.runs||[]).forEach(run=>{tt+=(+run.targetQty||0);tac+=(+run.actualQty||0);tr+=(+run.rejectionQty||0)})}}));
@@ -414,9 +444,70 @@ function renderActualHub(){
 
 function renderPlanHub(){
   document.getElementById('s-plan').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Production Planning</div></div></div><div class="pad">
-  <div class="hcard" onclick="S.editingPlanId=null;go('plan-next');renderPlanForm('next')"><div class="hcard-ic" style="background:#ede9fe">📆</div><div><div class="hcard-nm">Next Day Plan</div><div class="hcard-sub">${fmtD(tomStr())}</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
+  <div class="hcard" onclick="go('plan-day','plan');renderPlanDay()"><div class="hcard-ic" style="background:#ede9fe">📆</div><div><div class="hcard-nm">Plan for a Day</div><div class="hcard-sub">Fill Shift 1, 2 &amp; 3 for any date</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
   <div class="hcard" onclick="go('view-plan');rvp()"><div class="hcard-ic" style="background:var(--okbg)">📋</div><div><div class="hcard-nm">View All Plans</div><div class="hcard-sub">Browse, filter and edit plans</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
   </div>`;
+}
+function renderPlanDay(){
+  S.planDayStage='';S.planDayDate=tomStr();
+  document.getElementById('s-plan-day').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Plan for a Day</div></div></div>
+  <div class="pad">
+    <div class="card">
+      <div class="card-hd">Step 1 — Select Stage</div>
+      <div class="stage-sel"><button class="stbtn" onclick="selPlanDayStage('soft')" id="pds-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selPlanDayStage('ht')" id="pds-ht"><span class="si">🔥</span><span class="sn">HT</span></button><button class="stbtn" onclick="selPlanDayStage('hard')" id="pds-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div>
+      <div class="f" style="margin-top:12px;margin-bottom:0"><label>Step 2 — Select Date</label><input type="date" id="pday-date" value="${tomStr()}" onchange="S.planDayDate=this.value;renderPlanDayShifts()"></div>
+    </div>
+    <div id="pday-shifts" style="display:none"></div>
+  </div>`;
+}
+function selPlanDayStage(st){
+  S.planDayStage=st;
+  ['soft','ht','hard'].forEach(s=>{const b=document.getElementById('pds-'+s);if(b){b.className='stbtn';if(s===st)b.classList.add('on-'+st)}});
+  renderPlanDayShifts();
+}
+function renderPlanDayShifts(){
+  if(!S.planDayStage)return;
+  const date=S.planDayDate||tomStr();
+  const w=document.getElementById('pday-shifts');if(!w)return;
+  w.style.display='block';
+  const colors=['#ede9fe','#dbeafe','#d1fae5'];const icons=['🌅','🌞','🌙'];
+  const tiles=Object.entries(S.shifts).map(([k,sh],i)=>{
+    const existing=S.plans.find(p=>p.date===date&&p.stage===S.planDayStage&&p.shift===k);
+    let stat,scls;
+    if(!existing){stat='Not filled';scls='bdg-gr';}
+    else{const rpts=existing.machineReports||[];const filled=rpts.filter(r=>r.used&&(r.runs||[]).some(run=>run.plannedQty));stat=filled.length>0?'Filled ✓':'In Progress';scls=filled.length>0?'bdg-g':'bdg-a';}
+    return`<div class="shift-tile" onclick="openPlanDayShift('${k}','${date}')">
+      <div class="shift-tile-ic" style="background:${colors[i]}">${icons[i]}</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:14px">${sh.label}</div><div style="font-size:12px;color:var(--mut)">${sh.start} – ${sh.end}</div></div>
+      <span class="bdg ${scls}">${stat}</span>
+      <span style="color:var(--dim);font-size:18px">›</span>
+    </div>`;
+  }).join('');
+  const allFilled=Object.keys(S.shifts).every(k=>S.plans.some(p=>p.date===date&&p.stage===S.planDayStage&&p.shift===k&&(p.machineReports||[]).filter(r=>r.used&&(r.runs||[]).some(run=>run.plannedQty)).length>0));
+  w.innerHTML=`<div class="slbl">Step 3 — Fill each shift</div>${tiles}
+  ${allFilled?`<div style="background:var(--okbg);border:.5px solid var(--ok);border-radius:var(--rs);padding:14px;text-align:center;margin-top:4px"><div style="font-size:16px;font-weight:700;color:var(--ok)">✅ All 3 shifts planned!</div><div style="font-size:12px;color:var(--mut);margin-top:4px">${fmtD(date)} is fully planned</div></div>`:`<div class="ibox" style="font-size:12px">Fill all 3 shifts to complete the day's plan</div>`}`;
+}
+function openPlanDayShift(shiftKey,date){
+  S.planDayMode=true;S.planDayShift=shiftKey;S.planDayDate=date||S.planDayDate;
+  S.editingPlanId=null;S.planReports={};
+  // Check if existing plan for this shift
+  const existing=S.plans.find(p=>p.date===S.planDayDate&&p.stage===S.planDayStage&&p.shift===shiftKey);
+  if(existing){
+    S.editingPlanId=existing.id;
+    (existing.machineReports||[]).forEach(r=>{if(!r.machineId)return;const n={...r};if(!n.runs){n.runs=[{partId:r.partId||'',partNo:r.partNo||'',partName:r.partName||'',customer:r.customer||'',opId:r.opId||'',opName:r.opName||'',hoursPlanned:'',plannedQty:r.plannedQty||''}];n.setupTimes=[];}S.planReports[r.machineId]=n;});
+  }
+  go('plan-next','plan-day');
+  renderPlanForm('next');
+  setTimeout(()=>{
+    ['soft','ht','hard'].forEach(s=>{const b=document.getElementById('ps-'+s);if(b){b.className='stbtn';if(s===S.planDayStage)b.classList.add('on-'+S.planDayStage)}});
+    const dateEl=document.getElementById('pf-date');if(dateEl){dateEl.value=S.planDayDate;dateEl.disabled=true;}
+    const shiftEl=document.getElementById('pf-shift');if(shiftEl){shiftEl.value=shiftKey;shiftEl.disabled=true;}
+    const sup=document.getElementById('pf-sup');
+    if(sup)sup.innerHTML=`<option value="">— Select —</option>`+S.users.filter(u=>(u.role==='supervisor'||u.role==='manager')&&(u.stage===S.planDayStage||u.stage==='general')).map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+    document.getElementById('plan-rest').style.display='block';
+    renderPlanMachines();
+    if(S.editingPlanId)toast('Editing existing plan for this shift');
+  },100);
 }
 
 function renderPlanForm(type){
@@ -482,7 +573,7 @@ function buildPlanMC(m){
   </div></div>`;
 }
 function togPlanMC(id){const b=document.getElementById('pmcb-'+id),c=document.getElementById('pmcc-'+id);if(b){b.classList.toggle('op');if(c)c.classList.toggle('op',b.classList.contains('op'))}}
-function togPlanMCUsed(id,used){if(!S.planReports[id])return;S.planReports[id].used=used;document.getElementById('pmcu-form-'+id).style.display=used?'block':'none';document.getElementById('pmun-form-'+id).style.display=used?'none':'block';updPlanMCBdg(id);saveDraft('plan');}
+function togPlanMCUsed(id,used){if(!S.planReports[id])return;S.planReports[id].used=used;const ec=document.getElementById('pmc-'+id);if(ec)ec.classList.remove('has-err');const eb=ec?.querySelector('.mc-err-banner');if(eb)eb.remove();document.getElementById('pmcu-form-'+id).style.display=used?'block':'none';document.getElementById('pmun-form-'+id).style.display=used?'none':'block';updPlanMCBdg(id);saveDraft('plan');}
 function togPlanDT(id,has){if(!S.planReports[id])return;S.planReports[id].hasDowntime=has;const el=document.getElementById('pmdt-'+id);if(el)el.style.display=has?'block':'none';saveDraft('plan');}
 function togPlanDTO(id,v){const el=document.getElementById('pmdto-'+id);if(el)el.style.display=v==='other'?'block':'none'}
 function togPlanUO(id,v){const el=document.getElementById('pmuo-'+id);if(el)el.style.display=v==='other'?'block':'none'}
@@ -500,63 +591,79 @@ function selPartPlanMC(mid,pid){pickGDrop(pid)}
 function updPlanMCBdg(id){const r=S.planReports[id];if(!r)return;const[stat,scls]=planMCStat(r);const b=document.getElementById('pmcs-'+id);if(b){b.textContent=stat;b.className='bdg '+scls}}
 function validatePlanReports(){
   const errs=[];
-  Object.values(S.planReports).forEach(r=>{
-    const nm=r.machineName||'Machine';
-    if(r.used===null||r.used===undefined){errs.push(nm+': Please indicate if machine will be used');}
+  Object.entries(S.planReports).forEach(([id,r])=>{
+    const nm=r.machineName||'Machine';const msgs=[];
+    if(r.used===null||r.used===undefined){msgs.push('Please indicate if machine will be used');}
     else if(r.used){
       (r.runs||[]).forEach((run,idx)=>{
-        const rn=nm+' Run '+(idx+1);
-        if(!run.partId)errs.push(rn+': Part is required');
-        if(!run.opId)errs.push(rn+': Operation is required');
-        if(!run.hoursPlanned)errs.push(rn+': Estimated hours required');
-        if(!run.plannedQty)errs.push(rn+': Planned qty required');
+        if(!run.partId)msgs.push('Run '+(idx+1)+': Part is required');
+        if(!run.opId)msgs.push('Run '+(idx+1)+': Operation is required');
+        if(!run.hoursPlanned)msgs.push('Run '+(idx+1)+': Estimated hours required');
+        if(!run.plannedQty)msgs.push('Run '+(idx+1)+': Planned qty required');
       });
       if(r.hasDowntime){
-        if(!r.downtimeReason)errs.push(nm+': Downtime reason is required');
-        if(!r.downtimeMins)errs.push(nm+': Downtime duration is required');
+        if(!r.downtimeReason)msgs.push('Downtime reason is required');
+        if(!r.downtimeMins)msgs.push('Downtime duration is required');
       }
     }else{
-      if(!r.unusedReason)errs.push(nm+': Please select reason for not using');
+      if(!r.unusedReason)msgs.push('Please select reason for not using');
     }
+    if(msgs.length)errs.push({machineId:id,machineName:nm,msgs});
   });
   return errs;
 }
 function validateActualReports(){
   const errs=[];
-  Object.values(S.actReports).forEach(r=>{
-    const nm=r.machineName||'Machine';
-    if(r.used===null||r.used===undefined){errs.push(nm+': Please indicate if machine was used');}
+  Object.entries(S.actReports).forEach(([id,r])=>{
+    const nm=r.machineName||'Machine';const msgs=[];
+    if(r.used===null||r.used===undefined){msgs.push('Please indicate if machine was used');}
     else if(r.used){
-      if(!r.operatorId)errs.push(nm+': Operator is required');
+      if(!r.operatorId)msgs.push('Operator is required');
       (r.runs||[]).forEach((run,idx)=>{
-        const rn=nm+' Run '+(idx+1);
-        if(!run.partId)errs.push(rn+': Part is required');
-        if(!run.opId)errs.push(rn+': Operation is required');
-        if(!run.hoursRun)errs.push(rn+': Hours run is required');
-        if(run.actualQty===''||run.actualQty===undefined)errs.push(rn+': Actual qty is required');
-        if(run.rejectionQty===''||run.rejectionQty===undefined)errs.push(rn+': Rejection qty is required (0 if none)');
+        if(!run.partId)msgs.push('Run '+(idx+1)+': Part is required');
+        if(!run.opId)msgs.push('Run '+(idx+1)+': Operation is required');
+        if(!run.hoursRun)msgs.push('Run '+(idx+1)+': Hours run is required');
+        if(run.actualQty===''||run.actualQty===undefined)msgs.push('Run '+(idx+1)+': Actual qty is required');
+        if(run.rejectionQty===''||run.rejectionQty===undefined)msgs.push('Run '+(idx+1)+': Rejection qty required (0 if none)');
       });
       if(r.hasOtherDowntime){
-        if(!r.otherDowntimeReason)errs.push(nm+': Downtime reason is required');
-        if(!r.otherDowntimeMins)errs.push(nm+': Downtime duration is required');
+        if(!r.otherDowntimeReason)msgs.push('Downtime reason is required');
+        if(!r.otherDowntimeMins)msgs.push('Downtime duration is required');
       }
     }else{
-      if(!r.unusedReason)errs.push(nm+': Please select reason for not using');
+      if(!r.unusedReason)msgs.push('Please select reason for not using');
     }
+    if(msgs.length)errs.push({machineId:id,machineName:nm,msgs});
   });
   return errs;
 }
-function showValidationErrors(errs){
-  openModal(`<div class="mtit" style="color:var(--er)">⚠️ Please fix these issues</div>
-  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-    ${errs.map(e=>`<div style="background:var(--erbg);border-radius:var(--rs);padding:10px 12px;font-size:13px;color:var(--er)">${e}</div>`).join('')}
-  </div>
-  <button class="btn btn-s" onclick="closeModal()">Go back and fix</button>`);
+function highlightErrs(errs,prefix,bodyPrefix,chevPrefix){
+  // Clear previous
+  document.querySelectorAll('.mc-err-banner').forEach(e=>e.remove());
+  document.querySelectorAll('.mc.has-err').forEach(e=>e.classList.remove('has-err'));
+  let firstEl=null;
+  errs.forEach(({machineId,msgs})=>{
+    const card=document.getElementById(prefix+machineId);if(!card)return;
+    card.classList.add('has-err');
+    const banner=document.createElement('div');
+    banner.className='mc-err-banner';
+    banner.innerHTML=msgs.map(m=>'⚠️ '+m).join('<br>');
+    const hd=card.querySelector('.mc-hd');if(hd)hd.after(banner);
+    // Open card
+    const body=document.getElementById(bodyPrefix+machineId);
+    const chev=document.getElementById(chevPrefix+machineId);
+    if(body&&!body.classList.contains('op')){body.classList.add('op');if(chev)chev.classList.add('op');}
+    if(!firstEl)firstEl=card;
+  });
+  if(firstEl)firstEl.scrollIntoView({behavior:'smooth',block:'start'});
+  toast('⚠️ '+errs.length+' machine'+(errs.length>1?'s':'')+' need attention — see highlighted cards',3500);
 }
+function highlightPlanErrs(errs){highlightErrs(errs,'pmc-','pmcb-','pmcc-');}
+function highlightActErrs(errs){highlightErrs(errs,'mc-','mcb-','mcc-');}
 
 async function submitPlan(){
   if(!S.planStage){toast('Please select a stage');return}
-  const planErrs=validatePlanReports();if(planErrs.length>0){showValidationErrors(planErrs);return}
+  const planErrs=validatePlanReports();if(planErrs.length>0){highlightPlanErrs(planErrs);return}
   const reports=Object.values(S.planReports);
   const dateEl=document.getElementById('pf-date'),shiftEl=document.getElementById('pf-shift'),supEl=document.getElementById('pf-sup'),notesEl=document.getElementById('pf-notes'),matEl=document.getElementById('pf-mat');
   const btn=document.getElementById('plan-sub')?.querySelector('.btn-p');
@@ -570,18 +677,42 @@ async function submitPlan(){
         updatedBy:S.sess.userId,updatedAt:nowTS()
       });
       clearDraft('plan');S.planReports={};S.editingPlanId=null;
-      toast('Plan updated ✓');go('view-plan');rvp();
+      if(S.planDayMode){S.planDayMode=false;const dateEl2=document.getElementById('pf-date');const shiftEl2=document.getElementById('pf-shift');if(dateEl2)dateEl2.disabled=false;if(shiftEl2)shiftEl2.disabled=false;toast('Shift plan updated ✓');go('plan-day','plan-next');renderPlanDayShifts();}
+      else{toast('Plan updated ✓');go('view-plan');rvp();}
     }else{
       await db.collection('plans').add({date:dateEl.value,shift:shiftEl.value,stage:S.planStage,supervisorId:supEl?supEl.value:'',machineReports:reports,notes:notesEl?notesEl.value:'',matStatus:matEl?matEl.value:'',type:S.planType,createdBy:S.sess.userId,createdAt:nowTS()});clearDraft('plan');
-      S.planReports={};toast('Plan saved ✓');go('plan');renderPlanHub();
+      S.planReports={};
+      if(S.planDayMode){S.planDayMode=false;if(shiftEl)shiftEl.disabled=false;if(dateEl)dateEl.disabled=false;toast('Shift plan saved ✓');go('plan-day','plan-next');renderPlanDayShifts();}
+      else{toast('Plan saved ✓');go('plan');renderPlanHub();}
     }
   }catch(e){toast('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent=S.editingPlanId?'Update Plan':'Save Plan'}}
 }
 
 
-let _vpD='',_vpSh='all',_vpSt='all';
-function rvp(){_vpD=dateStr();document.getElementById('s-view-plan').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">View Plans</div></div></div><div class="pad"><div class="card"><div class="row2"><div class="f" style="margin:0"><label>Date</label><input type="date" id="vp-d" value="${_vpD}" onchange="_vpD=this.value;rfvp()"></div><div class="f" style="margin:0"><label>Shift</label><select onchange="_vpSh=this.value;rfvp()"><option value="all">All Shifts</option>${Object.entries(S.shifts).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}</select></div></div><div class="f" style="margin-top:10px;margin-bottom:0"><label>Stage</label><select onchange="_vpSt=this.value;rfvp()"><option value="all">All Stages</option><option value="soft">Soft</option><option value="ht">HT</option><option value="hard">Hard</option></select></div></div><div id="vp-res"></div></div>`;rfvp()}
-function rfvp(){const plans=S.plans.filter(p=>p.date===_vpD&&(_vpSh==='all'||p.shift===_vpSh)&&(_vpSt==='all'||p.stage===_vpSt));const w=document.getElementById('vp-res');if(!w)return;if(plans.length===0){w.innerHTML=`<div class="empty"><div class="empty-ic">📋</div><h3>No plans found</h3><p>No production plans for selected filters.</p></div>`;return}w.innerHTML=plans.map(p=>{const sup=S.users.find(u=>u.id===p.supervisorId);const sh=S.shifts[p.shift];const rpts=p.machineReports||p.entries||[];const tot=rpts.reduce((s,e)=>s+(+(e.plannedQty||0)),0);const usedMach=rpts.filter(r=>r.used);return`<div class="card"><div class="fbw" style="margin-bottom:10px"><div><span class="bdg ${sbdg(p.stage)}" style="margin-right:6px">${slbl(p.stage)}</span><span class="bdg bdg-b">${sh?sh.label:p.shift}</span></div><span class="tsm tmut">${tot} pcs planned</span></div>${sup?`<div class="tsm tmut" style="margin-bottom:8px">Supervisor: ${sup.name}</div>`:''}<div>${usedMach.map(r=>`<div class="rrow" style="padding:7px 0"><div><div class="tsm" style="font-weight:600">${r.partName||'—'} <span class="tsm tmut">${r.machineName?'· '+r.machineName:''}</span></div><div style="font-size:11px;color:var(--mut)">${r.partNo||''}${r.opName?' · '+r.opName:''}</div></div><div style="text-align:right"><div class="tsm" style="font-weight:700">${r.plannedQty||0} pcs</div></div></div>`).join('')}</div>${p.notes?`<div class="tsm tmut" style="margin-top:8px;font-style:italic;border-top:.5px solid var(--bdr);padding-top:8px">${p.notes}</div>`:''}
+let _vpD='',_vpDFrom='',_vpSh='all',_vpSt='all';
+function rvp(){
+  const sevenAgo=new Date();sevenAgo.setDate(sevenAgo.getDate()-7);
+  _vpDFrom=sevenAgo.toISOString().slice(0,10);_vpD=dateStr();
+  document.getElementById('s-view-plan').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">View Plans</div></div></div>
+  <div class="pad"><div class="card">
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="btn btn-s btn-sm" onclick="setVPRange('today')">Today</button>
+      <button class="btn btn-s btn-sm" onclick="setVPRange('week')">Last 7 Days</button>
+      <button class="btn btn-s btn-sm" onclick="setVPRange('month')">This Month</button>
+    </div>
+    <div class="row2"><div class="f" style="margin:0"><label>From</label><input type="date" id="vp-d-from" value="${_vpDFrom}" onchange="_vpDFrom=this.value;rfvp()"></div><div class="f" style="margin:0"><label>To</label><input type="date" id="vp-d" value="${_vpD}" onchange="_vpD=this.value;rfvp()"></div></div>
+    <div class="row2" style="margin-top:10px"><div class="f" style="margin:0"><label>Shift</label><select onchange="_vpSh=this.value;rfvp()"><option value="all">All Shifts</option>${Object.entries(S.shifts).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}</select></div><div class="f" style="margin:0"><label>Stage</label><select onchange="_vpSt=this.value;rfvp()"><option value="all">All Stages</option><option value="soft">Soft</option><option value="ht">HT</option><option value="hard">Hard</option></select></div></div>
+  </div><div id="vp-res"></div></div>`;rfvp();
+}
+function setVPRange(type){
+  const today=new Date();
+  if(type==='today'){_vpDFrom=_vpD=dateStr();}
+  else if(type==='week'){const d=new Date();d.setDate(d.getDate()-7);_vpDFrom=d.toISOString().slice(0,10);_vpD=dateStr();}
+  else if(type==='month'){_vpDFrom=today.toISOString().slice(0,8)+'01';_vpD=dateStr();}
+  const f=document.getElementById('vp-d-from'),t=document.getElementById('vp-d');
+  if(f)f.value=_vpDFrom;if(t)t.value=_vpD;rfvp();
+}
+function rfvp(){const plans=S.plans.filter(p=>p.date>=(_vpDFrom||_vpD)&&p.date<=_vpD&&(_vpSh==='all'||p.shift===_vpSh)&&(_vpSt==='all'||p.stage===_vpSt));const w=document.getElementById('vp-res');if(!w)return;if(plans.length===0){w.innerHTML=`<div class="empty"><div class="empty-ic">📋</div><h3>No plans found</h3><p>No production plans for selected filters.</p></div>`;return}w.innerHTML=plans.map(p=>{const sup=S.users.find(u=>u.id===p.supervisorId);const sh=S.shifts[p.shift];const rpts=p.machineReports||p.entries||[];const tot=rpts.reduce((s,e)=>s+(+(e.plannedQty||0)),0);const usedMach=rpts.filter(r=>r.used);return`<div class="card"><div class="fbw" style="margin-bottom:10px"><div><span class="bdg ${sbdg(p.stage)}" style="margin-right:6px">${slbl(p.stage)}</span><span class="bdg bdg-b">${sh?sh.label:p.shift}</span></div><span class="tsm tmut">${tot} pcs planned</span></div>${sup?`<div class="tsm tmut" style="margin-bottom:8px">Supervisor: ${sup.name}</div>`:''}<div>${usedMach.map(r=>`<div class="rrow" style="padding:7px 0"><div><div class="tsm" style="font-weight:600">${r.partName||'—'} <span class="tsm tmut">${r.machineName?'· '+r.machineName:''}</span></div><div style="font-size:11px;color:var(--mut)">${r.partNo||''}${r.opName?' · '+r.opName:''}</div></div><div style="text-align:right"><div class="tsm" style="font-weight:700">${r.plannedQty||0} pcs</div></div></div>`).join('')}</div>${p.notes?`<div class="tsm tmut" style="margin-top:8px;font-style:italic;border-top:.5px solid var(--bdr);padding-top:8px">${p.notes}</div>`:''}
       <div style="display:flex;gap:8px;margin-top:12px;padding-top:10px;border-top:.5px solid var(--bdr)">
         ${isAdmin()?`<button class="btn btn-s btn-sm" style="flex:1" onclick="editPlan('${p.id}')">✏️ Edit</button>`:''}
         <button class="btn btn-s btn-sm" style="flex:1;font-size:11px;color:var(--mut)" disabled>🕐 ${p.createdAt?new Date(p.createdAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'—'}</button>
@@ -594,7 +725,7 @@ function renderActual(){
   <div class="stage-sel"><button class="stbtn" onclick="selActStage('soft')" id="as-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selActStage('ht')" id="as-ht"><span class="si">🔥</span><span class="sn">HT</span></button><button class="stbtn" onclick="selActStage('hard')" id="as-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div>
   <div class="f" style="margin-bottom:0"><label>Shift</label><select id="act-sh" onchange="saveDraft('actual')">${Object.entries(S.shifts).map(([k,v])=>`<option value="${k}">${v.label} (${v.start}–${v.end})</option>`).join('')}</select></div><div class="f" style="margin-top:10px;margin-bottom:0;display:${canBackdate()?'block':'none'}"><label>📅 Report Date <span style="font-size:11px;color:var(--acc);font-weight:500">(Backdated entry)</span></label><input type="date" id="act-date-inp" value="${dateStr()}"></div></div>
   <div id="act-mach"></div>
-  <div id="act-sub" class="sub-bar-desktop" style="display:none">${getPerm("actual")==="full"?`<button class="btn btn-p" onclick="submitActual()">${S.editingActualId?"Update Report":"Submit Shift Report"}</button>`:`<div class="ibox">View only — you cannot submit reports</div>`}</div><div id="act-sub-bar" class="sub-bar">${getPerm("actual")==="full"?`<button class="btn btn-p" onclick="submitActual()">${S.editingActualId?"Update Report":"Submit Shift Report"}</button>`:""}</div></div>`;
+  <div id="act-sub" class="sub-bar-desktop" style="display:none">${getPerm("actual")==="full"?`<button class="btn btn-p" onclick="${S.editingActualId?'submitActual':'showActualConfirmation'}()">${S.editingActualId?"Update Report":"Submit Shift Report"}</button>`:`<div class="ibox">View only — you cannot submit reports</div>`}</div><div id="act-sub-bar" class="sub-bar">${getPerm("actual")==="full"?`<button class="btn btn-p" onclick="${S.editingActualId?'submitActual':'showActualConfirmation'}()">${S.editingActualId?"Update Report":"Submit Shift Report"}</button>`:""}</div></div>`;
 }
 function selActStage(st){
   S.actStage=st;S.actReports={};
@@ -648,7 +779,7 @@ function buildMC(m){
   </div></div>`;
 }
 function toggleMC(id){const b=document.getElementById('mcb-'+id),c=document.getElementById('mcc-'+id);if(b){b.classList.toggle('op');if(c)c.classList.toggle('op',b.classList.contains('op'))}}
-function togMCUsed(id,used){if(!S.actReports[id])return;S.actReports[id].used=used;document.getElementById('mcu-form-'+id).style.display=used?'block':'none';document.getElementById('mcun-form-'+id).style.display=used?'none':'block';updMCBdg(id);saveDraft('actual');}
+function togMCUsed(id,used){if(!S.actReports[id])return;S.actReports[id].used=used;const ec=document.getElementById('mc-'+id);if(ec)ec.classList.remove('has-err');const eb=ec?.querySelector('.mc-err-banner');if(eb)eb.remove();document.getElementById('mcu-form-'+id).style.display=used?'block':'none';document.getElementById('mcun-form-'+id).style.display=used?'none':'block';updMCBdg(id);saveDraft('actual');}
 function togUO(id,v){const el=document.getElementById('mcuo-'+id);if(el)el.style.display=v==='other'?'block':'none'}
 function togOtherDT(id,has){if(!S.actReports[id])return;S.actReports[id].hasOtherDowntime=has;const el=document.getElementById('mc-odt-'+id);if(el)el.style.display=has?'block':'none';updActTotals(id);saveDraft('actual');}
 function togOtherDTO(id,v){const el=document.getElementById('mc-odto-'+id);if(el)el.style.display=v==='other'?'block':'none'}
@@ -698,9 +829,36 @@ async function saveQuickOp(mid){
     const btn2=document.querySelector('#mcont .btn-p');if(btn2){btn2.disabled=false;btn2.textContent='Add Operator';}
   }
 }
+function showActualConfirmation(){
+  if(!S.actStage){toast('Please select a stage');return}
+  const actErrs=validateActualReports();if(actErrs.length>0){highlightActErrs(actErrs);return}
+  const shift=document.getElementById('act-sh').value;const reports=Object.values(S.actReports);if(!reports.length){toast('No data to submit');return}
+  const sh=S.shifts[shift];const used=reports.filter(r=>r.used);const notUsed=reports.filter(r=>!r.used);
+  const totalAct=used.reduce((s,r)=>s+(r.runs||[]).reduce((ss,run)=>ss+(+run.actualQty||0),0),0);
+  const totalRej=used.reduce((s,r)=>s+(r.runs||[]).reduce((ss,run)=>ss+(+run.rejectionQty||0),0),0);
+  openModal(`<div class="mtit">Confirm Shift Report</div>
+  <div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:14px;font-size:13px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div><div style="font-size:11px;color:var(--mut)">Stage</div><div style="font-weight:700">${slbl(S.actStage)}</div></div>
+      <div><div style="font-size:11px;color:var(--mut)">Shift</div><div style="font-weight:700">${sh?sh.label:shift}</div></div>
+      <div><div style="font-size:11px;color:var(--mut)">Total Produced</div><div style="font-weight:700;color:var(--ok)">${totalAct} pcs</div></div>
+      <div><div style="font-size:11px;color:var(--mut)">Rejections</div><div style="font-weight:700;color:${totalRej>0?'var(--er)':'var(--ok)'}">${totalRej} pcs</div></div>
+    </div>
+    <div style="border-top:.5px solid var(--bdr);padding-top:10px">
+      ${used.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px">
+        <span style="font-weight:600">${r.machineName}</span>
+        <span>${(r.runs||[]).reduce((s,run)=>s+(+run.actualQty||0),0)} pcs · ${(r.runs||[]).length} run${(r.runs||[]).length!==1?'s':''}</span>
+      </div>`).join('')}
+      ${notUsed.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;color:var(--mut)">
+        <span>${r.machineName}</span><span>Not used</span>
+      </div>`).join('')}
+    </div>
+  </div>
+  <button class="btn btn-p" onclick="closeModal();submitActual()">✓ Confirm & Submit</button>
+  <button class="btn btn-s mt8" onclick="closeModal()">← Edit Report</button>`);
+}
 async function submitActual(){
   if(!S.actStage){toast('Please select a stage');return}
-  const actErrs=validateActualReports();if(actErrs.length>0){showValidationErrors(actErrs);return}
   const shift=document.getElementById('act-sh').value;const reports=Object.values(S.actReports);if(!reports.length){toast('No data to submit');return}
   const btn=document.querySelector('#s-actual .btn-p');if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>Submitting...'}
   try{
@@ -799,6 +957,18 @@ function buildPlanActualLink(){
   </div>`;
 }
 
+async function deletePlan(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this plan permanently? This cannot be undone.'))return;
+  try{await db.collection('plans').doc(id).delete();toast('Plan deleted');rfvp();}
+  catch(e){toast('Error: '+e.message);}
+}
+async function deleteActual(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this report permanently? This cannot be undone.'))return;
+  try{await db.collection('actuals').doc(id).delete();toast('Report deleted');rfva();}
+  catch(e){toast('Error: '+e.message);}
+}
 function editPlan(id){
   const p=S.plans.find(x=>x.id===id);if(!p)return;
   S.editingPlanId=id;
@@ -923,6 +1093,32 @@ function editActual(id){
   },100);
 }
 
+function downloadReport(){
+  const acts=S.actuals.filter(a=>a.date>=_rd&&a.date<=(_rdTo||_rd)&&(_rs==='all'||a.shift===_rs)&&(_rst==='all'||a.stage===_rst));
+  if(!acts.length){toast('No data for selected filters');return}
+  let rows='';
+  acts.forEach(a=>{
+    const sh=S.shifts[a.shift];const sup=S.users.find(u=>u.id===a.supervisorId);
+    (a.machineReports||[]).forEach(r=>{
+      if(!r.used)return;
+      (r.runs||[]).forEach(run=>{
+        const eff=run.targetQty&&run.actualQty?Math.round(+run.actualQty/+run.targetQty*100):0;
+        rows+=`<tr><td>${a.date}</td><td>${sh?sh.label:a.shift}</td><td>${slbl(a.stage)}</td><td>${sup?sup.name:'—'}</td><td>${r.machineName||'—'}</td><td>${run.partName||'—'}</td><td>${run.opName||'—'}</td><td>${run.hoursRun||'—'}</td><td>${run.targetQty||0}</td><td>${run.actualQty||0}</td><td>${run.rejectionQty||0}</td><td>${eff}%</td></tr>`;
+      });
+    });
+  });
+  const html=`<!DOCTYPE html><html><head><title>IMF Production Report</title>
+  <style>body{font-family:Arial,sans-serif;font-size:11px;margin:16px}h1{font-size:16px;margin-bottom:2px}p{color:#666;margin-bottom:12px}table{width:100%;border-collapse:collapse}th{background:#1e3a8a;color:#fff;padding:7px 8px;text-align:left;font-size:10px}td{padding:5px 8px;border-bottom:1px solid #eee}tr:nth-child(even){background:#f8f9fa}.no-print{margin-bottom:12px}@media print{.no-print{display:none}}</style>
+  </head><body>
+  <div class="no-print"><button onclick="window.print()" style="padding:8px 18px;background:#1e3a8a;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px">🖨️ Print / Save as PDF</button></div>
+  <h1>Indo Metaforge Pvt Ltd — Production Report</h1>
+  <p>Period: ${_rd} to ${_rdTo||_rd} · Generated: ${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</p>
+  <table><thead><tr><th>Date</th><th>Shift</th><th>Stage</th><th>Supervisor</th><th>Machine</th><th>Part</th><th>Operation</th><th>Hours</th><th>Target</th><th>Actual</th><th>Rejection</th><th>Efficiency</th></tr></thead><tbody>${rows}</tbody></table>
+  </body></html>`;
+  const w=window.open('','_blank');if(!w){toast('Please allow popups to download report');return}
+  w.document.write(html);w.document.close();
+}
+
 // ── Masters filter state ──
 let _mSrch='',_mStagF='all';
 let _pplSrch='',_pplRole='all',_pplStage='all';
@@ -944,6 +1140,39 @@ function renderMasters(){
   </div></div>`;
 }
 
+function showMachHist(machId){
+  const m=S.machines.find(x=>x.id===machId);if(!m)return;
+  go('m-machine-hist','m-machines');
+  const ago30=new Date();ago30.setDate(ago30.getDate()-30);const from=ago30.toISOString().slice(0,10);
+  const acts=S.actuals.filter(a=>a.date>=from);
+  const records=[];
+  acts.forEach(a=>{(a.machineReports||[]).forEach(r=>{if(r.machineId===machId&&r.used){
+    const act=(r.runs||[]).reduce((s,run)=>s+(+run.actualQty||0),0);
+    const tgt=(r.runs||[]).reduce((s,run)=>s+(+run.targetQty||0),0);
+    const rej=(r.runs||[]).reduce((s,run)=>s+(+run.rejectionQty||0),0);
+    records.push({date:a.date,shift:a.shift,act,tgt,rej,runs:(r.runs||[]).length});
+  }});});
+  records.sort((a,b)=>b.date.localeCompare(a.date));
+  const totAct=records.reduce((s,r)=>s+r.act,0);
+  const totTgt=records.reduce((s,r)=>s+r.tgt,0);
+  const totRej=records.reduce((s,r)=>s+r.rej,0);
+  const avgEff=totTgt>0?Math.round(totAct/totTgt*100):0;
+  document.getElementById('s-m-machine-hist').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">${m.name}</div><div class="hdr-sub">Last 30 days</div></div></div>
+  <div class="pad">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="card" style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--acc)">${avgEff}%</div><div style="font-size:11px;color:var(--mut)">Avg Efficiency</div></div>
+      <div class="card" style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--ok)">${totAct}</div><div style="font-size:11px;color:var(--mut)">Total Produced</div></div>
+      <div class="card" style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--er)">${totRej}</div><div style="font-size:11px;color:var(--mut)">Total Rejections</div></div>
+      <div class="card" style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:800">${records.length}</div><div style="font-size:11px;color:var(--mut)">Shifts Recorded</div></div>
+    </div>
+    ${records.length===0?`<div class="empty"><div class="empty-ic">📊</div><h3>No data yet</h3><p>No actual reports found for this machine in the last 30 days.</p></div>`:`
+    <div class="slbl">Shift History</div>
+    ${records.map(r=>{const eff=r.tgt>0?Math.round(r.act/r.tgt*100):0;const sh=S.shifts[r.shift];return`<div class="card" style="margin-bottom:8px;padding:12px">
+      <div class="fbw"><div><span style="font-size:13px;font-weight:600">${fmtD(r.date)}</span> <span class="bdg bdg-b">${sh?sh.label:r.shift}</span></div><span class="bdg ${effb(eff)}">${eff}%</span></div>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--mut)"><span>✅ ${r.act} pcs</span><span>🎯 ${r.tgt} tgt</span>${r.rej>0?`<span style="color:var(--er)">❌ ${r.rej} rej</span>`:''}${r.runs>1?`<span>🔄 ${r.runs} runs</span>`:''}</div>
+    </div>`}).join('')}`}
+  </div>`;
+}
 function applyMachFilter(){
   const srch=_mSrch.toLowerCase(),stagf=_mStagF;
   const sorted=[...S.machines].sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
@@ -958,7 +1187,7 @@ function applyMachFilter(){
     <div class="drag-handle" ontouchstart="onMachTouchStart(event,'${m.id}')" ontouchmove="onMachTouchMove(event)" ontouchend="onMachTouchEnd(event,'${m.id}')">⠿</div>
     <div class="lic">⚙️</div>
     <div class="lib"><div class="linm">${m.name}</div><div class="lisb"><span class="bdg ${sbdg(m.stage)}">${slbl(m.stage)}</span>${m.active===false?'<span class="bdg bdg-r" style="margin-left:4px">Inactive</span>':'<span class="bdg bdg-g" style="margin-left:4px">Active</span>'}${m.id_code?' · '+m.id_code:''}${m.type?' · '+m.type:''}</div></div>
-    <div class="liac"><button class="btn btn-s btn-sm" onclick="editMachModal('${m.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delMach('${m.id}')">Del</button>`:''}</div>
+    <div class="liac"><button class="btn btn-s btn-sm" onclick="showMachHist('${m.id}')">📊</button><button class="btn btn-s btn-sm" onclick="editMachModal('${m.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delMach('${m.id}')">Del</button>`:''}</div>
   </div>`).join('');
 }
 function renderMachines(){
@@ -1140,7 +1369,17 @@ function applyPOFilter(){
   const w=document.getElementById('po-list');if(!w)return;
   w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">📐</div><h3>No results</h3></div>`:
     list.map(po=>{const p=S.parts.find(x=>x.id===po.partId),o=S.operations.find(x=>x.id===po.opId);
-    return`<div class="li"><div class="lic">📐</div><div class="lib"><div class="linm">${p?p.name:'Unknown Part'}</div><div class="lisb">${o?o.name:'Unknown Op'} · ${po.cycleTime} min/pc · Target: ${po.targetQty} pcs/shift</div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editPOModal('${po.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delPO('${po.id}')">Del</button>`:''}</div></div>`;}).join('');
+    return`<div class="li" style="flex-wrap:wrap;gap:6px"><div class="lic">📐</div>
+    <div class="lib" style="min-width:0"><div class="linm">${p?p.name:'Unknown Part'}</div>
+    <div class="lisb" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span>${o?o.name:'?'}</span>
+      <span style="color:var(--mut)">CT:</span>
+      <input type="number" value="${po.cycleTime}" min="0.1" step="0.1" style="width:60px;padding:3px 6px;font-size:12px;border:1.5px solid var(--bdr);border-radius:6px;text-align:center" onchange="savePOInline('${po.id}','cycleTime',this.value)" title="Cycle time (min/pc)">
+      <span style="color:var(--mut)">min · Tgt:</span>
+      <input type="number" value="${po.targetQty}" min="0" style="width:60px;padding:3px 6px;font-size:12px;border:1.5px solid var(--bdr);border-radius:6px;text-align:center" onchange="savePOInline('${po.id}','targetQty',this.value)" title="Target qty per shift">
+      <span style="color:var(--mut)">pcs</span>
+    </div></div>
+    <div class="liac">${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delPO('${po.id}')">Del</button>`:''}</div></div>`;}).join('');
 }
 function renderPartOps(){
   document.getElementById('s-m-partops').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Part-Operations</div><div class="hdr-sub">Cycle times &amp; targets</div></div><button class="hdr-act" onclick="addPOModal()">+ Add</button></div>
@@ -1160,6 +1399,16 @@ function autoCalcTarget(){const ct=parseFloat(document.getElementById('po-c').va
 function addPOModal(){openModal(`<div class="mtit">Add Part-Operation</div>${poF(null)}<button class="btn btn-p mt12" onclick="savePO()">Add</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
 function editPOModal(id){const po=S.partOps.find(po=>po.id===id);if(!po)return;openModal(`<div class="mtit">Edit Part-Operation</div>${poF(po)}<button class="btn btn-p mt12" onclick="savePO('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delPO('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
 async function savePO(id){const pi=document.getElementById('po-p').value,oi=document.getElementById('po-o').value;if(!pi||!oi){toast('Part and operation required');return}const mi=document.getElementById('po-m').value;const d={partId:pi,opId:oi,machineId:mi||'',cycleTime:parseFloat(document.getElementById('po-c').value)||0,targetQty:parseInt(document.getElementById('po-t').value)||0};try{if(id){await db.collection('partOps').doc(id).update(d)}else{await db.collection('partOps').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderPartOps();toast(id?'Updated ✓':'Added ✓')}catch(e){toast('Error: '+e.message)}}
+async function savePOInline(id,field,val){
+  try{
+    const upd={[field]:+val};
+    if(field==='cycleTime'&&+val>0){upd.targetQty=Math.round(450/(+val));}
+    await db.collection('partOps').doc(id).update(upd);
+    const po=S.partOps.find(p=>p.id===id);
+    if(po){po[field]=+val;if(field==='cycleTime'&&+val>0)po.targetQty=Math.round(450/(+val));}
+    toast('Updated ✓',1500);
+  }catch(e){toast('Error: '+e.message);}
+}
 async function delPO(id){if(!confirm('Delete?'))return;await db.collection('partOps').doc(id).delete();await reloadM();closeModal();renderPartOps();toast('Deleted')}
 
 function renderShifts(){document.getElementById('s-m-shifts').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Shift Timings</div></div></div><div class="pad"><div class="wbox">Changes here affect shift display across the entire app.</div>${Object.entries(S.shifts).map(([k,v])=>`<div class="card"><div class="card-hd">${v.label}</div><div class="row2"><div class="f"><label>Start Time</label><input type="time" id="sh-${k}-s" value="${v.start}"></div><div class="f"><label>End Time</label><input type="time" id="sh-${k}-e" value="${v.end}"></div></div><div class="f" style="margin:0"><label>Label</label><input type="text" id="sh-${k}-l" value="${v.label}"></div></div>`).join('')}<button class="btn btn-p" onclick="saveShifts()">Save Timings</button></div>`}
@@ -1185,6 +1434,9 @@ async function init(){
     const u=S.users.find(u=>u.id===sess.userId);
     if(!u){sSess(null);showLogin();return}
     S.sess=sess;setupListeners();renderApp();initBackBtn();
+    // Offline indicator
+    function updConn(){const b=document.getElementById('offline-bar');if(b)b.style.display=navigator.onLine?'none':'block';}
+    window.addEventListener('online',updConn);window.addEventListener('offline',updConn);updConn();
   }catch(e){
     document.getElementById('app').innerHTML=`<div class="loading"><div style="color:#fff;text-align:center"><div class="lspin" style="margin:0 auto 16px"></div><div style="font-size:14px">Connecting...</div><div style="font-size:12px;margin-top:8px;opacity:.6">${e.message}</div><div style="margin-top:16px"><button onclick="init()" style="background:var(--acc);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px">Retry</button></div></div></div>`;
   }
