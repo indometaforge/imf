@@ -485,7 +485,7 @@ function renderPlanDayShifts(){
   }).join('');
   const allFilled=Object.keys(S.shifts).every(k=>S.plans.some(p=>p.date===date&&p.stage===S.planDayStage&&p.shift===k&&(p.machineReports||[]).filter(r=>r.used&&(r.runs||[]).some(run=>run.plannedQty)).length>0));
   w.innerHTML=`<div class="slbl">Step 3 — Fill each shift</div>${tiles}
-  ${allFilled?`<div style="background:var(--okbg);border:.5px solid var(--ok);border-radius:var(--rs);padding:14px;text-align:center;margin-top:4px"><div style="font-size:16px;font-weight:700;color:var(--ok)">✅ All 3 shifts planned!</div><div style="font-size:12px;color:var(--mut);margin-top:4px">${fmtD(date)} is fully planned</div></div>`:`<div class="ibox" style="font-size:12px">Fill all 3 shifts to complete the day's plan</div>`}`;
+  ${allFilled?`<div style="background:var(--okbg);border:.5px solid var(--ok);border-radius:var(--rs);padding:14px;text-align:center;margin-top:4px"><div style="font-size:16px;font-weight:700;color:var(--ok)">✅ All 3 shifts planned!</div><div style="font-size:12px;color:var(--mut);margin-top:4px">${fmtD(date)} is fully planned</div><button class="btn btn-s" style="margin-top:12px;font-size:12px" onclick="go('view-plan');rvp()">📋 View All Plans</button></div>`:`<div class="ibox" style="font-size:12px">Fill all 3 shifts to complete the day's plan</div>`}`;
 }
 function openPlanDayShift(shiftKey,date){
   S.planDayMode=true;S.planDayShift=shiftKey;S.planDayDate=date||S.planDayDate;
@@ -535,7 +535,7 @@ function renderPlanForm(type){
   <input type="hidden" id="pf-date" value="${S.planDayDate}">
   <input type="hidden" id="pf-shift" value="${S.planDayShift}">
   <input type="hidden" id="pf-mat" value="ready">
-  <button class="btn btn-s" style="font-size:12px;margin-bottom:4px" onclick="fillSamplePlan()">⚡ Auto-Fill Sample Plan</button>
+  <button class="btn btn-s" style="font-size:12px;margin-bottom:4px" onclick="fillSamplePlan()">⚡ Fill Sample (Top 5 Machines)</button>
   `:`
   <div class="card"><div class="card-hd">Step 1 — Select Stage</div>
   <div class="stage-sel"><button class="stbtn" onclick="selPlanStage('soft')" id="ps-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selPlanStage('ht')" id="ps-ht"><span class="si">🔥</span><span class="sn">HT</span></button><button class="stbtn" onclick="selPlanStage('hard')" id="ps-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div></div>
@@ -583,51 +583,30 @@ function renderPlanMachines(){
 }
 
 function fillSamplePlan(){
-  // 1. Get ALL active machines for this stage, not just the top 5
+  if(!isTanmay()){toast('Only Tanmay can use this feature');return}
   const allMach=[...S.machines].filter(m=>m.stage===S.planStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
-  if(!allMach.length){toast('No machines to fill');return}
-  
+  const top5=allMach.slice(0,5);
   const ops=S.operations.filter(o=>o.stage===S.planStage);
   const parts=S.parts.slice(0,5);
-  
-  // 2. Loop through every machine
   allMach.forEach((m,i)=>{
     const r=S.planReports[m.id];if(!r)return;
-    
-    if(i < 5) {
-      // Top 5 machines: Mark as used and fill with dummy data
+    if(i<5){
       r.used=true;
-      r.runs=[{
-        partId:parts[i]?.id||parts[0]?.id||'',
-        partNo:parts[i]?.no||parts[0]?.no||'',
-        partName:parts[i]?.name||parts[0]?.name||'Sample Part',
-        customer:parts[i]?.cust||'',
-        opId:ops[0]?.id||'',
-        opName:ops[0]?.name||'',
-        hoursPlanned:'8',
-        plannedQty:'100'
-      }];
+      r.runs=[{partId:parts[i%parts.length]?.id||'',partNo:parts[i%parts.length]?.no||'',partName:parts[i%parts.length]?.name||'Sample Part',customer:parts[i%parts.length]?.cust||'',opId:ops[0]?.id||'',opName:ops[0]?.name||'',hoursPlanned:'',plannedQty:'100'}];
       r.setupTimes=[];
-      r.hasDowntime=false;
-    } else {
-      // Remaining machines: Mark as NOT used so they pass form validation
-      r.used=false;
-      r.unusedReason='operator'; // Reason: Operator / Manpower
-      r.unusedOther='';
+    }else{
+      r.used=false;r.unusedReason='other';r.unusedOther='Sample — not used';
     }
-    
-    // Rebuild the HTML card for the machine to show the new state
     const card=document.getElementById('pmc-'+m.id);
-    if(card){card.outerHTML=buildPlanMC(m);}
+    if(card)card.outerHTML=buildPlanMC(m);
   });
-  
   saveDraft('plan');
-  toast('⚡ Sample filled (5 used, rest unused)', 2500);
+  toast('⚡ Top 5 filled, rest marked Not Used — ready to submit',3000);
 }
 function planMCStat(r){if(r.used===null||r.used===undefined)return['Not filled','bdg-gr'];if(!r.used)return['Not planned','bdg-r'];const runs=r.runs||[];const filled=runs.filter(ru=>ru.plannedQty);if(filled.length===runs.length&&runs.length>0)return['Planned ✓','bdg-g'];return['Partial','bdg-a']}
 
-function buildPlanRunsHTML(mid,r,ops){const runs=r.runs||[{}];const setups=r.setupTimes||[];let h='';runs.forEach((run,idx)=>{h+=buildPlanRunBlock(mid,idx,run,ops);if(idx<runs.length-1)h+=`<div class="setup-blk" id="pmc-setup-${mid}-${idx}"><span class="setup-lbl">🔧 Setup Change ${idx+1}→${idx+2}</span><input type="number" min="0" value="${setups[idx]||''}" placeholder="mins" style="width:80px;padding:7px 10px;font-size:14px;font-weight:600;text-align:center;background:#fff;border:1.5px solid var(--bdr);border-radius:6px" onchange="setPlanSetup('${mid}',${idx},this.value)"><span style="font-size:12px;color:#92400e;font-weight:500">mins</span></div>`;});return h;}
-function buildPlanRunBlock(mid,idx,run,ops){return`<div class="run-block" id="pmc-run-${mid}-${idx}"><div class="run-hd"><span class="run-hd-lbl">Run ${idx+1}</span></div><div class="f"><input type="text" placeholder="Search part..." value="${run.partName||''}" oninput="spPlanRun(this,'${mid}',${idx})" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off" style="font-size:14px"></div><div class="row2"><div class="f"><label>Operation</label><select onchange="setPlanRunOp('${mid}',${idx},this.value,this.options[this.selectedIndex].text)"><option value="">— Select —</option>${ops.map(o=>`<option value="${o.id}" ${run.opId===o.id?'selected':''}>${o.name}</option>`).join('')}</select></div><div class="f"><label>Estimated Hours</label><input type="number" min="0" step="0.5" value="${run.hoursPlanned||''}" placeholder="e.g. 3.5" onchange="setPlanRun('${mid}',${idx},'hoursPlanned',this.value);updPlanRunQty('${mid}',${idx})"></div></div><div class="f"><label>Planned Qty</label><input type="number" id="pmc-qty-${mid}-${idx}" min="0" value="${run.plannedQty||''}" placeholder="Auto" onchange="setPlanRun('${mid}',${idx},'plannedQty',this.value);updPlanMCBdg('${mid}')"></div></div>`;}
+function buildPlanRunsHTML(mid,r,ops){const runs=r.runs||[{}];const setups=r.setupTimes||[];const tot=runs.length;let h='';runs.forEach((run,idx)=>{h+=buildPlanRunBlock(mid,idx,run,ops,tot);if(idx<runs.length-1)h+=`<div class="setup-blk" id="pmc-setup-${mid}-${idx}"><span class="setup-lbl">🔧 Setup Change ${idx+1}→${idx+2}</span><input type="number" min="0" value="${setups[idx]||''}" placeholder="mins" style="width:80px;padding:7px 10px;font-size:14px;font-weight:600;text-align:center;background:#fff;border:1.5px solid var(--bdr);border-radius:6px" onchange="setPlanSetup('${mid}',${idx},this.value)"><span style="font-size:12px;color:#92400e;font-weight:500">mins</span></div>`;});return h;}
+function buildPlanRunBlock(mid,idx,run,ops,tot){const multi=(tot||1)>1;return`<div class="run-block" id="pmc-run-${mid}-${idx}"><div class="run-hd"><span class="run-hd-lbl">Run ${idx+1}</span></div><div class="f"><input type="text" placeholder="Search part..." value="${run.partName||''}" oninput="spPlanRun(this,'${mid}',${idx})" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off" style="font-size:14px"></div><div class="${multi?'row2':'f'}"><div class="f"><label>Operation</label><select onchange="setPlanRunOp('${mid}',${idx},this.value,this.options[this.selectedIndex].text)"><option value="">— Select —</option>${ops.map(o=>`<option value="${o.id}" ${run.opId===o.id?'selected':''}>${o.name}</option>`).join('')}</select></div>${multi?`<div class="f"><label>Estimated Hours</label><input type="number" min="0" step="0.5" value="${run.hoursPlanned||''}" placeholder="e.g. 3.5" onchange="setPlanRun('${mid}',${idx},'hoursPlanned',this.value);updPlanRunQty('${mid}',${idx})"></div>`:''}</div><div class="f"><label>Planned Qty</label><input type="number" id="pmc-qty-${mid}-${idx}" min="0" value="${run.plannedQty||''}" placeholder="${multi?'Auto':'Enter qty'}" onchange="setPlanRun('${mid}',${idx},'plannedQty',this.value);updPlanMCBdg('${mid}')"></div></div>`;}
 function buildPlanMC(m){
   const r=S.planReports[m.id]||{};const[stat,scls]=planMCStat(r);
   const ops=S.operations.filter(o=>o.stage===S.planStage);
@@ -639,7 +618,7 @@ function buildPlanMC(m){
     <div id="pmc-runs-${m.id}">${buildPlanRunsHTML(m.id,r,ops)}</div>
     <div class="totals-bar"><span>⚙️ Total setup time: <strong id="pmc-setup-total-${m.id}">${totalSetup}</strong> mins</span></div>
     <div class="utog" style="margin-top:10px"><label>Expected downtime?</label><label class="tsw"><input type="checkbox" ${r.hasDowntime?'checked':''} onchange="togPlanDT('${m.id}',this.checked)"><span class="tsl"></span></label></div>
-    <div id="pmdt-${m.id}" style="display:${r.hasDowntime?'block':'none'}"><div class="row2"><div class="f"><label>Reason</label><select id="pmdtr-${m.id}" onchange="setPlanMach('${m.id}','downtimeReason',this.value);togPlanDTO('${m.id}',this.value)"><option value="material" ${r.downtimeReason==='material'?'selected':''}>Material not available</option><option value="operator" ${r.downtimeReason==='operator'?'selected':''}>Operator / Manpower</option><option value="maintenance" ${r.downtimeReason==='maintenance'?'selected':''}>Maintenance</option><option value="electricity" ${r.downtimeReason==='electricity'?'selected':''}>Electricity</option><option value="other" ${r.downtimeReason==='other'?'selected':''}>Other</option></select></div><div class="f"><label>Duration (mins)</label><input type="number" min="0" id="pmdtm-${m.id}" value="${r.downtimeMins||''}" placeholder="0" onchange="setPlanMach('${m.id}','downtimeMins',this.value)"></div></div><div id="pmdto-${m.id}" style="display:${r.downtimeReason==='other'?'block':'none'}"><div class="f"><label>Specify</label><input type="text" value="${r.downtimeOther||''}" placeholder="Describe..." onchange="setPlanMach('${m.id}','downtimeOther',this.value)"></div></div></div>
+    <div id="pmdt-${m.id}" style="display:${r.hasDowntime?'block':'none'}"><div class="row2"><div class="f"><label>Reason</label><select id="pmdtr-${m.id}" onchange="setPlanMach('${m.id}','downtimeReason',this.value);togPlanDTO('${m.id}',this.value)"><option value="setup" ${r.downtimeReason==='setup'?'selected':''}>Setup / Changeover</option><option value="material" ${r.downtimeReason==='material'?'selected':''}>Material not available</option><option value="operator" ${r.downtimeReason==='operator'?'selected':''}>Operator / Manpower</option><option value="maintenance" ${r.downtimeReason==='maintenance'?'selected':''}>Maintenance</option><option value="electricity" ${r.downtimeReason==='electricity'?'selected':''}>Electricity</option><option value="other" ${r.downtimeReason==='other'?'selected':''}>Other</option></select></div><div class="f"><label>Duration (mins)</label><input type="number" min="0" id="pmdtm-${m.id}" value="${r.downtimeMins||''}" placeholder="0" onchange="setPlanMach('${m.id}','downtimeMins',this.value)"></div></div><div id="pmdto-${m.id}" style="display:${r.downtimeReason==='other'?'block':'none'}"><div class="f"><label>Specify</label><input type="text" value="${r.downtimeOther||''}" placeholder="Describe..." onchange="setPlanMach('${m.id}','downtimeOther',this.value)"></div></div></div>
   </div>
   <div id="pmun-form-${m.id}" style="display:${r.used===true?'none':'block'}"><div class="f"><label>Why won't this machine be used?</label><select id="pmunr-${m.id}" onchange="setPlanMach('${m.id}','unusedReason',this.value);togPlanUO('${m.id}',this.value)"><option value="">— Select reason —</option><option value="material" ${r.unusedReason==='material'?'selected':''}>Material not available</option><option value="operator" ${r.unusedReason==='operator'?'selected':''}>Operator / Manpower</option><option value="maintenance" ${r.unusedReason==='maintenance'?'selected':''}>Maintenance</option><option value="electricity" ${r.unusedReason==='electricity'?'selected':''}>Electricity</option><option value="other" ${r.unusedReason==='other'?'selected':''}>Other</option></select></div><div id="pmuo-${m.id}" style="display:${r.unusedReason==='other'?'block':'none'}"><div class="f"><label>Specify</label><input type="text" value="${r.unusedOther||''}" placeholder="Describe..." onchange="setPlanMach('${m.id}','unusedOther',this.value)"></div></div></div>
   </div></div>`;
@@ -655,7 +634,7 @@ function setPlanRunOp(mid,idx,opId,opName){const r=S.planReports[mid];if(!r||!r.
 function setPlanSetup(mid,idx,val){const r=S.planReports[mid];if(!r)return;if(!r.setupTimes)r.setupTimes=[];r.setupTimes[idx]=val;updPlanSetupTotal(mid);saveDraft('plan');}
 function addPlanRun(mid){const r=S.planReports[mid];if(!r)return;if(!r.runs)r.runs=[{}];r.runs.push({partId:'',partNo:'',partName:'',customer:'',opId:'',opName:'',hoursPlanned:'',plannedQty:''});if(!r.setupTimes)r.setupTimes=[];r.setupTimes.push('');const cnt=document.getElementById('pmc-rcount-'+mid);if(cnt)cnt.textContent=r.runs.length;const ops=S.operations.filter(o=>o.stage===S.planStage);const rd=document.getElementById('pmc-runs-'+mid);if(rd)rd.innerHTML=buildPlanRunsHTML(mid,r,ops);saveDraft('plan');}
 function removePlanRun(mid){const r=S.planReports[mid];if(!r||!r.runs||r.runs.length<=1)return;r.runs.pop();if(r.setupTimes&&r.setupTimes.length>0)r.setupTimes.pop();const cnt=document.getElementById('pmc-rcount-'+mid);if(cnt)cnt.textContent=r.runs.length;const ops=S.operations.filter(o=>o.stage===S.planStage);const rd=document.getElementById('pmc-runs-'+mid);if(rd)rd.innerHTML=buildPlanRunsHTML(mid,r,ops);updPlanSetupTotal(mid);saveDraft('plan');}
-function updPlanRunQty(mid,idx){const r=S.planReports[mid];if(!r||!r.runs||!r.runs[idx])return;const run=r.runs[idx];if(run.hoursPlanned&&run.opId&&run.partId){const po=S.partOps.find(p=>p.partId===run.partId&&p.opId===run.opId);if(po&&po.cycleTime>0){const qty=Math.round(+run.hoursPlanned*60/po.cycleTime);run.plannedQty=qty;const el=document.getElementById('pmc-qty-'+mid+'-'+idx);if(el)el.value=qty}}updPlanMCBdg(mid)}
+function updPlanRunQty(mid,idx){const r=S.planReports[mid];if(!r||!r.runs||!r.runs[idx])return;const run=r.runs[idx];if(!run.opId||!run.partId)return;const po=S.partOps.find(p=>p.partId===run.partId&&p.opId===run.opId);if(!po||po.cycleTime<=0)return;const multi=r.runs.length>1;let qty;if(multi){if(!run.hoursPlanned)return;qty=Math.round(+run.hoursPlanned*60/po.cycleTime);}else{const dtMins=r.hasDowntime?(+r.downtimeMins||0):0;const setupMins=(r.setupTimes||[]).reduce((s,v)=>s+(+v||0),0);qty=Math.round((450-dtMins-setupMins)/po.cycleTime);}run.plannedQty=qty;const el=document.getElementById('pmc-qty-'+mid+'-'+idx);if(el)el.value=qty;updPlanMCBdg(mid);}
 function updPlanSetupTotal(mid){const r=S.planReports[mid];if(!r)return;const t=(r.setupTimes||[]).reduce((s,v)=>s+(+v||0),0);const el=document.getElementById('pmc-setup-total-'+mid);if(el)el.textContent=t}
 function spPlanRun(inp,mid,idx){const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}const m=S.parts.filter(p=>p.name.toLowerCase().includes(q)||p.no.toLowerCase().includes(q)).slice(0,15);showGDrop(inp,m,p=>{const r=S.planReports[mid];if(!r||!r.runs||!r.runs[idx])return;r.runs[idx].partId=p.id;r.runs[idx].partNo=p.no;r.runs[idx].partName=p.name;r.runs[idx].customer=p.cust;inp.value=p.name;updPlanRunQty(mid,idx);})}
 function cpdPlan(id){hideGlobalDrop()}
@@ -764,12 +743,13 @@ async function submitPlan(){
 let _vpD='',_vpDFrom='',_vpSh='all',_vpSt='all';
 function rvp(){
   const sevenAgo=new Date();sevenAgo.setDate(sevenAgo.getDate()-7);
-  _vpDFrom=sevenAgo.toISOString().slice(0,10);_vpD=dateStr();
+  const sevenAhead=new Date();sevenAhead.setDate(sevenAhead.getDate()+7);
+  _vpDFrom=sevenAgo.toISOString().slice(0,10);_vpD=sevenAhead.toISOString().slice(0,10);
   document.getElementById('s-view-plan').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">View Plans</div></div></div>
   <div class="pad"><div class="card">
     <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
       <button class="btn btn-s btn-sm" onclick="setVPRange('today')">Today</button>
-      <button class="btn btn-s btn-sm" onclick="setVPRange('week')">Last 7 Days</button>
+      <button class="btn btn-s btn-sm" onclick="setVPRange('week')">±7 Days</button>
       <button class="btn btn-s btn-sm" onclick="setVPRange('month')">This Month</button>
     </div>
     <div class="row2"><div class="f" style="margin:0"><label>From</label><input type="date" id="vp-d-from" value="${_vpDFrom}" onchange="_vpDFrom=this.value;rfvp()"></div><div class="f" style="margin:0"><label>To</label><input type="date" id="vp-d" value="${_vpD}" onchange="_vpD=this.value;rfvp()"></div></div>
@@ -778,8 +758,8 @@ function rvp(){
 }
 function setVPRange(type){
   const today=new Date();
-  if(type==='today'){_vpDFrom=_vpD=dateStr();}
-  else if(type==='week'){const d=new Date();d.setDate(d.getDate()-7);_vpDFrom=d.toISOString().slice(0,10);_vpD=dateStr();}
+  if(type==='today'){const ahead=new Date();ahead.setDate(today.getDate()+1);_vpDFrom=dateStr();_vpD=ahead.toISOString().slice(0,10);}
+  else if(type==='week'){const d=new Date();d.setDate(d.getDate()-7);const a=new Date();a.setDate(a.getDate()+7);_vpDFrom=d.toISOString().slice(0,10);_vpD=a.toISOString().slice(0,10);}
   else if(type==='month'){_vpDFrom=today.toISOString().slice(0,8)+'01';_vpD=dateStr();}
   const f=document.getElementById('vp-d-from'),t=document.getElementById('vp-d');
   if(f)f.value=_vpDFrom;if(t)t.value=_vpD;rfvp();
@@ -815,8 +795,8 @@ function renderActMachines(){
   if(hadDraft)toast('Draft restored — continue from where you left off',3500);
 }
 function mcStat(r){if(r.used===null||r.used===undefined)return['Not filled','bdg-gr'];if(!r.used)return['Not Used','bdg-r'];const runs=r.runs||[];const filled=runs.filter(ru=>ru.actualQty!==''&&ru.actualQty!==undefined);if(filled.length===runs.length&&runs.length>0)return['Filled ✓','bdg-g'];if(filled.length>0)return['In Progress','bdg-a'];return['In Progress','bdg-a']}
-function buildActRunsHTML(mid,r,ops){const runs=r.runs||[{}];const setups=r.setupTimes||[];let h='';runs.forEach((run,idx)=>{h+=buildActRunBlock(mid,idx,run,ops);if(idx<runs.length-1)h+=`<div class="setup-blk" id="mc-setup-${mid}-${idx}"><span class="setup-lbl">🔧 Setup Change ${idx+1}→${idx+2}</span><input type="number" min="0" value="${setups[idx]||''}" placeholder="mins" style="width:80px;padding:7px 10px;font-size:14px;font-weight:600;text-align:center;background:#fff;border:1.5px solid var(--bdr);border-radius:6px" onchange="setActSetup('${mid}',${idx},this.value)"><span style="font-size:12px;color:#92400e;font-weight:500">mins</span></div>`;});return h;}
-function buildActRunBlock(mid,idx,run,ops){const eff=run.targetQty&&run.actualQty?Math.round(+run.actualQty/+run.targetQty*100):0;return`<div class="run-block" id="mc-run-${mid}-${idx}"><div class="run-hd"><span class="run-hd-lbl">Run ${idx+1}</span></div><div class="f"><input type="text" placeholder="Search part..." value="${run.partName||''}" oninput="spActRun(this,'${mid}',${idx})" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off" style="font-size:14px"></div><div class="row2"><div class="f"><label>Operation</label><select onchange="setActRunOp('${mid}',${idx},this.value,this.options[this.selectedIndex].text)"><option value="">— Select —</option>${ops.map(o=>`<option value="${o.id}" ${run.opId===o.id?'selected':''}>${o.name}</option>`).join('')}</select></div><div class="f"><label>Hours run</label><input type="number" min="0" step="0.5" value="${run.hoursRun||''}" placeholder="e.g. 3.5" onchange="setActRun('${mid}',${idx},'hoursRun',this.value);updActRunTarget('${mid}',${idx})"></div></div><div class="row2"><div class="f"><label>Target Qty</label><input type="number" id="mc-tgt-${mid}-${idx}" min="0" value="${run.targetQty||''}" placeholder="Auto" onchange="setActRun('${mid}',${idx},'targetQty',this.value);updActRunEff('${mid}',${idx})"></div><div class="f"><label>Actual Qty</label><input type="number" min="0" value="${run.actualQty||''}" placeholder="0" onchange="setActRun('${mid}',${idx},'actualQty',this.value);updActRunEff('${mid}',${idx})"></div></div><div id="mc-run-eff-${mid}-${idx}" style="margin-bottom:10px;display:${run.targetQty&&run.actualQty?'block':'none'}"><div class="prog"><div class="pf ${effcls(eff)}" id="mc-run-pf-${mid}-${idx}" style="width:${Math.min(eff,100)}%"></div></div><div class="tsm tmut" id="mc-run-el-${mid}-${idx}">Efficiency: ${eff}%</div></div><div class="row2"><div class="f"><label>Rejection Qty</label><input type="number" min="0" value="${run.rejectionQty||0}" onchange="setActRun('${mid}',${idx},'rejectionQty',this.value)"></div><div class="f"><label>Rejection Reason</label><input type="text" value="${run.rejectionReason||''}" placeholder="Type reason..." onchange="setActRun('${mid}',${idx},'rejectionReason',this.value)"></div></div></div>`;}
+function buildActRunsHTML(mid,r,ops){const runs=r.runs||[{}];const setups=r.setupTimes||[];const tot=runs.length;let h='';runs.forEach((run,idx)=>{h+=buildActRunBlock(mid,idx,run,ops,tot);if(idx<runs.length-1)h+=`<div class="setup-blk" id="mc-setup-${mid}-${idx}"><span class="setup-lbl">🔧 Setup Change ${idx+1}→${idx+2}</span><input type="number" min="0" value="${setups[idx]||''}" placeholder="mins" style="width:80px;padding:7px 10px;font-size:14px;font-weight:600;text-align:center;background:#fff;border:1.5px solid var(--bdr);border-radius:6px" onchange="setActSetup('${mid}',${idx},this.value)"><span style="font-size:12px;color:#92400e;font-weight:500">mins</span></div>`;});return h;}
+function buildActRunBlock(mid,idx,run,ops,tot){const eff=run.targetQty&&run.actualQty?Math.round(+run.actualQty/+run.targetQty*100):0;const multi=tot>1;return`<div class="run-block" id="mc-run-${mid}-${idx}"><div class="run-hd"><span class="run-hd-lbl">Run ${idx+1}</span></div><div class="f"><input type="text" placeholder="Search part..." value="${run.partName||''}" oninput="spActRun(this,'${mid}',${idx})" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off" style="font-size:14px"></div><div class="${multi?'row2':'f' }"><div class="f"><label>Operation</label><select onchange="setActRunOp('${mid}',${idx},this.value,this.options[this.selectedIndex].text)"><option value="">— Select —</option>${ops.map(o=>`<option value="${o.id}" ${run.opId===o.id?'selected':''}>${o.name}</option>`).join('')}</select></div>${multi?`<div class="f"><label>Hours run</label><input type="number" min="0" step="0.5" value="${run.hoursRun||''}" placeholder="e.g. 3.5" onchange="setActRun('${mid}',${idx},'hoursRun',this.value);updActRunTarget('${mid}',${idx})"></div>`:''}</div><div class="row2"><div class="f"><label>Target Qty</label><input type="number" id="mc-tgt-${mid}-${idx}" min="0" value="${run.targetQty||''}" placeholder="Auto" onchange="setActRun('${mid}',${idx},'targetQty',this.value);updActRunEff('${mid}',${idx})"></div><div class="f"><label>Actual Qty</label><input type="number" min="0" value="${run.actualQty||''}" placeholder="0" onchange="setActRun('${mid}',${idx},'actualQty',this.value);updActRunEff('${mid}',${idx})"></div></div><div id="mc-run-eff-${mid}-${idx}" style="margin-bottom:10px;display:${run.targetQty&&run.actualQty?'block':'none'}"><div class="prog"><div class="pf ${effcls(eff)}" id="mc-run-pf-${mid}-${idx}" style="width:${Math.min(eff,100)}%"></div></div><div class="tsm tmut" id="mc-run-el-${mid}-${idx}">Efficiency: ${eff}%</div></div><div class="row2"><div class="f"><label>Rejection Qty</label><input type="number" min="0" value="${run.rejectionQty||0}" onchange="setActRun('${mid}',${idx},'rejectionQty',this.value)"></div><div class="f"><label>Rejection Reason</label><input type="text" value="${run.rejectionReason||''}" placeholder="Type reason..." onchange="setActRun('${mid}',${idx},'rejectionReason',this.value)"></div></div></div>`;}
 function buildMC(m){
   const r=S.actReports[m.id]||{};const[stat,scls]=mcStat(r);
   const ops=S.operations.filter(o=>o.stage===S.actStage);
@@ -835,12 +815,12 @@ function buildMC(m){
     <div class="utog"><label for="mcu-${m.id}">Machine was used this shift</label><label class="tsw"><input type="checkbox" id="mcu-${m.id}" ${r.used?'checked':''} onchange="togMCUsed('${m.id}',this.checked)"><span class="tsl"></span></label></div>
     <div id="mcu-form-${m.id}" style="display:${r.used===true?'block':'none'}">
       <div class="f"><label>Operator</label><select id="mcop-${m.id}" onchange="handleOpSel('${m.id}',this.value,this)"><option value="">— Select —</option><option value="_add" style="color:var(--acc);font-weight:600">+ Add new operator...</option>${usrs.map(u=>`<option value="${u.id}" ${r.operatorId===u.id?'selected':''}>${u.name}</option>`).join('')}</select></div>
-      <div class="run-ctrl"><span class="run-ctrl-lbl">Varieties of components processed</span><div class="run-ctrl-btns"><button class="rc-btn" onclick="removeActRun('${m.id}')">−</button><span class="rc-num" id="mc-rcount-${m.id}">${(r.runs||[]).length||1}</span><button class="rc-btn" onclick="addActRun('${m.id}')">+</button></div></div>
+      ${isTanmay()?`<button class="btn btn-s" style="font-size:12px;margin-bottom:8px;width:100%" onclick="fillSampleActual()">⚡ Fill Sample (Top 5)</button>`:'\`'}<div class="run-ctrl"><span class="run-ctrl-lbl">Varieties of components processed</span><div class="run-ctrl-btns"><button class="rc-btn" onclick="removeActRun('${m.id}')">−</button><span class="rc-num" id="mc-rcount-${m.id}">${(r.runs||[]).length||1}</span><button class="rc-btn" onclick="addActRun('${m.id}')">+</button></div></div>
       <div id="mc-runs-${m.id}">${buildActRunsHTML(m.id,r,ops)}</div>
       <div class="totals-bar"><span>⚙️ Setup: <strong id="mc-setup-total-${m.id}">${totalSetup}</strong> mins</span><span>⏱ Total downtime: <strong id="mc-dt-total-${m.id}">${totalDT}</strong> mins</span></div>
       <div class="utog" style="margin-top:10px"><label>Other downtime (apart from setups)?</label><label class="tsw"><input type="checkbox" ${r.hasOtherDowntime?'checked':''} onchange="togOtherDT('${m.id}',this.checked)"><span class="tsl"></span></label></div>
       <div id="mc-odt-${m.id}" style="display:${r.hasOtherDowntime?'block':'none'}">
-        <div class="row2"><div class="f"><label>Reason</label><select id="mc-odtr-${m.id}" onchange="setActMach('${m.id}','otherDowntimeReason',this.value);togOtherDTO('${m.id}',this.value)"><option value="material" ${r.otherDowntimeReason==='material'?'selected':''}>Material not available</option><option value="operator" ${r.otherDowntimeReason==='operator'?'selected':''}>Operator / Manpower</option><option value="maintenance" ${r.otherDowntimeReason==='maintenance'?'selected':''}>Maintenance</option><option value="electricity" ${r.otherDowntimeReason==='electricity'?'selected':''}>Electricity</option><option value="other" ${r.otherDowntimeReason==='other'?'selected':''}>Other</option></select></div><div class="f"><label>Duration (mins)</label><input type="number" id="mc-odtm-${m.id}" min="0" value="${r.otherDowntimeMins||''}" placeholder="0" onchange="setActMach('${m.id}','otherDowntimeMins',this.value);updActTotals('${m.id}')"></div></div>
+        <div class="row2"><div class="f"><label>Reason</label><select id="mc-odtr-${m.id}" onchange="setActMach('${m.id}','otherDowntimeReason',this.value);togOtherDTO('${m.id}',this.value)"><option value="setup" ${r.otherDowntimeReason==='setup'?'selected':''}>Setup / Changeover</option><option value="material" ${r.otherDowntimeReason==='material'?'selected':''}>Material not available</option><option value="operator" ${r.otherDowntimeReason==='operator'?'selected':''}>Operator / Manpower</option><option value="maintenance" ${r.otherDowntimeReason==='maintenance'?'selected':''}>Maintenance</option><option value="electricity" ${r.otherDowntimeReason==='electricity'?'selected':''}>Electricity</option><option value="other" ${r.otherDowntimeReason==='other'?'selected':''}>Other</option></select></div><div class="f"><label>Duration (mins)</label><input type="number" id="mc-odtm-${m.id}" min="0" value="${r.otherDowntimeMins||''}" placeholder="0" onchange="setActMach('${m.id}','otherDowntimeMins',this.value);updActTotals('${m.id}')"></div></div>
         <div id="mc-odto-${m.id}" style="display:${r.otherDowntimeReason==='other'?'block':'none'}"><div class="f"><label>Specify reason</label><input type="text" value="${r.otherDowntimeOther||''}" placeholder="Describe..." onchange="setActMach('${m.id}','otherDowntimeOther',this.value)"></div></div>
       </div>
     </div>
@@ -861,11 +841,32 @@ function setActRunOp(mid,idx,opId,opName){const r=S.actReports[mid];if(!r||!r.ru
 function setActSetup(mid,idx,val){const r=S.actReports[mid];if(!r)return;if(!r.setupTimes)r.setupTimes=[];r.setupTimes[idx]=val;updActTotals(mid);saveDraft('actual');}
 function addActRun(mid){const r=S.actReports[mid];if(!r)return;if(!r.runs)r.runs=[{}];r.runs.push({partId:'',partNo:'',partName:'',customer:'',opId:'',opName:'',hoursRun:'',targetQty:'',actualQty:'',rejectionQty:0,rejectionReason:''});if(!r.setupTimes)r.setupTimes=[];r.setupTimes.push('');const cnt=document.getElementById('mc-rcount-'+mid);if(cnt)cnt.textContent=r.runs.length;const ops=S.operations.filter(o=>o.stage===S.actStage);const runsDiv=document.getElementById('mc-runs-'+mid);if(runsDiv)runsDiv.innerHTML=buildActRunsHTML(mid,r,ops);saveDraft('actual');}
 function removeActRun(mid){const r=S.actReports[mid];if(!r||!r.runs||r.runs.length<=1)return;r.runs.pop();if(r.setupTimes&&r.setupTimes.length>0)r.setupTimes.pop();const cnt=document.getElementById('mc-rcount-'+mid);if(cnt)cnt.textContent=r.runs.length;const ops=S.operations.filter(o=>o.stage===S.actStage);const runsDiv=document.getElementById('mc-runs-'+mid);if(runsDiv)runsDiv.innerHTML=buildActRunsHTML(mid,r,ops);updActTotals(mid);saveDraft('actual');}
-function updActRunTarget(mid,idx){const r=S.actReports[mid];if(!r||!r.runs||!r.runs[idx])return;const run=r.runs[idx];if(run.hoursRun&&run.opId&&run.partId){const po=S.partOps.find(p=>p.partId===run.partId&&p.opId===run.opId);if(po&&po.cycleTime>0){const tgt=Math.round(+run.hoursRun*60/po.cycleTime);run.targetQty=tgt;const el=document.getElementById('mc-tgt-'+mid+'-'+idx);if(el)el.value=tgt;updActRunEff(mid,idx)}}}
+function updActRunTarget(mid,idx){const r=S.actReports[mid];if(!r||!r.runs||!r.runs[idx])return;const run=r.runs[idx];const multi=r.runs.length>1;if(!run.opId||!run.partId)return;const po=S.partOps.find(p=>p.partId===run.partId&&p.opId===run.opId);if(!po||po.cycleTime<=0)return;let tgt;if(multi){if(!run.hoursRun)return;tgt=Math.round(+run.hoursRun*60/po.cycleTime);}else{const dtMins=r.hasOtherDowntime?(+r.otherDowntimeMins||0):0;tgt=Math.round((450-dtMins)/po.cycleTime);}run.targetQty=tgt;const el=document.getElementById('mc-tgt-'+mid+'-'+idx);if(el)el.value=tgt;updActRunEff(mid,idx);}
 function updActRunEff(mid,idx){const r=S.actReports[mid];if(!r||!r.runs||!r.runs[idx])return;const run=r.runs[idx];const eff=run.targetQty&&run.actualQty?Math.round(+run.actualQty/+run.targetQty*100):0;const d=document.getElementById('mc-run-eff-'+mid+'-'+idx);if(d){d.style.display=run.targetQty&&run.actualQty?'block':'none';const pf=document.getElementById('mc-run-pf-'+mid+'-'+idx);if(pf){pf.style.width=Math.min(eff,100)+'%';pf.className='pf '+effcls(eff)}const lb=document.getElementById('mc-run-el-'+mid+'-'+idx);if(lb)lb.textContent='Efficiency: '+eff+'%'}updMCBdg(mid)}
 function updActTotals(mid){const r=S.actReports[mid];if(!r)return;const ts=(r.setupTimes||[]).reduce((s,v)=>s+(+v||0),0);const od=r.hasOtherDowntime?(+r.otherDowntimeMins||0):0;const td=ts+od;const se=document.getElementById('mc-setup-total-'+mid);const de=document.getElementById('mc-dt-total-'+mid);if(se)se.textContent=ts;if(de)de.textContent=td}
-function spActRun(inp,mid,idx){const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}const m=S.parts.filter(p=>p.name.toLowerCase().includes(q)||p.no.toLowerCase().includes(q)).slice(0,15);showGDrop(inp,m,p=>{const r=S.actReports[mid];if(!r||!r.runs||!r.runs[idx])return;r.runs[idx].partId=p.id;r.runs[idx].partNo=p.no;r.runs[idx].partName=p.name;r.runs[idx].customer=p.cust;inp.value=p.name;updActRunTarget(mid,idx);})}
+function spActRun(inp,mid,idx){const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}const m=S.parts.filter(p=>p.name.toLowerCase().includes(q)||p.no.toLowerCase().includes(q)).slice(0,15);showGDrop(inp,m,p=>{const r=S.actReports[mid];if(!r||!r.runs||!r.runs[idx])return;r.runs[idx].partId=p.id;r.runs[idx].partNo=p.no;r.runs[idx].partName=p.name;r.runs[idx].customer=p.cust;inp.value=p.name;updActRunTarget(mid,idx);saveDraft('actual');})}
 function updMCBdg(id){const r=S.actReports[id];if(!r)return;const[stat,scls]=mcStat(r);const b=document.getElementById('mcs-'+id);if(b){b.textContent=stat;b.className='bdg '+scls}}
+function fillSampleActual(){
+  if(!isTanmay()){toast('Only Tanmay can use this feature');return}
+  const allMach=[...S.machines].filter(m=>m.stage===S.actStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+  const ops=S.operations.filter(o=>o.stage===S.actStage);
+  const parts=S.parts.slice(0,5);
+  const opId=S.users.filter(u=>u.role==='operator'&&(u.stage===S.actStage||u.stage==='general'))[0]?.id||'';
+  allMach.forEach((m,i)=>{
+    const r=S.actReports[m.id];if(!r)return;
+    if(i<5){
+      r.used=true;r.operatorId=opId;
+      r.runs=[{partId:parts[i%parts.length]?.id||'',partNo:parts[i%parts.length]?.no||'',partName:parts[i%parts.length]?.name||'Sample',customer:parts[i%parts.length]?.cust||'',opId:ops[0]?.id||'',opName:ops[0]?.name||'',hoursRun:'',targetQty:'100',actualQty:'95',rejectionQty:0,rejectionReason:''}];
+      r.setupTimes=[];r.hasOtherDowntime=false;
+    }else{
+      r.used=false;r.unusedReason='other';r.unusedOther='Sample — not used';
+    }
+    const card=document.getElementById('mc-'+m.id);
+    if(card)card.outerHTML=buildMC(m);
+  });
+  saveDraft('actual');
+  toast('⚡ Top 5 filled, rest marked Not Used — ready to submit',3000);
+}
 function handleOpSel(mid,val,sel){if(val==='_add'){sel.value='';quickAddOpModal(mid);}else{setActMach(mid,'operatorId',val);}}
 function quickAddOpModal(mid){
   openModal(`<div class="mtit">Quick Add Operator</div>
@@ -1340,7 +1341,7 @@ function renderPeople(){
   applyPplFilter();
 }
 function persF(u){
-  const au=!u||u.appUser!==false;
+  const au=u?u.appUser!==false:false;
   const dp=u&&u.permissions?u.permissions:getDefaultPerms(u?u.role:'operator');
   const pOpt=(field,val)=>['full','view','hidden'].map(v=>`<option value="${v}" ${val===v?'selected':''}>${{full:'Full Access',view:'View Only',hidden:'Hidden'}[v]}</option>`).join('');
   return`<div class="f"><label>Full Name</label><input id="pm-n" type="text" value="${u?u.name:''}" placeholder="e.g. Ramesh Kumar"></div>
@@ -1518,7 +1519,7 @@ async function init(){
 if('serviceWorker' in navigator){
   let _swReg=null;
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').then(reg=>{
+    navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{
       _swReg=reg;
       reg.update(); // check for new version on every load
 
