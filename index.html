@@ -163,7 +163,7 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:767px){
   .sub-bar{display:block;position:fixed;bottom:calc(var(--nh) + env(safe-area-inset-bottom));left:0;right:0;background:var(--sur);padding:10px 16px;border-top:.5px solid var(--bdr);z-index:95;box-shadow:0 -2px 16px rgba(0,0,0,.09)}
   .sub-bar .btn{width:100%;margin:0;border-radius:10px}
-  .sub-bar-desktop{display:block}
+  .sub-bar-desktop{display:none}
 }
 @media(min-width:768px){
   .sub-bar{display:none!important}
@@ -504,6 +504,7 @@ function openPlanDayShift(shiftKey,date){
     const shiftEl=document.getElementById('pf-shift');if(shiftEl){shiftEl.value=shiftKey;shiftEl.disabled=true;}
     const sup=document.getElementById('pf-sup');
     if(sup)sup.innerHTML=`<option value="">— Select —</option>`+S.users.filter(u=>(u.role==='supervisor'||u.role==='manager')&&(u.stage===S.planDayStage||u.stage==='general')).map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+    S.planStage=S.planDayStage;
     document.getElementById('plan-rest').style.display='block';
     renderPlanMachines();
     if(S.editingPlanId)toast('Editing existing plan for this shift');
@@ -997,6 +998,7 @@ function editPlan(id){
     const notesEl=document.getElementById('pf-notes');if(notesEl)notesEl.value=p.notes||'';
     const matEl=document.getElementById('pf-mat');if(matEl)matEl.value=p.matStatus||'ready';
     // Show plan-rest and render machine cards
+    S.planStage=S.planDayStage;
     document.getElementById('plan-rest').style.display='block';
     renderPlanMachines();
     toast('Editing existing plan — make changes and save');
