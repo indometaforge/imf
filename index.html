@@ -451,7 +451,7 @@ function selPlanStage(st){
 }
 
 function renderPlanMachines(){
-  const mach=[...S.machines].filter(m=>m.stage===S.planStage).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+  const mach=[...S.machines].filter(m=>m.stage===S.planStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
   const w=document.getElementById('plan-mach');if(!w)return;
   if(mach.length===0){w.innerHTML=`<div class="empty"><div class="empty-ic">⚙️</div><h3>No machines in ${slbl(S.planStage)}</h3><p>Go to Masters → Machines and add machines for this stage.</p></div>`;document.getElementById('plan-sub').style.display='none';const _psb2=document.getElementById('plan-sub-bar');if(_psb2)_psb2.style.display='none';return}
   const hadDraft=loadDraft('plan');
@@ -602,7 +602,7 @@ function selActStage(st){
   renderActMachines();
 }
 function renderActMachines(){
-  const mach=[...S.machines].filter(m=>m.stage===S.actStage).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+  const mach=[...S.machines].filter(m=>m.stage===S.actStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
   const w=document.getElementById('act-mach');if(!w)return;
   if(mach.length===0){w.innerHTML=`<div class="empty"><div class="empty-ic">⚙️</div><h3>No machines in ${slbl(S.actStage)}</h3><p>Go to Masters → Machines and add machines for this stage.</p></div>`;document.getElementById('act-sub').style.display='none';const _asb2=document.getElementById('act-sub-bar');if(_asb2)_asb2.style.display='none';return}
   const hadDraft=loadDraft('actual');
@@ -954,10 +954,10 @@ function applyMachFilter(){
   });
   const w=document.getElementById('mach-list');if(!w)return;
   w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">⚙️</div><h3>No results</h3><p>Try a different search or filter.</p></div>`:
-    list.map(m=>`<div class="li li-drag is-drag-item" data-id="${m.id}" draggable="true" ondragstart="onMachDragStart(event,'${m.id}')" ondragover="onMachDragOver(event)" ondrop="onMachDrop(event,'${m.id}')" ondragend="onMachDragEnd()">
+    list.map(m=>`<div class="li li-drag is-drag-item" data-id="${m.id}" draggable="true" ondragstart="onMachDragStart(event,'${m.id}')" ondragover="onMachDragOver(event)" ondrop="onMachDrop(event,'${m.id}')" ondragend="onMachDragEnd()" style="${m.active===false?'opacity:0.5':''}">
     <div class="drag-handle" ontouchstart="onMachTouchStart(event,'${m.id}')" ontouchmove="onMachTouchMove(event)" ontouchend="onMachTouchEnd(event,'${m.id}')">⠿</div>
     <div class="lic">⚙️</div>
-    <div class="lib"><div class="linm">${m.name}</div><div class="lisb"><span class="bdg ${sbdg(m.stage)}">${slbl(m.stage)}</span>${m.id_code?' · '+m.id_code:''}${m.type?' · '+m.type:''}</div></div>
+    <div class="lib"><div class="linm">${m.name}</div><div class="lisb"><span class="bdg ${sbdg(m.stage)}">${slbl(m.stage)}</span>${m.active===false?'<span class="bdg bdg-r" style="margin-left:4px">Inactive</span>':'<span class="bdg bdg-g" style="margin-left:4px">Active</span>'}${m.id_code?' · '+m.id_code:''}${m.type?' · '+m.type:''}</div></div>
     <div class="liac"><button class="btn btn-s btn-sm" onclick="editMachModal('${m.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delMach('${m.id}')">Del</button>`:''}</div>
   </div>`).join('');
 }
@@ -1006,10 +1006,10 @@ async function reorderMachines(srcId,tgtId){
     applyMachFilter();toast('Order saved ✓');
   }catch(err){toast('Error: '+err.message);}
 }
-function mchF(m){return`<div class="f"><label>Machine Name</label><input id="mm-n" type="text" value="${m?m.name:''}" placeholder="e.g. Hobbing Machine 1"></div><div class="f"><label>Machine Code</label><input id="mm-c" type="text" value="${m?m.id_code||'':''}" placeholder="e.g. M-01"></div><div class="f"><label>Type</label><input id="mm-t" type="text" value="${m?m.type||'':''}" placeholder="e.g. CNC, Lathe, Hobbing..."></div><div class="f"><label>Stage</label><select id="mm-s"><option value="soft" ${m&&m.stage==='soft'?'selected':''}>Soft</option><option value="ht" ${m&&m.stage==='ht'?'selected':''}>HT</option><option value="hard" ${m&&m.stage==='hard'?'selected':''}>Hard</option></select></div>`}
+function mchF(m){return`<div class="f"><label>Machine Name</label><input id="mm-n" type="text" value="${m?m.name:''}" placeholder="e.g. Hobbing Machine 1"></div><div class="f"><label>Machine Code</label><input id="mm-c" type="text" value="${m?m.id_code||'':''}" placeholder="e.g. M-01"></div><div class="f"><label>Type</label><input id="mm-t" type="text" value="${m?m.type||'':''}" placeholder="e.g. CNC, Lathe, Hobbing..."></div><div class="f"><label>Stage</label><select id="mm-s"><option value="soft" ${m&&m.stage==='soft'?'selected':''}>Soft</option><option value="ht" ${m&&m.stage==='ht'?'selected':''}>HT</option><option value="hard" ${m&&m.stage==='hard'?'selected':''}>Hard</option></select></div><div class="utog" style="margin-top:10px"><label style="font-size:13px;font-weight:600">Active <span style="font-size:11px;color:var(--mut);font-weight:400">(shows in Plan &amp; Actual forms)</span></label><label class="tsw"><input type="checkbox" id="mm-active" ${!m||m.active!==false?'checked':''}><span class="tsl"></span></label></div>`}
 function addMachModal(){openModal(`<div class="mtit">Add Machine</div>${mchF(null)}<button class="btn btn-p mt12" onclick="saveMach()">Add Machine</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
 function editMachModal(id){const m=S.machines.find(m=>m.id===id);if(!m)return;openModal(`<div class="mtit">Edit Machine</div>${mchF(m)}<button class="btn btn-p mt12" onclick="saveMach('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delMach('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-async function saveMach(id){const n=document.getElementById('mm-n').value.trim();if(!n){toast('Name required');return}const d={name:n,id_code:document.getElementById('mm-c').value,type:document.getElementById('mm-t').value,stage:document.getElementById('mm-s').value};try{if(id){await db.collection('machines').doc(id).update(d)}else{await db.collection('machines').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderMachines();toast(id?'Updated ✓':'Machine added ✓')}catch(e){toast('Error: '+e.message)}}
+async function saveMach(id){const n=document.getElementById('mm-n').value.trim();if(!n){toast('Name required');return}const actEl=document.getElementById('mm-active');const d={name:n,id_code:document.getElementById('mm-c').value,type:document.getElementById('mm-t').value,stage:document.getElementById('mm-s').value,active:actEl?actEl.checked:true};try{if(id){await db.collection('machines').doc(id).update(d)}else{await db.collection('machines').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderMachines();toast(id?'Updated ✓':'Machine added ✓')}catch(e){toast('Error: '+e.message)}}
 async function delMach(id){if(!confirm('Delete this machine?'))return;await db.collection('machines').doc(id).delete();await reloadM();closeModal();renderMachines();toast('Deleted')}
 
 function applyPplFilter(){
