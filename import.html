@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IMF ProTrack — Bulk Import</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0f5ff;--sur:#fff;--hdr:#1e3a8a;--acc:#2563eb;--ok:#16a34a;--er:#dc2626;--wa:#d97706;--mut:#64748b;--bdr:rgba(37,99,235,.12);--r:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:#0f172a;min-height:100vh}
+.hdr{background:var(--hdr);padding:18px 24px;display:flex;align-items:center;gap:14px}
+.hdr-mark{width:40px;height:40px;background:var(--acc);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:16px}
+.hdr-title{color:#fff;font-size:16px;font-weight:700}
+.hdr-sub{color:rgba(255,255,255,.45);font-size:12px;margin-top:2px}
+.wrap{max-width:860px;margin:0 auto;padding:28px 20px}
+.tabs{display:flex;gap:0;background:var(--sur);border-radius:var(--r);overflow:hidden;border:.5px solid var(--bdr);margin-bottom:24px}
+.tab{flex:1;padding:12px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;color:var(--mut);border:none;background:none;transition:all .15s}
+.tab.on{background:var(--acc);color:#fff}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--sur);border-radius:var(--r);padding:22px;margin-bottom:16px;border:.5px solid var(--bdr);box-shadow:0 1px 4px rgba(37,99,235,.06)}
+.card h2{font-size:15px;font-weight:700;margin-bottom:6px}
+.card p{font-size:13px;color:var(--mut);line-height:1.6;margin-bottom:14px}
+.steps{counter-reset:step;display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.step{display:flex;gap:12px;align-items:flex-start}
+.step-n{width:26px;height:26px;background:var(--acc);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-t{font-size:13px;line-height:1.5}
+.step-t strong{display:block;font-weight:600;margin-bottom:2px}
+.btn{padding:11px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
+.btn:active{transform:scale(.98)}
+.btn-p{background:var(--acc);color:#fff}
+.btn-s{background:var(--bg);color:#0f172a;border:1.5px solid var(--bdr)}
+.btn-ok{background:var(--ok);color:#fff}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.drop-zone{border:2px dashed var(--bdr);border-radius:var(--r);padding:32px;text-align:center;cursor:pointer;transition:all .15s;background:#f8faff}
+.drop-zone:hover,.drop-zone.over{border-color:var(--acc);background:var(--bg)}
+.drop-zone input{display:none}
+.drop-ic{font-size:32px;margin-bottom:8px}
+.drop-txt{font-size:14px;font-weight:600;color:#0f172a;margin-bottom:4px}
+.drop-sub{font-size:12px;color:var(--mut)}
+.preview{margin-top:16px;display:none}
+.preview-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.preview-title{font-size:14px;font-weight:700}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.bdg-g{background:#f0fdf4;color:var(--ok)}.bdg-r{background:#fef2f2;color:var(--er)}.bdg-a{background:#fffbeb;color:var(--wa)}.bdg-b{background:#eff6ff;color:var(--acc)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;background:var(--bg);color:var(--mut);font-weight:600;border-bottom:1px solid var(--bdr)}
+td{padding:7px 10px;border-bottom:.5px solid var(--bdr);color:#0f172a}
+tr:last-child td{border:none}
+.err-row td{background:#fff5f5}.del-row td{background:#fff5f5;color:#dc2626}
+.err-msg{color:var(--er);font-size:11px}
+.progress{margin-top:16px;display:none}
+.prog-bar-wrap{height:8px;background:var(--bg);border-radius:99px;overflow:hidden;margin:8px 0}
+.prog-bar{height:100%;background:var(--acc);border-radius:99px;transition:width .3s}
+.result{margin-top:14px;padding:14px;border-radius:10px;font-size:13px;display:none}
+.result.ok{background:#f0fdf4;color:var(--ok);border:.5px solid #bbf7d0}
+.result.er{background:#fef2f2;color:var(--er);border:.5px solid #fecaca}
+.info{background:#eff6ff;border:.5px solid #bfdbfe;border-radius:8px;padding:10px 13px;font-size:13px;color:var(--acc);margin-bottom:14px}
+.template-preview{background:var(--bg);border-radius:8px;padding:12px;font-family:monospace;font-size:12px;color:var(--mut);margin-bottom:14px;overflow-x:auto;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-mark">IMF</div>
+  <div><div class="hdr-title">Bulk Import Tool</div><div class="hdr-sub">Indo Metaforge Pvt Ltd — ProTrack Masters</div></div>
+</div>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab on" onclick="showTab('people')">👤 People</button>
+    <button class="tab" onclick="showTab('machines')">⚙️ Machines</button>
+    <button class="tab" onclick="showTab('parts')">🔩 Parts</button>
+    <button class="tab" onclick="showTab('partops')">📐 Part-Operations</button>
+  </div>
+
+  <!-- ═══ PEOPLE PANEL ═══ -->
+  <div class="panel on" id="panel-people">
+    <div class="card">
+      <h2>Import People / Users</h2>
+      <p>Download the template, fill it in Excel or Google Sheets, then upload it here. All rows will be added to Firebase.</p>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Download template</strong>Fill in each person's details. Do not change column headers.</div></div>
+        <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Fill the CSV</strong>One person per row. See column guide below.</div></div>
+        <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Upload &amp; import</strong>The tool checks for errors before importing anything.</div></div>
+      </div>
+
+      <div class="info">
+        <strong>Column guide:</strong><br>
+        <b>name</b> — Full name &nbsp;|&nbsp;
+        <b>role</b> — operator / supervisor / manager / dispatch / owner / admin &nbsp;|&nbsp;
+        <b>stage</b> — soft / ht / hard / general &nbsp;|&nbsp;
+        <b>pin</b> — 4-digit number (leave blank for non-app users) &nbsp;|&nbsp;
+        <b>app_user</b> — yes / no &nbsp;|&nbsp;
+        <b>plan_perm</b> — full / view / hidden &nbsp;|&nbsp;
+        <b>actual_perm</b> — full / view / hidden &nbsp;|&nbsp;
+        <b>reports_perm</b> — full / view / hidden
+      </div>
+
+      <div class="template-preview">name,role,stage,pin,app_user,plan_perm,actual_perm,reports_perm<br>
+Ramesh Kumar,operator,soft,1234,yes,full,full,view<br>
+Suresh Patil,supervisor,soft,5678,yes,full,full,full<br>
+Anil Sharma,manager,general,9012,yes,view,view,full<br>
+Dispatch Team,dispatch,general,,no,,,</div>
+
+      <div class="btn-row">
+        <button class="btn btn-p" onclick="downloadTemplate('people')">⬇ Download Template</button>
+        <button class="btn btn-s" onclick="document.getElementById('ppl-file').click()">📂 Upload CSV</button>
+        <input type="file" id="ppl-file" accept=".csv" onchange="handleFile(this,'people')">
+      </div>
+
+      <div class="drop-zone" id="dz-people" onclick="document.getElementById('ppl-file').click()"
+        ondragover="dzOver(event,'people')" ondragleave="dzLeave('people')" ondrop="dzDrop(event,'people')">
+        <div class="drop-ic">📄</div>
+        <div class="drop-txt">Drop your CSV here or click to browse</div>
+        <div class="drop-sub">people_import.csv</div>
+      </div>
+
+      <div class="preview" id="prev-people">
+        <div class="preview-hd">
+          <div class="preview-title">Preview</div>
+          <div id="prev-people-badge"></div>
+        </div>
+        <div style="overflow-x:auto"><table id="tbl-people"></table></div>
+        <div class="progress" id="prog-people">
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px" id="prog-people-txt">Importing...</div>
+          <div class="prog-bar-wrap"><div class="prog-bar" id="prog-people-bar" style="width:0%"></div></div>
+        </div>
+        <div class="result" id="res-people"></div>
+        <div class="btn-row" style="margin-top:14px">
+          <button class="btn btn-ok" id="imp-btn-people" onclick="doImport('people')" style="display:none">⬆ Import to Firebase</button>
+          <button class="btn btn-s" onclick="clearPreview('people')">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MACHINES PANEL ═══ -->
+  <div class="panel" id="panel-machines">
+    <div class="card">
+      <h2>Import Machines</h2>
+      <p>Download the template, fill in your machine details, then upload. Each machine will be added to the masters and linked to its stage.</p>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Download template</strong>Fill in each machine's details. Do not change column headers.</div></div>
+        <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Fill the CSV</strong>One machine per row. Name and stage are required, rest are optional.</div></div>
+        <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Upload &amp; import</strong>The tool validates before importing anything.</div></div>
+      </div>
+
+      <div class="info">
+        <strong>Column guide:</strong><br>
+        <b>name</b> — Machine name, required (e.g. Hobbing Machine 1) &nbsp;|&nbsp;
+        <b>code</b> — Machine ID/code, optional (e.g. M-01) &nbsp;|&nbsp;
+        <b>type</b> — Machine type, optional (e.g. CNC, Hobbing, Grinding) &nbsp;|&nbsp;
+        <b>stage</b> — Required: soft / ht / hard
+      </div>
+
+      <div class="template-preview">name,code,type,stage<br>
+Hobbing Machine 1,M-01,Hobbing,soft<br>
+Hobbing Machine 2,M-02,Hobbing,soft<br>
+CNC Gear Shaper 1,M-10,Shaping,soft<br>
+Heat Treatment Furnace 1,HT-01,Furnace,ht<br>
+Gear Grinding 1,G-01,Grinding,hard</div>
+
+      <div class="btn-row">
+        <button class="btn btn-p" onclick="downloadTemplate('machines')">⬇ Download Template</button>
+        <button class="btn btn-s" onclick="document.getElementById('mach-file').click()">📂 Upload CSV</button>
+        <input type="file" id="mach-file" accept=".csv" onchange="handleFile(this,'machines')">
+      </div>
+
+      <div class="drop-zone" id="dz-machines" onclick="document.getElementById('mach-file').click()"
+        ondragover="dzOver(event,'machines')" ondragleave="dzLeave('machines')" ondrop="dzDrop(event,'machines')">
+        <div class="drop-ic">📄</div>
+        <div class="drop-txt">Drop your CSV here or click to browse</div>
+        <div class="drop-sub">machines_import.csv</div>
+      </div>
+
+      <div class="preview" id="prev-machines">
+        <div class="preview-hd">
+          <div class="preview-title">Preview</div>
+          <div id="prev-machines-badge"></div>
+        </div>
+        <div style="overflow-x:auto"><table id="tbl-machines"></table></div>
+        <div class="progress" id="prog-machines">
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px" id="prog-machines-txt">Importing...</div>
+          <div class="prog-bar-wrap"><div class="prog-bar" id="prog-machines-bar" style="width:0%"></div></div>
+        </div>
+        <div class="result" id="res-machines"></div>
+        <div class="btn-row" style="margin-top:14px">
+          <button class="btn btn-ok" id="imp-btn-machines" onclick="doImport('machines')" style="display:none">⬆ Import to Firebase</button>
+          <button class="btn btn-s" onclick="clearPreview('machines')">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PARTS PANEL ═══ -->
+  <div class="panel" id="panel-parts">
+    <div class="card">
+      <h2>Import / Update Parts Master</h2>
+      <p>Smart upsert — if a part number already exists in the system it will be <strong>updated</strong> with the new data. If it's a new part number it will be <strong>created</strong>. This way you can fix rates, rename parts, or add new ones all in one go.</p>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Download current parts</strong>Downloads all existing parts pre-filled so you can edit them directly.</div></div>
+        <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Edit in Excel / Google Sheets</strong>Update rates, fix names, add new rows. Part number is the key — don't change it if you want to update an existing part.</div></div>
+        <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Upload &amp; import</strong>Preview shows each row as NEW or UPDATE before anything is saved.</div></div>
+      </div>
+
+      <div class="info">
+        <strong>Column guide:</strong><br>
+        <b>part_no</b> — Part number, required. This is the key — existing part numbers get updated &nbsp;|&nbsp;
+        <b>name</b> — Part name, required &nbsp;|&nbsp;
+        <b>customer</b> — Customer code (e.g. PVPL, ATUL, M&amp;M) &nbsp;|&nbsp;
+        <b>rate</b> — Rate in ₹, can be 0
+      </div>
+
+      <div class="template-preview">part_no,name,customer,rate<br>
+1A009578R,1ST SPEED 501,PVPL,191.56<br>
+1A010700R,2ND SPEED 501,PVPL,151.57<br>
+NEW_PART_001,My New Part Name,PVPL,250.00</div>
+
+      <div class="btn-row">
+        <button class="btn btn-p" onclick="downloadTemplate('parts')">⬇ Download Current Parts (all ${fbData.parts.length || '146'} parts)</button>
+        <button class="btn btn-s" onclick="document.getElementById('parts-file').click()">📂 Upload CSV</button>
+        <input type="file" id="parts-file" accept=".csv" onchange="handleFile(this,'parts')">
+      </div>
+
+      <div class="drop-zone" id="dz-parts" onclick="document.getElementById('parts-file').click()"
+        ondragover="dzOver(event,'parts')" ondragleave="dzLeave('parts')" ondrop="dzDrop(event,'parts')">
+        <div class="drop-ic">📄</div>
+        <div class="drop-txt">Drop your CSV here or click to browse</div>
+        <div class="drop-sub">parts_import.csv</div>
+      </div>
+
+      <div class="preview" id="prev-parts">
+        <div class="preview-hd">
+          <div class="preview-title">Preview</div>
+          <div id="prev-parts-badge"></div>
+        </div>
+        <div style="overflow-x:auto"><table id="tbl-parts"></table></div>
+        <div class="progress" id="prog-parts">
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px" id="prog-parts-txt">Importing...</div>
+          <div class="prog-bar-wrap"><div class="prog-bar" id="prog-parts-bar" style="width:0%"></div></div>
+        </div>
+        <div id="parts-delete-warn" style="display:none;background:#fef2f2;border:.5px solid #fecaca;border-radius:8px;padding:12px 14px;font-size:13px;color:#dc2626;margin-top:12px;line-height:1.5"></div>
+        <div class="result" id="res-parts"></div>
+        <div class="btn-row" style="margin-top:14px">
+          <button class="btn btn-ok" id="imp-btn-parts" onclick="doImport('parts')" style="display:none">⬆ Import to Firebase</button>
+          <button class="btn btn-s" onclick="clearPreview('parts')">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PART-OPS PANEL ═══ -->
+  <div class="panel" id="panel-partops">
+    <div class="card">
+      <h2>Import Part-Operations</h2>
+      <p>Maps each Part + Operation combination with its cycle time and target quantity per shift. Part numbers and operation names must exactly match what's already in your masters.</p>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Download template</strong>Includes all your current parts as reference.</div></div>
+        <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Fill cycle times</strong>part_no must match exactly. operation_name must match exactly.</div></div>
+        <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Upload &amp; import</strong>Target qty auto-calculates from cycle time (450 ÷ cycle time) if left blank.</div></div>
+      </div>
+
+      <div class="info">
+        <strong>Column guide:</strong><br>
+        <b>part_no</b> — Must match exactly (e.g. 1A009578R) &nbsp;|&nbsp;
+        <b>operation_name</b> — Must match exactly (e.g. Hobbing) &nbsp;|&nbsp;
+        <b>cycle_time_mins</b> — Minutes per piece (e.g. 4.5) &nbsp;|&nbsp;
+        <b>target_qty_shift</b> — Leave blank to auto-calculate (450 ÷ cycle time) &nbsp;|&nbsp;
+        <b>machine_name</b> — Optional, must match machine name in masters
+      </div>
+
+      <div class="template-preview">part_no,operation_name,cycle_time_mins,target_qty_shift,machine_name<br>
+1A009578R,Hobbing,4.5,,M-01<br>
+1A009578R,Shaving,2.0,225,<br>
+1A010700R,Hobbing,5.0,,</div>
+
+      <div class="btn-row">
+        <button class="btn btn-p" onclick="downloadTemplate('partops')">⬇ Download Template (with parts list)</button>
+        <button class="btn btn-s" onclick="document.getElementById('po-file').click()">📂 Upload CSV</button>
+        <input type="file" id="po-file" accept=".csv" onchange="handleFile(this,'partops')">
+      </div>
+
+      <div class="drop-zone" id="dz-partops" onclick="document.getElementById('po-file').click()"
+        ondragover="dzOver(event,'partops')" ondragleave="dzLeave('partops')" ondrop="dzDrop(event,'partops')">
+        <div class="drop-ic">📄</div>
+        <div class="drop-txt">Drop your CSV here or click to browse</div>
+        <div class="drop-sub">part_operations_import.csv</div>
+      </div>
+
+      <div class="preview" id="prev-partops">
+        <div class="preview-hd">
+          <div class="preview-title">Preview</div>
+          <div id="prev-partops-badge"></div>
+        </div>
+        <div style="overflow-x:auto"><table id="tbl-partops"></table></div>
+        <div class="progress" id="prog-partops">
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px" id="prog-partops-txt">Importing...</div>
+          <div class="prog-bar-wrap"><div class="prog-bar" id="prog-partops-bar" style="width:0%"></div></div>
+        </div>
+        <div class="result" id="res-partops"></div>
+        <div class="btn-row" style="margin-top:14px">
+          <button class="btn btn-ok" id="imp-btn-partops" onclick="doImport('partops')" style="display:none">⬆ Import to Firebase</button>
+          <button class="btn btn-s" onclick="clearPreview('partops')">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyA3-RPrX4ysIwTHAn_nnbMGJSghv3RRcLs",
+  authDomain:"imf-pro-track.firebaseapp.com",
+  projectId:"imf-pro-track",
+  storageBucket:"imf-pro-track.firebasestorage.app",
+  messagingSenderId:"288808983033",
+  appId:"1:288808983033:web:0c02884447ba6f25734528"
+});
+const db = firebase.firestore();
+
+// ── State ──
+let parsedData = { people: null, machines: null, parts: null, partops: null };
+let fbData = { parts: [], operations: [], machines: [], users: [] };
+
+// ── Load Firebase masters ──
+async function loadFBData() {
+  const [ps, ops, machs, usrs] = await Promise.all([
+    db.collection('parts').get(),
+    db.collection('operations').get(),
+    db.collection('machines').get(),
+    db.collection('users').get()
+  ]);
+  fbData.parts = ps.docs.map(d => ({ id: d.id, ...d.data() }));
+  fbData.operations = ops.docs.map(d => ({ id: d.id, ...d.data() }));
+  fbData.machines = machs.docs.map(d => ({ id: d.id, ...d.data() }));
+  fbData.users = usrs.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+loadFBData();
+
+// ── Tabs ──
+function showTab(tab) {
+  const tabs = ['people','machines','parts','partops'];
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('on', tabs[i] === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.getElementById('panel-' + tab).classList.add('on');
+}
+
+// ── Drag & drop ──
+function dzOver(e, t) { e.preventDefault(); document.getElementById('dz-' + t).classList.add('over'); }
+function dzLeave(t) { document.getElementById('dz-' + t).classList.remove('over'); }
+function dzDrop(e, t) { e.preventDefault(); dzLeave(t); const f = e.dataTransfer.files[0]; if (f) processFile(f, t); }
+function handleFile(inp, t) { if (inp.files[0]) processFile(inp.files[0], t); }
+
+// ── CSV Parser ──
+function parseCSV(text) {
+  const lines = text.trim().split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+  if (lines.length < 2) return { headers: [], rows: [] };
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/\s+/g, '_'));
+  const rows = lines.slice(1).map((line, i) => {
+    const vals = line.split(',').map(v => v.trim());
+    const obj = {};
+    headers.forEach((h, j) => { obj[h] = vals[j] || ''; });
+    obj._row = i + 2;
+    return obj;
+  });
+  return { headers, rows };
+}
+
+// ── Process file ──
+function processFile(file, type) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const { headers, rows } = parseCSV(e.target.result);
+    if (type === 'people') validatePeople(headers, rows);
+    else if (type === 'machines') validateMachines(headers, rows);
+    else if (type === 'parts') validateParts(headers, rows);
+    else validatePartOps(headers, rows);
+  };
+  reader.readAsText(file);
+}
+
+// ── PEOPLE validation ──
+const VALID_ROLES = ['operator','supervisor','manager','dispatch','owner','admin'];
+const VALID_STAGES = ['soft','ht','hard','general'];
+const VALID_PERMS = ['full','view','hidden',''];
+
+function validatePeople(headers, rows) {
+  const required = ['name','role','stage'];
+  const missing = required.filter(h => !headers.includes(h));
+  if (missing.length) { alert('Missing columns: ' + missing.join(', ')); return; }
+
+  let valid = 0, errors = 0;
+  const annotated = rows.map(r => {
+    const errs = [];
+    if (!r.name) errs.push('Name required');
+    if (!VALID_ROLES.includes(r.role)) errs.push('Invalid role: ' + r.role);
+    if (!VALID_STAGES.includes(r.stage)) errs.push('Invalid stage: ' + r.stage);
+    const isAppUser = (r.app_user || '').toLowerCase() === 'yes';
+    if (isAppUser && r.pin && !/^\d{4}$/.test(r.pin)) errs.push('PIN must be 4 digits');
+    if (['full','view','hidden'].includes(r.plan_perm) === false && r.plan_perm) errs.push('Invalid plan_perm');
+    if (errs.length) errors++; else valid++;
+    return { ...r, _errs: errs, _ok: errs.length === 0 };
+  });
+
+  parsedData.people = annotated;
+  renderPreview('people', ['Row','Name','Role','Stage','App User','PIN','Plan','Actual','Reports','Status'],
+    annotated.map(r => [
+      r._row, r.name, r.role, r.stage,
+      r.app_user || 'no', r.pin || '—',
+      r.plan_perm || 'auto', r.actual_perm || 'auto', r.reports_perm || 'auto',
+      r._ok ? '<span class="badge bdg-g">✓ OK</span>' : `<span class="badge bdg-r">✗ ${r._errs.join('; ')}</span>`
+    ], r._ok),
+    valid, errors, 'people'
+  );
+}
+
+// ── MACHINES validation ──
+const VALID_STAGES_MACH = ['soft','ht','hard'];
+
+function validateMachines(headers, rows) {
+  const required = ['name','stage'];
+  const missing = required.filter(h => !headers.includes(h));
+  if (missing.length) { alert('Missing columns: ' + missing.join(', ')); return; }
+
+  let valid = 0, errors = 0;
+  const annotated = rows.map(r => {
+    const errs = [];
+    if (!r.name) errs.push('Name required');
+    if (!VALID_STAGES_MACH.includes((r.stage||'').toLowerCase())) errs.push('Stage must be soft / ht / hard');
+    if (errs.length) errors++; else valid++;
+    return { ...r, stage: (r.stage||'').toLowerCase(), _errs: errs, _ok: errs.length === 0 };
+  });
+
+  parsedData.machines = annotated;
+  renderPreview('machines',
+    ['Row', 'Name', 'Code', 'Type', 'Stage', 'Status'],
+    annotated.map(r => [
+      r._row, r.name, r.code || '—', r.type || '—',
+      r.stage,
+      r._ok ? '<span class="badge bdg-g">✓ OK</span>' : `<span class="badge bdg-r">✗ ${r._errs.join('; ')}</span>`
+    ]),
+    valid, errors, 'machines'
+  );
+}
+
+// ── PARTS validation (full sync — upsert + delete) ──
+function validateParts(headers, rows) {
+  const required = ['part_no','name'];
+  const missing = required.filter(h => !headers.includes(h));
+  if (missing.length) { alert('Missing columns: ' + missing.join(', ')); return; }
+
+  let creates = 0, updates = 0, errors = 0;
+  const annotated = rows.map(r => {
+    const errs = [];
+    if (!r.part_no) errs.push('Part no required');
+    if (!r.name) errs.push('Name required');
+    const rate = parseFloat(r.rate);
+    if (r.rate && isNaN(rate)) errs.push('Rate must be a number');
+
+    const existing = fbData.parts.find(p => p.no === r.part_no);
+    const action = existing ? 'update' : 'create';
+    if (action === 'update') updates++; else if (!errs.length) creates++;
+    if (errs.length && action === 'create') errors++;
+
+    return {
+      ...r, _errs: errs, _ok: errs.length === 0,
+      _action: action, _existingId: existing?.id || null,
+      _rate: isNaN(rate) ? 0 : rate
+    };
+  });
+
+  // Find parts in Firebase NOT in the CSV → will be deleted
+  const csvNos = new Set(rows.map(r => r.part_no).filter(Boolean));
+  const toDelete = fbData.parts.filter(p => !csvNos.has(p.no));
+  const deleteRows = toDelete.map(p => ({
+    _row: '—', part_no: p.no, name: p.name, customer: p.cust || '',
+    rate: p.rate || 0, _errs: [], _ok: true,
+    _action: 'delete', _existingId: p.id, _rate: p.rate || 0
+  }));
+
+  parsedData.parts = [...annotated, ...deleteRows];
+
+  // Build preview rows — valid upserts first, then deletions, then errors
+  const previewRows = [
+    ...annotated.map(r => ({
+      cells: [
+        r._row,
+        `<span class="mono">${r.part_no}</span>`,
+        r.name, r.customer || '—',
+        r.rate ? '₹' + r.rate : '₹0',
+        r._action === 'update' ? '<span class="badge bdg-a">⟳ UPDATE</span>' : '<span class="badge bdg-b">+ NEW</span>',
+        r._ok ? '<span class="badge bdg-g">✓ OK</span>' : `<span class="badge bdg-r">✗ ${r._errs.join('; ')}</span>`
+      ],
+      cls: r._ok ? '' : 'err-row'
+    })),
+    ...deleteRows.map(r => ({
+      cells: [
+        '—',
+        `<span class="mono">${r.part_no}</span>`,
+        r.name, r.customer || '—',
+        '₹' + r.rate,
+        '<span class="badge bdg-r">🗑 DELETE</span>',
+        '<span class="badge bdg-r">Will be removed</span>'
+      ],
+      cls: 'del-row'
+    }))
+  ];
+
+  const tbl = document.getElementById('tbl-parts');
+  const cols = ['Row','Part No','Name','Customer','Rate (₹)','Action','Status'];
+  tbl.innerHTML = `<thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${previewRows.map(r => `<tr class="${r.cls}">${r.cells.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+  document.getElementById('prev-parts').style.display = 'block';
+
+  const badge = document.getElementById('prev-parts-badge');
+  if (badge) {
+    badge.innerHTML =
+      `<span class="badge bdg-b" style="margin-right:4px">+ ${creates} new</span>` +
+      `<span class="badge bdg-a" style="margin-right:4px">⟳ ${updates} updates</span>` +
+      (toDelete.length ? `<span class="badge bdg-r" style="margin-right:4px">🗑 ${toDelete.length} deletions</span>` : '') +
+      (errors ? `<span class="badge bdg-r">${errors} errors</span>` : '');
+  }
+
+  // Delete warning banner
+  const warn = document.getElementById('parts-delete-warn');
+  if (warn) {
+    if (toDelete.length > 0) {
+      warn.style.display = 'block';
+      warn.innerHTML = `⚠️ <strong>${toDelete.length} parts will be permanently deleted</strong> from Firebase because they are not in your CSV. This cannot be undone. Review the red rows above before importing.`;
+    } else {
+      warn.style.display = 'none';
+    }
+  }
+
+  const btn = document.getElementById('imp-btn-parts');
+  if (btn) {
+    const total = creates + updates + toDelete.length;
+    btn.style.display = total > 0 ? 'inline-block' : 'none';
+    btn.textContent = `⬆ Sync Firebase (${creates} new · ${updates} updates · ${toDelete.length} deletions)`;
+    btn.className = toDelete.length > 0 ? 'btn btn-d' : 'btn btn-ok';
+  }
+
+  document.getElementById('res-parts').style.display = 'none';
+}
+
+// ── PART-OPS validation ──
+function validatePartOps(headers, rows) {
+  const required = ['part_no','operation_name','cycle_time_mins'];
+  const missing = required.filter(h => !headers.includes(h));
+  if (missing.length) { alert('Missing columns: ' + missing.join(', ')); return; }
+
+  let valid = 0, errors = 0;
+  const annotated = rows.map(r => {
+    const errs = [];
+    if (!r.part_no) errs.push('Part no required');
+    if (!r.operation_name) errs.push('Operation required');
+    const ct = parseFloat(r.cycle_time_mins);
+    if (isNaN(ct) || ct <= 0) errs.push('Invalid cycle time');
+
+    const part = fbData.parts.find(p => p.no === r.part_no);
+    if (!part) errs.push('Part not found in masters');
+
+    const op = fbData.operations.find(o => o.name.toLowerCase() === (r.operation_name || '').toLowerCase());
+    if (!op) errs.push('Operation not found — add it in Masters first');
+
+    const machine = r.machine_name ? fbData.machines.find(m => m.name.toLowerCase() === r.machine_name.toLowerCase()) : null;
+    if (r.machine_name && !machine) errs.push('Machine not found: ' + r.machine_name);
+
+    const autoTarget = !isNaN(ct) && ct > 0 ? Math.round(450 / ct) : '—';
+    const targetQty = r.target_qty_shift ? parseInt(r.target_qty_shift) : autoTarget;
+
+    if (errs.length) errors++; else valid++;
+    return { ...r, _errs: errs, _ok: errs.length === 0, _partId: part?.id, _opId: op?.id, _machId: machine?.id || '', _target: targetQty };
+  });
+
+  parsedData.partops = annotated;
+  renderPreview('partops', ['Row','Part No','Operation','Cycle Time','Target Qty','Machine','Status'],
+    annotated.map(r => [
+      r._row, r.part_no, r.operation_name,
+      r.cycle_time_mins + ' min',
+      r._target + ' pcs',
+      r.machine_name || '—',
+      r._ok ? '<span class="badge bdg-g">✓ OK</span>' : `<span class="badge bdg-r">✗ ${r._errs.join('; ')}</span>`
+    ], r._ok),
+    valid, errors, 'partops'
+  );
+}
+
+// ── Render preview table ──
+function renderPreview(type, cols, rowData, valid, errors, id) {
+  const prev = document.getElementById('prev-' + id);
+  prev.style.display = 'block';
+
+  const badge = document.getElementById('prev-' + id + '-badge');
+  badge.innerHTML = `<span class="badge bdg-g">${valid} valid</span> ` +
+    (errors ? `<span class="badge bdg-r" style="margin-left:4px">${errors} errors</span>` : '');
+
+  const tbl = document.getElementById('tbl-' + id);
+  tbl.innerHTML = `<thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${rowData.map((cells, i) => `<tr class="${rowData[i] && !cells[cells.length-1].includes('bdg-g') ? 'err-row' : ''}">${cells.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+  const btn = document.getElementById('imp-btn-' + id);
+  btn.style.display = valid > 0 ? 'inline-block' : 'none';
+  if (errors > 0) btn.textContent = `⬆ Import ${valid} valid rows (skip ${errors} errors)`;
+  else btn.textContent = `⬆ Import all ${valid} rows`;
+
+  document.getElementById('res-' + id).style.display = 'none';
+}
+
+// ── IMPORT ──
+async function doImport(type) {
+  const allRows = parsedData[type].filter(r => r._ok);
+  if (!allRows.length) return;
+
+  // For parts: separate upserts from deletions and confirm
+  const rows = type === 'parts' ? allRows.filter(r => r._action !== 'delete') : allRows;
+  const deleteRows = type === 'parts' ? allRows.filter(r => r._action === 'delete') : [];
+
+  if (type === 'parts' && deleteRows.length > 0) {
+    const confirmed = confirm(`⚠️ This will permanently delete ${deleteRows.length} part(s) from Firebase.\n\nThese are parts in the system that are NOT in your CSV.\n\nAre you sure you want to continue?`);
+    if (!confirmed) return;
+  }
+
+  const progWrap = document.getElementById('prog-' + type);
+  const progBar = document.getElementById('prog-' + type + '-bar');
+  const progTxt = document.getElementById('prog-' + type + '-txt');
+  const resEl = document.getElementById('res-' + type);
+  const btn = document.getElementById('imp-btn-' + type);
+
+  progWrap.style.display = 'block';
+  btn.disabled = true;
+  resEl.style.display = 'none';
+
+  const BATCH_SIZE = 20;
+  let done = 0, failed = 0;
+  const totalOps = rows.length + deleteRows.length;
+
+  const nowTS = () => new Date().toISOString();
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+  const getDefaultPerms = (role) => {
+    const d = {
+      operator:{plan:'full',actual:'full',reports:'view'},
+      supervisor:{plan:'full',actual:'full',reports:'full'},
+      manager:{plan:'view',actual:'view',reports:'full'},
+      dispatch:{plan:'view',actual:'hidden',reports:'view'},
+      owner:{plan:'hidden',actual:'hidden',reports:'full'},
+      admin:{plan:'full',actual:'full',reports:'full'}
+    };
+    return d[role] || {plan:'hidden',actual:'hidden',reports:'view'};
+  };
+
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const batch = db.batch();
+    const chunk = rows.slice(i, i + BATCH_SIZE);
+
+    try {
+      chunk.forEach(r => {
+        const ref = db.collection(
+          type === 'people' ? 'users' :
+          type === 'machines' ? 'machines' :
+          type === 'parts' ? 'parts' : 'partOps'
+        ).doc(type === 'parts' && r._existingId ? r._existingId : undefined);
+        if (type === 'people') {
+          const isApp = (r.app_user || '').toLowerCase() === 'yes';
+          const dp = getDefaultPerms(r.role);
+          const perms = {
+            plan: r.plan_perm || dp.plan,
+            actual: r.actual_perm || dp.actual,
+            reports: r.reports_perm || dp.reports
+          };
+          const data = { name: r.name, role: r.role, stage: r.stage, appUser: isApp, permissions: perms, createdAt: nowTS() };
+          if (isApp && r.pin) data.pin = r.pin;
+          batch.set(ref, data);
+        } else if (type === 'machines') {
+          batch.set(ref, {
+            name: r.name,
+            id_code: r.code || '',
+            type: r.type || '',
+            stage: r.stage,
+            createdAt: nowTS()
+          });
+        } else if (type === 'parts') {
+          const data = { no: r.part_no, name: r.name, cust: r.customer || '', rate: r._rate };
+          if (r._action === 'update') {
+            batch.update(ref, data);
+          } else {
+            batch.set(ref, { ...data, createdAt: nowTS() });
+          }
+        } else {
+          batch.set(ref, {
+            partId: r._partId, opId: r._opId, machineId: r._machId || '',
+            cycleTime: parseFloat(r.cycle_time_mins),
+            targetQty: typeof r._target === 'number' ? r._target : parseInt(r.target_qty_shift) || 0,
+            createdAt: nowTS()
+          });
+        }
+      });
+      await batch.commit();
+      done += chunk.length;
+    } catch (e) {
+      failed += chunk.length;
+      console.error(e);
+    }
+
+    const pct = Math.round((done) / totalOps * 100);
+    progBar.style.width = pct + '%';
+    progTxt.textContent = `Importing... ${done} of ${rows.length} done`;
+  }
+
+  // Handle deletions for parts
+  if (deleteRows.length > 0) {
+    progTxt.textContent = `Deleting ${deleteRows.length} removed parts...`;
+    for (let i = 0; i < deleteRows.length; i += BATCH_SIZE) {
+      const batch = db.batch();
+      const chunk = deleteRows.slice(i, i + BATCH_SIZE);
+      try {
+        chunk.forEach(r => { batch.delete(db.collection('parts').doc(r._existingId)); });
+        await batch.commit();
+        done += chunk.length;
+      } catch(e) { failed += chunk.length; console.error(e); }
+      progBar.style.width = Math.round(done / totalOps * 100) + '%';
+    }
+  }
+
+  progWrap.style.display = 'none';
+  resEl.style.display = 'block';
+  if (failed === 0) {
+    resEl.className = 'result ok';
+    const delMsg = deleteRows.length > 0 ? ` · ${deleteRows.length} deleted` : '';
+    resEl.innerHTML = `✅ Sync complete — ${rows.length} upserted${delMsg}. Go back to the app to see the updated parts master.`;
+    btn.style.display = 'none';
+    const dw = document.getElementById('parts-delete-warn');
+    if (dw) dw.style.display = 'none';
+  } else {
+    resEl.className = 'result er';
+    resEl.innerHTML = `⚠️ Done with errors — ${done} succeeded, ${failed} failed. Check your connection and try again.`;
+    btn.disabled = false;
+  }
+  await loadFBData();
+}
+
+// ── Download templates ──
+function downloadTemplate(type) {
+  let csv = '';
+  if (type === 'people') {
+    csv = 'name,role,stage,pin,app_user,plan_perm,actual_perm,reports_perm\n';
+    csv += 'Ramesh Kumar,operator,soft,1234,yes,full,full,view\n';
+    csv += 'Suresh Patil,supervisor,soft,5678,yes,full,full,full\n';
+    csv += 'Anil Sharma,manager,general,9012,yes,view,view,full\n';
+    csv += 'Vinod Dispatch,dispatch,general,,no,view,hidden,view\n';
+  } else if (type === 'machines') {
+    csv = 'name,code,type,stage\n';
+    csv += 'Hobbing Machine 1,M-01,Hobbing,soft\n';
+    csv += 'Hobbing Machine 2,M-02,Hobbing,soft\n';
+    csv += 'Gear Shaper 1,M-10,Shaping,soft\n';
+    csv += 'Heat Treatment Furnace 1,HT-01,Furnace,ht\n';
+    csv += 'Gear Grinding 1,G-01,Grinding,hard\n';
+  } else if (type === 'parts') {
+    csv = 'part_no,name,customer,rate\n';
+    if (fbData.parts.length > 0) {
+      fbData.parts.forEach(p => {
+        csv += `${p.no},${p.name},${p.cust||''},${p.rate||0}\n`;
+      });
+    } else {
+      csv += '1A009578R,1ST SPEED 501,PVPL,191.56\n';
+      csv += 'NEW_PART_001,My New Part,PVPL,250.00\n';
+    }
+  } else {
+    csv = 'part_no,operation_name,cycle_time_mins,target_qty_shift,machine_name\n';
+    fbData.parts.slice(0, 10).forEach(p => {
+      csv += `${p.no},Hobbing,,, \n`;
+    });
+    if (fbData.parts.length > 10) csv += `# ... and ${fbData.parts.length - 10} more parts in your masters\n`;
+  }
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = type === 'people' ? 'people_import.csv' : type === 'machines' ? 'machines_import.csv' : type === 'parts' ? 'parts_master.csv' : 'part_operations_import.csv';
+  a.click();
+}
+
+function clearPreview(type) {
+  parsedData[type] = null;
+  document.getElementById('prev-' + type).style.display = 'none';
+  document.getElementById('imp-btn-' + type).style.display = 'none';
+  document.getElementById('res-' + type).style.display = 'none';
+  const fileIds = { people: 'ppl-file', machines: 'mach-file', parts: 'parts-file', partops: 'po-file' };
+  const fi = document.getElementById(fileIds[type]);
+  if (fi) fi.value = '';
+}
+</script>
+</body>
+</html>
