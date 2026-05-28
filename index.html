@@ -496,6 +496,7 @@ function openPlanDayShift(shiftKey,date){
     S.editingPlanId=existing.id;
     (existing.machineReports||[]).forEach(r=>{if(!r.machineId)return;const n={...r};if(!n.runs){n.runs=[{partId:r.partId||'',partNo:r.partNo||'',partName:r.partName||'',customer:r.customer||'',opId:r.opId||'',opName:r.opName||'',hoursPlanned:'',plannedQty:r.plannedQty||''}];n.setupTimes=[];}S.planReports[r.machineId]=n;});
   }
+  S.planStage=S.planDayStage;
   go('plan-next','plan-day');
   renderPlanForm('next');
   setTimeout(()=>{
@@ -534,6 +535,7 @@ function renderPlanForm(type){
   <input type="hidden" id="pf-date" value="${S.planDayDate}">
   <input type="hidden" id="pf-shift" value="${S.planDayShift}">
   <input type="hidden" id="pf-mat" value="ready">
+  <button class="btn btn-s" style="font-size:12px;margin-bottom:4px" onclick="fillSamplePlan()">⚡ Fill Sample (Top 5 Machines)</button>
   `:`
   <div class="card"><div class="card-hd">Step 1 — Select Stage</div>
   <div class="stage-sel"><button class="stbtn" onclick="selPlanStage('soft')" id="ps-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selPlanStage('ht')" id="ps-ht"><span class="si">🔥</span><span class="sn">HT</span></button><button class="stbtn" onclick="selPlanStage('hard')" id="ps-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div></div>
@@ -550,12 +552,13 @@ function renderPlanForm(type){
   </div>
   <div id="plan-sub-bar" class="sub-bar">${getPerm("plan")==="full"?`<button class="btn btn-p" onclick="submitPlan()">${S.editingPlanId?"Update Plan":S.planDayMode?"Save Shift Plan":"Save Plan"}</button>`:""}</div></div>`;
   if(S.planDayMode){
-    document.getElementById('plan-rest')||document.getElementById('s-'+sid);
-    setTimeout(()=>{
-      const w=document.getElementById('s-'+sid);
-      const pr=document.getElementById('plan-rest');
-      if(pr)pr.style.display='block';
-    },10);
+    // Populate supervisor immediately
+    const _sup=document.getElementById('pf-sup');
+    if(_sup)_sup.innerHTML=`<option value="">— Select —</option>`+
+      S.users.filter(u=>(u.role==='supervisor'||u.role==='manager')&&(u.stage===S.planDayStage||u.stage==='general'))
+      .map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+    // Render machines immediately
+    renderPlanMachines();
   }
 }
 
@@ -579,6 +582,32 @@ function renderPlanMachines(){
   if(hadDraft)toast('Draft restored — continue from where you left off',3500);
 }
 
+function fillSamplePlan(){
+  const mach=[...S.machines].filter(m=>m.stage===S.planStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)).slice(0,5);
+  if(!mach.length){toast('No machines to fill');return}
+  const ops=S.operations.filter(o=>o.stage===S.planStage);
+  const parts=S.parts.slice(0,5);
+  mach.forEach((m,i)=>{
+    const r=S.planReports[m.id];if(!r)return;
+    r.used=true;
+    r.runs=[{
+      partId:parts[i]?.id||parts[0]?.id||'',
+      partNo:parts[i]?.no||parts[0]?.no||'',
+      partName:parts[i]?.name||parts[0]?.name||'Sample Part',
+      customer:parts[i]?.cust||'',
+      opId:ops[0]?.id||'',
+      opName:ops[0]?.name||'',
+      hoursPlanned:'8',
+      plannedQty:'100'
+    }];
+    r.setupTimes=[];
+    // Rebuild card
+    const card=document.getElementById('pmc-'+m.id);
+    if(card){card.outerHTML=buildPlanMC(m);}
+  });
+  saveDraft('plan');
+  toast('⚡ Sample data filled for top 5 machines',2500);
+}
 function planMCStat(r){if(r.used===null||r.used===undefined)return['Not filled','bdg-gr'];if(!r.used)return['Not planned','bdg-r'];const runs=r.runs||[];const filled=runs.filter(ru=>ru.plannedQty);if(filled.length===runs.length&&runs.length>0)return['Planned ✓','bdg-g'];return['Partial','bdg-a']}
 
 function buildPlanRunsHTML(mid,r,ops){const runs=r.runs||[{}];const setups=r.setupTimes||[];let h='';runs.forEach((run,idx)=>{h+=buildPlanRunBlock(mid,idx,run,ops);if(idx<runs.length-1)h+=`<div class="setup-blk" id="pmc-setup-${mid}-${idx}"><span class="setup-lbl">🔧 Setup Change ${idx+1}→${idx+2}</span><input type="number" min="0" value="${setups[idx]||''}" placeholder="mins" style="width:80px;padding:7px 10px;font-size:14px;font-weight:600;text-align:center;background:#fff;border:1.5px solid var(--bdr);border-radius:6px" onchange="setPlanSetup('${mid}',${idx},this.value)"><span style="font-size:12px;color:#92400e;font-weight:500">mins</span></div>`;});return h;}
