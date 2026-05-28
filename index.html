@@ -964,7 +964,7 @@ function renderReports(){
       <div class="f" style="margin:0"><label>Stage</label><select onchange="_rst=this.value;rfr()"><option value="all">All Stages</option><option value="soft">Soft</option><option value="ht">HT</option><option value="hard">Hard</option></select></div>
     </div>
   </div>
-  <div id="rep-body"></div></div>`;
+  ${getPerm("reports")==="full"?`<button class="print-btn" style="margin-top:12px;width:100%;justify-content:center" onclick="downloadReport()">🖨️ Download / Print Report</button>`:''}<div id="rep-body"></div></div>`;
   rfr();
 }
 function setRepRange(type){
