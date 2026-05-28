@@ -592,7 +592,7 @@ function fillSamplePlan(){
     const r=S.planReports[m.id];if(!r)return;
     if(i<5){
       r.used=true;
-      r.runs=[{partId:parts[i%parts.length]?.id||'',partNo:parts[i%parts.length]?.no||'',partName:parts[i%parts.length]?.name||'Sample Part',customer:parts[i%parts.length]?.cust||'',opId:ops[0]?.id||'',opName:ops[0]?.name||'',hoursPlanned:'',plannedQty:'100'}];
+      r.runs=[{partId:parts[i%parts.length]?.id||'',partNo:parts[i%parts.length]?.no||'',partName:parts[i%parts.length]?.name||'Sample Part',customer:parts[i%parts.length]?.cust||'',opId:ops[0]?.id||'',opName:ops[0]?.name||'',hoursPlanned:'',plannedQty:'100'}];updPlanRunQty(m.id,0);
       r.setupTimes=[];
     }else{
       r.used=false;r.unusedReason='other';r.unusedOther='Sample — not used';
@@ -646,10 +646,11 @@ function validatePlanReports(){
     const nm=r.machineName||'Machine';const msgs=[];
     if(r.used===null||r.used===undefined){msgs.push('Please indicate if machine will be used');}
     else if(r.used){
+      const multiPlan=(r.runs||[]).length>1;
       (r.runs||[]).forEach((run,idx)=>{
         if(!run.partId)msgs.push('Run '+(idx+1)+': Part is required');
         if(!run.opId)msgs.push('Run '+(idx+1)+': Operation is required');
-        if(!run.hoursPlanned)msgs.push('Run '+(idx+1)+': Estimated hours required');
+        if(multiPlan&&!run.hoursPlanned)msgs.push('Run '+(idx+1)+': Estimated hours required');
         if(!run.plannedQty)msgs.push('Run '+(idx+1)+': Planned qty required');
       });
       if(r.hasDowntime){
@@ -790,7 +791,7 @@ function renderActMachines(){
   if(mach.length===0){w.innerHTML=`<div class="empty"><div class="empty-ic">⚙️</div><h3>No machines in ${slbl(S.actStage)}</h3><p>Go to Masters → Machines and add machines for this stage.</p></div>`;document.getElementById('act-sub').style.display='none';const _asb2=document.getElementById('act-sub-bar');if(_asb2)_asb2.style.display='none';return}
   const hadDraft=loadDraft('actual');
   mach.forEach(m=>{if(!S.actReports[m.id])S.actReports[m.id]={machineId:m.id,machineName:m.name,used:null,unusedReason:'',unusedOther:'',runs:[{partId:'',partNo:'',partName:'',customer:'',opId:'',opName:'',hoursRun:'',targetQty:'',actualQty:'',rejectionQty:0,rejectionReason:''}],setupTimes:[],operatorId:'',hasOtherDowntime:false,otherDowntimeReason:'material',otherDowntimeOther:'',otherDowntimeMins:''}});
-  w.innerHTML=`<div class="slbl">Step 2 — Report for each machine (${mach.length})</div>`+mach.map(m=>buildMC(m)).join('');
+  w.innerHTML=`${isTanmay()?'<button class="btn btn-s" style="font-size:12px;margin-bottom:10px;width:100%" onclick="fillSampleActual()">⚡ Fill Sample (Top 5 Machines)</button>':''}<div class="slbl">Step 2 — Report for each machine (${mach.length})</div>`+mach.map(m=>buildMC(m)).join('');
   document.getElementById('act-sub').style.display='block';const _asb=document.getElementById('act-sub-bar');if(_asb&&getPerm('actual')==='full')_asb.style.display='block';
   if(hadDraft)toast('Draft restored — continue from where you left off',3500);
 }
@@ -815,7 +816,7 @@ function buildMC(m){
     <div class="utog"><label for="mcu-${m.id}">Machine was used this shift</label><label class="tsw"><input type="checkbox" id="mcu-${m.id}" ${r.used?'checked':''} onchange="togMCUsed('${m.id}',this.checked)"><span class="tsl"></span></label></div>
     <div id="mcu-form-${m.id}" style="display:${r.used===true?'block':'none'}">
       <div class="f"><label>Operator</label><select id="mcop-${m.id}" onchange="handleOpSel('${m.id}',this.value,this)"><option value="">— Select —</option><option value="_add" style="color:var(--acc);font-weight:600">+ Add new operator...</option>${usrs.map(u=>`<option value="${u.id}" ${r.operatorId===u.id?'selected':''}>${u.name}</option>`).join('')}</select></div>
-      ${isTanmay()?`<button class="btn btn-s" style="font-size:12px;margin-bottom:8px;width:100%" onclick="fillSampleActual()">⚡ Fill Sample (Top 5)</button>`:'\`'}<div class="run-ctrl"><span class="run-ctrl-lbl">Varieties of components processed</span><div class="run-ctrl-btns"><button class="rc-btn" onclick="removeActRun('${m.id}')">−</button><span class="rc-num" id="mc-rcount-${m.id}">${(r.runs||[]).length||1}</span><button class="rc-btn" onclick="addActRun('${m.id}')">+</button></div></div>
+      <div class="run-ctrl"><span class="run-ctrl-lbl">Varieties of components processed</span><div class="run-ctrl-btns"><button class="rc-btn" onclick="removeActRun('${m.id}')">−</button><span class="rc-num" id="mc-rcount-${m.id}">${(r.runs||[]).length||1}</span><button class="rc-btn" onclick="addActRun('${m.id}')">+</button></div></div>
       <div id="mc-runs-${m.id}">${buildActRunsHTML(m.id,r,ops)}</div>
       <div class="totals-bar"><span>⚙️ Setup: <strong id="mc-setup-total-${m.id}">${totalSetup}</strong> mins</span><span>⏱ Total downtime: <strong id="mc-dt-total-${m.id}">${totalDT}</strong> mins</span></div>
       <div class="utog" style="margin-top:10px"><label>Other downtime (apart from setups)?</label><label class="tsw"><input type="checkbox" ${r.hasOtherDowntime?'checked':''} onchange="togOtherDT('${m.id}',this.checked)"><span class="tsl"></span></label></div>
