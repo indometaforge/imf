@@ -169,6 +169,15 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .sub-bar{display:none!important}
   .sub-bar-desktop{display:block}
 }
+
+.mfilt{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.mfilt input[type=search]{flex:1;min-width:140px;padding:8px 12px;font-size:13px;border:1.5px solid var(--bdr);border-radius:var(--rs);background:#fff;outline:none}
+.mfilt input[type=search]:focus{border-color:var(--acc)}
+.mfilt select{padding:8px 10px;font-size:13px;border:1.5px solid var(--bdr);border-radius:var(--rs);background:#fff;color:var(--txt)}
+.drag-handle{cursor:grab;color:var(--mut);font-size:18px;padding:4px 10px 4px 4px;touch-action:none;user-select:none;flex-shrink:0}
+.li.li-drag{cursor:default}
+.li.is-dragging{opacity:.35;background:var(--acc3)}
+.li.drag-target{border:2px solid var(--acc);background:var(--acc3);border-radius:var(--rs)}
 </style>
 </head>
 <body>
@@ -442,7 +451,7 @@ function selPlanStage(st){
 }
 
 function renderPlanMachines(){
-  const mach=S.machines.filter(m=>m.stage===S.planStage);
+  const mach=[...S.machines].filter(m=>m.stage===S.planStage).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
   const w=document.getElementById('plan-mach');if(!w)return;
   if(mach.length===0){w.innerHTML=`<div class="empty"><div class="empty-ic">⚙️</div><h3>No machines in ${slbl(S.planStage)}</h3><p>Go to Masters → Machines and add machines for this stage.</p></div>`;document.getElementById('plan-sub').style.display='none';const _psb2=document.getElementById('plan-sub-bar');if(_psb2)_psb2.style.display='none';return}
   const hadDraft=loadDraft('plan');
@@ -593,7 +602,7 @@ function selActStage(st){
   renderActMachines();
 }
 function renderActMachines(){
-  const mach=S.machines.filter(m=>m.stage===S.actStage);
+  const mach=[...S.machines].filter(m=>m.stage===S.actStage).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
   const w=document.getElementById('act-mach');if(!w)return;
   if(mach.length===0){w.innerHTML=`<div class="empty"><div class="empty-ic">⚙️</div><h3>No machines in ${slbl(S.actStage)}</h3><p>Go to Masters → Machines and add machines for this stage.</p></div>`;document.getElementById('act-sub').style.display='none';const _asb2=document.getElementById('act-sub-bar');if(_asb2)_asb2.style.display='none';return}
   const hadDraft=loadDraft('actual');
@@ -914,6 +923,15 @@ function editActual(id){
   },100);
 }
 
+// ── Masters filter state ──
+let _mSrch='',_mStagF='all';
+let _pplSrch='',_pplRole='all',_pplStage='all';
+let _ptSrch='',_ptCust='all';
+let _opSrch='',_opStage='all';
+let _poSrch='',_poFilt='all';
+// ── Drag state ──
+let _dragId=null,_dragEl=null;
+
 function renderMasters(){
   document.getElementById('s-masters').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Masters &amp; Settings</div></div></div><div class="pad">
   <div class="mtiles">
@@ -926,14 +944,99 @@ function renderMasters(){
   </div></div>`;
 }
 
-function renderMachines(){document.getElementById('s-m-machines').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Machines</div><div class="hdr-sub">${S.machines.length} records</div></div><button class="hdr-act" onclick="addMachModal()">+ Add</button></div><div class="pad">${S.machines.length===0?`<div class="empty"><div class="empty-ic">⚙️</div><h3>No machines yet</h3><p>Add machines and assign them to Soft, HT or Hard stage.</p></div>`:S.machines.map(m=>`<div class="li"><div class="lic">⚙️</div><div class="lib"><div class="linm">${m.name}</div><div class="lisb"><span class="bdg ${sbdg(m.stage)}">${slbl(m.stage)}</span>${m.id_code?' · '+m.id_code:''}${m.type?' · '+m.type:''}</div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editMachModal('${m.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delMach('${m.id}')">Del</button>`:''}</div></div>`).join('')}</div>`}
+function applyMachFilter(){
+  const srch=_mSrch.toLowerCase(),stagf=_mStagF;
+  const sorted=[...S.machines].sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+  const list=sorted.filter(m=>{
+    const matchS=stagf==='all'||m.stage===stagf;
+    const matchQ=!srch||m.name.toLowerCase().includes(srch)||(m.id_code||'').toLowerCase().includes(srch)||(m.type||'').toLowerCase().includes(srch);
+    return matchS&&matchQ;
+  });
+  const w=document.getElementById('mach-list');if(!w)return;
+  w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">⚙️</div><h3>No results</h3><p>Try a different search or filter.</p></div>`:
+    list.map(m=>`<div class="li li-drag is-drag-item" data-id="${m.id}" draggable="true" ondragstart="onMachDragStart(event,'${m.id}')" ondragover="onMachDragOver(event)" ondrop="onMachDrop(event,'${m.id}')" ondragend="onMachDragEnd()">
+    <div class="drag-handle" ontouchstart="onMachTouchStart(event,'${m.id}')" ontouchmove="onMachTouchMove(event)" ontouchend="onMachTouchEnd(event,'${m.id}')">⠿</div>
+    <div class="lic">⚙️</div>
+    <div class="lib"><div class="linm">${m.name}</div><div class="lisb"><span class="bdg ${sbdg(m.stage)}">${slbl(m.stage)}</span>${m.id_code?' · '+m.id_code:''}${m.type?' · '+m.type:''}</div></div>
+    <div class="liac"><button class="btn btn-s btn-sm" onclick="editMachModal('${m.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delMach('${m.id}')">Del</button>`:''}</div>
+  </div>`).join('');
+}
+function renderMachines(){
+  document.getElementById('s-m-machines').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Machines</div><div class="hdr-sub">${S.machines.length} records</div></div><button class="hdr-act" onclick="addMachModal()">+ Add</button></div>
+  <div class="pad">
+    <div class="mfilt">
+      <input type="search" placeholder="Search machines..." oninput="_mSrch=this.value;applyMachFilter()">
+      <select onchange="_mStagF=this.value;applyMachFilter()"><option value="all">All Stages</option><option value="soft">Soft</option><option value="ht">HT</option><option value="hard">Hard</option></select>
+    </div>
+    <div style="font-size:11px;color:var(--mut);margin-bottom:8px">Hold ⠿ and drag to reorder</div>
+    <div id="mach-list"></div>
+  </div>`;
+  _mSrch='';_mStagF='all';
+  applyMachFilter();
+}
+// ── Machine drag-and-drop (desktop HTML5 + mobile touch) ──
+function onMachDragStart(e,id){_dragId=id;_dragEl=e.currentTarget;e.dataTransfer.effectAllowed='move';e.currentTarget.classList.add('is-dragging');}
+function onMachDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';document.querySelectorAll('.is-drag-item').forEach(el=>el.classList.remove('drag-target'));e.currentTarget.classList.add('drag-target');}
+function onMachDrop(e,targetId){e.preventDefault();if(_dragId&&_dragId!==targetId)reorderMachines(_dragId,targetId);onMachDragEnd();}
+function onMachDragEnd(){document.querySelectorAll('.is-drag-item').forEach(el=>{el.classList.remove('is-dragging');el.classList.remove('drag-target');});_dragId=null;_dragEl=null;}
+// Touch drag
+let _touchOverId=null;
+function onMachTouchStart(e,id){_dragId=id;_dragEl=e.currentTarget.closest('.is-drag-item');_dragEl.classList.add('is-dragging');e.preventDefault();}
+function onMachTouchMove(e){
+  e.preventDefault();
+  const t=e.touches[0];
+  document.querySelectorAll('.is-drag-item').forEach(el=>el.classList.remove('drag-target'));
+  const els=document.elementsFromPoint(t.clientX,t.clientY);
+  const over=els.find(el=>el.classList&&el.classList.contains('is-drag-item')&&el!==_dragEl);
+  if(over){over.classList.add('drag-target');_touchOverId=over.dataset.id;}else{_touchOverId=null;}
+}
+function onMachTouchEnd(e,id){
+  if(_touchOverId&&_touchOverId!==_dragId)reorderMachines(_dragId,_touchOverId);
+  onMachDragEnd();_touchOverId=null;
+}
+async function reorderMachines(srcId,tgtId){
+  const sorted=[...S.machines].sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+  const si=sorted.findIndex(m=>m.id===srcId),ti=sorted.findIndex(m=>m.id===tgtId);
+  if(si===-1||ti===-1)return;
+  const[moved]=sorted.splice(si,1);sorted.splice(ti,0,moved);
+  try{
+    const batch=db.batch();
+    sorted.forEach((m,i)=>{batch.update(db.collection('machines').doc(m.id),{sortOrder:i});const sm=S.machines.find(x=>x.id===m.id);if(sm)sm.sortOrder=i;});
+    await batch.commit();
+    applyMachFilter();toast('Order saved ✓');
+  }catch(err){toast('Error: '+err.message);}
+}
 function mchF(m){return`<div class="f"><label>Machine Name</label><input id="mm-n" type="text" value="${m?m.name:''}" placeholder="e.g. Hobbing Machine 1"></div><div class="f"><label>Machine Code</label><input id="mm-c" type="text" value="${m?m.id_code||'':''}" placeholder="e.g. M-01"></div><div class="f"><label>Type</label><input id="mm-t" type="text" value="${m?m.type||'':''}" placeholder="e.g. CNC, Lathe, Hobbing..."></div><div class="f"><label>Stage</label><select id="mm-s"><option value="soft" ${m&&m.stage==='soft'?'selected':''}>Soft</option><option value="ht" ${m&&m.stage==='ht'?'selected':''}>HT</option><option value="hard" ${m&&m.stage==='hard'?'selected':''}>Hard</option></select></div>`}
 function addMachModal(){openModal(`<div class="mtit">Add Machine</div>${mchF(null)}<button class="btn btn-p mt12" onclick="saveMach()">Add Machine</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
 function editMachModal(id){const m=S.machines.find(m=>m.id===id);if(!m)return;openModal(`<div class="mtit">Edit Machine</div>${mchF(m)}<button class="btn btn-p mt12" onclick="saveMach('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delMach('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
 async function saveMach(id){const n=document.getElementById('mm-n').value.trim();if(!n){toast('Name required');return}const d={name:n,id_code:document.getElementById('mm-c').value,type:document.getElementById('mm-t').value,stage:document.getElementById('mm-s').value};try{if(id){await db.collection('machines').doc(id).update(d)}else{await db.collection('machines').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderMachines();toast(id?'Updated ✓':'Machine added ✓')}catch(e){toast('Error: '+e.message)}}
 async function delMach(id){if(!confirm('Delete this machine?'))return;await db.collection('machines').doc(id).delete();await reloadM();closeModal();renderMachines();toast('Deleted')}
 
-function renderPeople(){document.getElementById('s-m-people').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">People</div><div class="hdr-sub">${S.users.length} users</div></div><button class="hdr-act" onclick="addPersModal()">+ Add</button></div><div class="pad">${S.users.map(u=>`<div class="li"><div class="lic" style="background:#e0e7ff;color:#3730a3;font-weight:700;font-size:15px">${u.name.charAt(0).toUpperCase()}</div><div class="lib"><div class="linm">${u.name}</div><div class="lisb">${rlbl(u.role)} · <span class="bdg ${sbdg(u.stage)}">${slbl(u.stage)}</span>${u.appUser!==false?` · <span class="bdg bdg-b">App user</span>`:' · <span class="bdg bdg-gr">Record only</span>'}</div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editPersModal('${u.id}')">Edit</button>${isAdmin()&&u.id!==S.sess.userId?`<button class="btn btn-d btn-sm" onclick="delPers('${u.id}')">Del</button>`:''}</div></div>`).join('')}</div>`}
+function applyPplFilter(){
+  const q=_pplSrch.toLowerCase(),rf=_pplRole,sf=_pplStage;
+  const list=S.users.filter(u=>{
+    const mq=!q||u.name.toLowerCase().includes(q);
+    const mr=rf==='all'||u.role===rf;
+    const ms=sf==='all'||u.stage===sf;
+    return mq&&mr&&ms;
+  });
+  const w=document.getElementById('ppl-list');if(!w)return;
+  w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">👤</div><h3>No results</h3></div>`:
+    list.map(u=>`<div class="li"><div class="lic" style="background:#e0e7ff;color:#3730a3;font-weight:700;font-size:15px">${u.name.charAt(0).toUpperCase()}</div><div class="lib"><div class="linm">${u.name}</div><div class="lisb">${rlbl(u.role)} · <span class="bdg ${sbdg(u.stage)}">${slbl(u.stage)}</span>${u.appUser!==false?` · <span class="bdg bdg-b">App user</span>`:' · <span class="bdg bdg-gr">Record only</span>'}</div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editPersModal('${u.id}')">Edit</button>${isAdmin()&&u.id!==S.sess.userId?`<button class="btn btn-d btn-sm" onclick="delPers('${u.id}')">Del</button>`:''}</div></div>`).join('');
+}
+function renderPeople(){
+  document.getElementById('s-m-people').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">People</div><div class="hdr-sub">${S.users.length} users</div></div><button class="hdr-act" onclick="addPersModal()">+ Add</button></div>
+  <div class="pad">
+    <div class="mfilt">
+      <input type="search" placeholder="Search people..." oninput="_pplSrch=this.value;applyPplFilter()" style="min-width:100px">
+      <select onchange="_pplRole=this.value;applyPplFilter()"><option value="all">All Roles</option><option value="admin">Admin</option><option value="supervisor">Supervisor</option><option value="manager">Manager</option><option value="operator">Operator</option><option value="dispatch">Dispatch</option><option value="owner">Owner</option></select>
+      <select onchange="_pplStage=this.value;applyPplFilter()"><option value="all">All Stages</option><option value="soft">Soft</option><option value="ht">HT</option><option value="hard">Hard</option><option value="general">General</option></select>
+    </div>
+    <div id="ppl-list"></div>
+  </div>`;
+  _pplSrch='';_pplRole='all';_pplStage='all';
+  applyPplFilter();
+}
 function persF(u){
   const au=!u||u.appUser!==false;
   const dp=u&&u.permissions?u.permissions:getDefaultPerms(u?u.role:'operator');
@@ -971,31 +1074,87 @@ async function savePers(id){
 async function delPers(id){if(id===S.sess.userId){toast('Cannot delete yourself');return}if(!confirm('Delete?'))return;await db.collection('users').doc(id).delete();await reloadM();closeModal();renderPeople();toast('Deleted')}
 
 let _pf='';
-function renderParts(){
-  _pf='';
-  document.getElementById('s-m-parts').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Parts Master</div><div class="hdr-sub">${S.parts.length} parts</div></div><button class="hdr-act" onclick="addPartModal()">+ Add</button></div><div class="pad"><input type="text" id="parts-search-inp" placeholder="Search name, part no, customer..." autocomplete="off" oninput="filterParts(this.value)" style="margin-bottom:12px"><div id="parts-list"></div></div>`;
-  filterParts('');
-}
-function filterParts(q){
-  _pf=q.toLowerCase();
-  const fl=S.parts.filter(p=>!_pf||p.name.toLowerCase().includes(_pf)||p.no.toLowerCase().includes(_pf)||p.cust.toLowerCase().includes(_pf));
+function applyPartsFilter(){
+  const q=_ptSrch.toLowerCase(),cf=_ptCust;
+  const list=S.parts.filter(p=>{
+    const mq=!q||p.name.toLowerCase().includes(q)||(p.no||'').toLowerCase().includes(q)||(p.cust||'').toLowerCase().includes(q);
+    const mc=cf==='all'||(p.cust||'')=== cf;
+    return mq&&mc;
+  });
   const w=document.getElementById('parts-list');if(!w)return;
-  w.innerHTML=fl.slice(0,60).map(p=>`<div class="li" style="padding:10px 12px"><div class="lib"><div class="linm" style="font-size:13px">${p.name}</div><div class="lisb"><span class="mono">${p.no}</span> · <span class="bdg bdg-gr" style="font-size:10px;padding:1px 6px">${p.cust}</span> · ₹${p.rate}</div></div><div class="liac"><button class="btn btn-s btn-sm" style="font-size:11px" onclick="editPartModal('${p.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" style="font-size:11px" onclick="delPart('${p.id}')">Del</button>`:''}</div></div>`).join('')+(fl.length>60?`<div class="tsm tmut" style="text-align:center;padding:10px">Showing 60 of ${fl.length}. Search to narrow.</div>`:'');
+  w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">⚙️</div><h3>No results</h3></div>`:
+    list.map(p=>`<div class="li"><div class="lic">⚙️</div><div class="lib"><div class="linm">${p.name}</div><div class="lisb">${p.no||''}${p.cust?' · '+p.cust:''}${p.rate?' · ₹'+p.rate:''}</div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editPartModal('${p.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delPart('${p.id}')">Del</button>`:''}</div></div>`).join('');
 }
-function prtF(p){return`<div class="f"><label>Part Name</label><input id="prt-n" type="text" value="${p?p.name:''}" placeholder="e.g. CLUSTER GEAR"></div><div class="f"><label>Part Number</label><input id="prt-o" type="text" value="${p?p.no:''}" class="mono" placeholder="e.g. 1A009578R"></div><div class="f"><label>Customer</label><input id="prt-c" type="text" value="${p?p.cust:''}" placeholder="e.g. PVPL"></div><div class="f"><label>Rate (₹)</label><input id="prt-r" type="number" value="${p?p.rate:''}" min="0" step="0.01"></div>`}
-function addPartModal(){openModal(`<div class="mtit">Add Part</div>${prtF(null)}<button class="btn btn-p mt12" onclick="savePart()">Add</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-function editPartModal(id){const p=S.parts.find(p=>p.id===id);if(!p)return;openModal(`<div class="mtit">Edit Part</div>${prtF(p)}<button class="btn btn-p mt12" onclick="savePart('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delPart('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-async function savePart(id){const n=document.getElementById('prt-n').value.trim(),no=document.getElementById('prt-o').value.trim();if(!n||!no){toast('Name and part number required');return}const d={name:n,no,cust:document.getElementById('prt-c').value,rate:parseFloat(document.getElementById('prt-r').value)||0};try{if(id){await db.collection('parts').doc(id).update(d)}else{await db.collection('parts').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderParts();toast(id?'Updated ✓':'Part added ✓')}catch(e){toast('Error: '+e.message)}}
-async function delPart(id){if(!confirm('Delete?'))return;await db.collection('parts').doc(id).delete();await reloadM();closeModal();renderParts();toast('Deleted')}
+function renderParts(){
+  const custs=[...new Set(S.parts.map(p=>p.cust).filter(Boolean))].sort();
+  document.getElementById('s-m-parts').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Parts</div><div class="hdr-sub">${S.parts.length} records</div></div><button class="hdr-act" onclick="addPartModal()">+ Add</button></div>
+  <div class="pad">
+    <div class="mfilt">
+      <input type="search" placeholder="Search parts..." oninput="_ptSrch=this.value;applyPartsFilter()">
+      <select onchange="_ptCust=this.value;applyPartsFilter()"><option value="all">All Customers</option>${custs.map(c=>`<option value="${c}">${c}</option>`).join('')}</select>
+    </div>
+    <div id="parts-list"></div>
+  </div>`;
+  _ptSrch='';_ptCust='all';
+  applyPartsFilter();
+}
 
-function renderOps(){document.getElementById('s-m-ops').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Operations</div><div class="hdr-sub">${S.operations.length} records</div></div><button class="hdr-act" onclick="addOpModal()">+ Add</button></div><div class="pad">${S.operations.length===0?`<div class="empty"><div class="empty-ic">🔧</div><h3>No operations yet</h3><p>Add operations like Hobbing, Shaping, Grinding and assign them to a stage.</p></div>`:S.operations.map(o=>`<div class="li"><div class="lic">🔧</div><div class="lib"><div class="linm">${o.name}</div><div class="lisb"><span class="bdg ${sbdg(o.stage)}">${slbl(o.stage)}</span></div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editOpModal('${o.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delOp('${o.id}')">Del</button>`:''}</div></div>`).join('')}</div>`}
+function applyOpsFilter(){
+  const q=_opSrch.toLowerCase(),sf=_opStage;
+  const list=S.operations.filter(o=>{
+    const mq=!q||o.name.toLowerCase().includes(q);
+    const ms=sf==='all'||o.stage===sf;
+    return mq&&ms;
+  });
+  const w=document.getElementById('ops-list');if(!w)return;
+  w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">🔧</div><h3>No results</h3></div>`:
+    list.map(o=>`<div class="li"><div class="lic">🔧</div><div class="lib"><div class="linm">${o.name}</div><div class="lisb"><span class="bdg ${sbdg(o.stage)}">${slbl(o.stage)}</span></div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editOpModal('${o.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delOp('${o.id}')">Del</button>`:''}</div></div>`).join('');
+}
+function renderOps(){
+  document.getElementById('s-m-ops').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Operations</div><div class="hdr-sub">${S.operations.length} records</div></div><button class="hdr-act" onclick="addOpModal()">+ Add</button></div>
+  <div class="pad">
+    <div class="mfilt">
+      <input type="search" placeholder="Search operations..." oninput="_opSrch=this.value;applyOpsFilter()">
+      <select onchange="_opStage=this.value;applyOpsFilter()"><option value="all">All Stages</option><option value="soft">Soft</option><option value="ht">HT</option><option value="hard">Hard</option></select>
+    </div>
+    <div id="ops-list"></div>
+  </div>`;
+  _opSrch='';_opStage='all';
+  applyOpsFilter();
+}
 function opF(o){return`<div class="f"><label>Operation Name</label><input id="op-n" type="text" value="${o?o.name:''}" placeholder="e.g. Hobbing, Grinding, Shaping..."></div><div class="f"><label>Stage</label><select id="op-s"><option value="soft" ${o&&o.stage==='soft'?'selected':''}>Soft</option><option value="ht" ${o&&o.stage==='ht'?'selected':''}>HT</option><option value="hard" ${o&&o.stage==='hard'?'selected':''}>Hard</option></select></div>`}
 function addOpModal(){openModal(`<div class="mtit">Add Operation</div>${opF(null)}<button class="btn btn-p mt12" onclick="saveOp()">Add</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
 function editOpModal(id){const o=S.operations.find(o=>o.id===id);if(!o)return;openModal(`<div class="mtit">Edit Operation</div>${opF(o)}<button class="btn btn-p mt12" onclick="saveOp('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delOp('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
 async function saveOp(id){const n=document.getElementById('op-n').value.trim();if(!n){toast('Name required');return}const d={name:n,stage:document.getElementById('op-s').value};try{if(id){await db.collection('operations').doc(id).update(d)}else{await db.collection('operations').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderOps();toast(id?'Updated ✓':'Operation added ✓')}catch(e){toast('Error: '+e.message)}}
 async function delOp(id){if(!confirm('Delete?'))return;await db.collection('operations').doc(id).delete();await reloadM();closeModal();renderOps();toast('Deleted')}
 
-function renderPartOps(){document.getElementById('s-m-partops').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Part-Operations</div><div class="hdr-sub">Cycle times &amp; targets</div></div><button class="hdr-act" onclick="addPOModal()">+ Add</button></div><div class="pad"><div class="ibox">When you select Part + Operation in Actual Output, the target qty auto-fills from here.</div>${S.partOps.length===0?`<div class="empty"><div class="empty-ic">📐</div><h3>No records yet</h3><p>Define Part + Operation combinations with cycle time to auto-fill targets.</p></div>`:S.partOps.map(po=>{const p=S.parts.find(p=>p.id===po.partId),o=S.operations.find(o=>o.id===po.opId);return`<div class="li"><div class="lic">📐</div><div class="lib"><div class="linm">${p?p.name:'Unknown Part'}</div><div class="lisb">${o?o.name:'Unknown Op'} · ${po.cycleTime} min/pc · Target: ${po.targetQty} pcs/shift</div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editPOModal('${po.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delPO('${po.id}')">Del</button>`:''}</div></div>`}).join('')}</div>`}
+function applyPOFilter(){
+  const q=_poSrch.toLowerCase(),ff=_poFilt;
+  const list=S.partOps.filter(po=>{
+    const p=S.parts.find(x=>x.id===po.partId),o=S.operations.find(x=>x.id===po.opId);
+    const pn=(p?p.name:'').toLowerCase(),on=(o?o.name:'').toLowerCase();
+    const mq=!q||pn.includes(q)||on.includes(q);
+    const mf=ff==='all'||(ff==='part'&&pn.includes(q))||(ff==='op'&&on.includes(q));
+    return mq&&(ff==='all'||mf);
+  });
+  const w=document.getElementById('po-list');if(!w)return;
+  w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">📐</div><h3>No results</h3></div>`:
+    list.map(po=>{const p=S.parts.find(x=>x.id===po.partId),o=S.operations.find(x=>x.id===po.opId);
+    return`<div class="li"><div class="lic">📐</div><div class="lib"><div class="linm">${p?p.name:'Unknown Part'}</div><div class="lisb">${o?o.name:'Unknown Op'} · ${po.cycleTime} min/pc · Target: ${po.targetQty} pcs/shift</div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editPOModal('${po.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delPO('${po.id}')">Del</button>`:''}</div></div>`;}).join('');
+}
+function renderPartOps(){
+  document.getElementById('s-m-partops').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Part-Operations</div><div class="hdr-sub">Cycle times &amp; targets</div></div><button class="hdr-act" onclick="addPOModal()">+ Add</button></div>
+  <div class="pad">
+    <div class="ibox">When you select Part + Operation in Actual Output, the target qty auto-fills from here.</div>
+    <div class="mfilt">
+      <input type="search" placeholder="Search part or operation..." oninput="_poSrch=this.value;applyPOFilter()">
+      <select onchange="_poFilt=this.value;applyPOFilter()"><option value="all">Part + Operation</option><option value="part">Part only</option><option value="op">Operation only</option></select>
+    </div>
+    <div id="po-list"></div>
+  </div>`;
+  _poSrch='';_poFilt='all';
+  applyPOFilter();
+}
 function poF(po){return`<div class="f"><label>Part</label><select id="po-p">${S.parts.map(p=>`<option value="${p.id}" ${po&&po.partId===p.id?'selected':''}>${p.name} (${p.no})</option>`).join('')}</select></div><div class="f"><label>Operation</label><select id="po-o">${S.operations.map(o=>`<option value="${o.id}" ${po&&po.opId===o.id?'selected':''}>${o.name} (${slbl(o.stage)})</option>`).join('')}</select></div><div class="f"><label>Machine (optional)</label><select id="po-m"><option value="">— Not machine-specific —</option>${S.machines.map(m=>`<option value="${m.id}" ${po&&po.machineId===m.id?'selected':''}>${m.name} (${slbl(m.stage)})</option>`).join('')}</select></div><div class="row2"><div class="f"><label>Cycle Time (min/pc)</label><input id="po-c" type="number" value="${po?po.cycleTime:''}" min="0" step="0.1" placeholder="e.g. 4.5" oninput="autoCalcTarget()"></div><div class="f"><label>Target Qty / Shift <span style="color:var(--mut);font-weight:400">(auto)</span></label><input id="po-t" type="number" value="${po?po.targetQty:''}" min="0" placeholder="Auto-calculated"></div></div>`}
 function autoCalcTarget(){const ct=parseFloat(document.getElementById('po-c').value);const tEl=document.getElementById('po-t');if(ct>0&&tEl){tEl.value=Math.round(450/ct)}}
 function addPOModal(){openModal(`<div class="mtit">Add Part-Operation</div>${poF(null)}<button class="btn btn-p mt12" onclick="savePO()">Add</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
