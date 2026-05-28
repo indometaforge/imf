@@ -535,7 +535,7 @@ function renderPlanForm(type){
   <input type="hidden" id="pf-date" value="${S.planDayDate}">
   <input type="hidden" id="pf-shift" value="${S.planDayShift}">
   <input type="hidden" id="pf-mat" value="ready">
-  <button class="btn btn-s" style="font-size:12px;margin-bottom:4px" onclick="fillSamplePlan()">⚡ Fill Sample (Top 5 Machines)</button>
+  <button class="btn btn-s" style="font-size:12px;margin-bottom:4px" onclick="fillSamplePlan()">⚡ Auto-Fill Sample Plan</button>
   `:`
   <div class="card"><div class="card-hd">Step 1 — Select Stage</div>
   <div class="stage-sel"><button class="stbtn" onclick="selPlanStage('soft')" id="ps-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selPlanStage('ht')" id="ps-ht"><span class="si">🔥</span><span class="sn">HT</span></button><button class="stbtn" onclick="selPlanStage('hard')" id="ps-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div></div>
@@ -583,30 +583,46 @@ function renderPlanMachines(){
 }
 
 function fillSamplePlan(){
-  const mach=[...S.machines].filter(m=>m.stage===S.planStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)).slice(0,5);
-  if(!mach.length){toast('No machines to fill');return}
+  // 1. Get ALL active machines for this stage, not just the top 5
+  const allMach=[...S.machines].filter(m=>m.stage===S.planStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+  if(!allMach.length){toast('No machines to fill');return}
+  
   const ops=S.operations.filter(o=>o.stage===S.planStage);
   const parts=S.parts.slice(0,5);
-  mach.forEach((m,i)=>{
+  
+  // 2. Loop through every machine
+  allMach.forEach((m,i)=>{
     const r=S.planReports[m.id];if(!r)return;
-    r.used=true;
-    r.runs=[{
-      partId:parts[i]?.id||parts[0]?.id||'',
-      partNo:parts[i]?.no||parts[0]?.no||'',
-      partName:parts[i]?.name||parts[0]?.name||'Sample Part',
-      customer:parts[i]?.cust||'',
-      opId:ops[0]?.id||'',
-      opName:ops[0]?.name||'',
-      hoursPlanned:'8',
-      plannedQty:'100'
-    }];
-    r.setupTimes=[];
-    // Rebuild card
+    
+    if(i < 5) {
+      // Top 5 machines: Mark as used and fill with dummy data
+      r.used=true;
+      r.runs=[{
+        partId:parts[i]?.id||parts[0]?.id||'',
+        partNo:parts[i]?.no||parts[0]?.no||'',
+        partName:parts[i]?.name||parts[0]?.name||'Sample Part',
+        customer:parts[i]?.cust||'',
+        opId:ops[0]?.id||'',
+        opName:ops[0]?.name||'',
+        hoursPlanned:'8',
+        plannedQty:'100'
+      }];
+      r.setupTimes=[];
+      r.hasDowntime=false;
+    } else {
+      // Remaining machines: Mark as NOT used so they pass form validation
+      r.used=false;
+      r.unusedReason='operator'; // Reason: Operator / Manpower
+      r.unusedOther='';
+    }
+    
+    // Rebuild the HTML card for the machine to show the new state
     const card=document.getElementById('pmc-'+m.id);
     if(card){card.outerHTML=buildPlanMC(m);}
   });
+  
   saveDraft('plan');
-  toast('⚡ Sample data filled for top 5 machines',2500);
+  toast('⚡ Sample filled (5 used, rest unused)', 2500);
 }
 function planMCStat(r){if(r.used===null||r.used===undefined)return['Not filled','bdg-gr'];if(!r.used)return['Not planned','bdg-r'];const runs=r.runs||[];const filled=runs.filter(ru=>ru.plannedQty);if(filled.length===runs.length&&runs.length>0)return['Planned ✓','bdg-g'];return['Partial','bdg-a']}
 
