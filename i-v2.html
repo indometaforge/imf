@@ -186,6 +186,10 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .shift-tile:active{box-shadow:0 0 0 2px var(--acc)}
 .shift-tile-ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .print-btn{background:var(--hdr);color:#fff;border:none;padding:9px 18px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.bin-row{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--bdr);border-radius:var(--rs);padding:9px 10px;margin-bottom:8px}
+.bin-no{width:26px;height:26px;border-radius:7px;background:var(--acc2);color:var(--acc);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.bin-bc{flex:1;min-width:0}.bin-bc input{padding:9px 11px;font-size:14px}
+.scan-btn{flex-shrink:0;width:40px;height:40px;border-radius:8px;border:1.5px solid var(--bdr2);background:var(--acc3);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
@@ -195,6 +199,7 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 <div class="mov" id="mov" onclick="if(event.target===this)closeModal()"><div class="modal" id="mcont"></div></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 firebase.initializeApp({apiKey:"AIzaSyA3-RPrX4ysIwTHAn_nnbMGJSghv3RRcLs",authDomain:"imf-pro-track.firebaseapp.com",projectId:"imf-pro-track",storageBucket:"imf-pro-track.firebasestorage.app",messagingSenderId:"288808983033",appId:"1:288808983033:web:0c02884447ba6f25734528"});
 const db=firebase.firestore();
@@ -293,7 +298,7 @@ function setupListeners(){
     db.collection('partOps').onSnapshot(sn=>{S.partOps=sn.docs.map(d=>({id:d.id,...d.data()}));}),
     db.collection('inward').onSnapshot(sn=>{S.inward=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur&&S.cur.startsWith('store'))reloadStore();if(S.cur==='home')renderHome();}),
     db.collection('batches').onSnapshot(sn=>{S.batches=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur&&S.cur.startsWith('store'))reloadStore();}),
-    db.collection('cards').onSnapshot(sn=>{S.cards=sn.docs.map(d=>({id:d.id,...d.data()}));})
+    db.collection('cards').onSnapshot(sn=>{S.cards=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='store-batches')renderBatchList();})
   );
 }
 
@@ -396,7 +401,7 @@ function renderApp(){
     {id:'reports',svg:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',l:'Reports',s:getPerm('reports')!=='hidden'},
     {id:'masters',svg:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',l:'Masters',s:isA}
   ].filter(n=>n.s);
-  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><div class="sb-mark">IMF</div><div class="sb-co">Indo Metaforge Pvt Ltd</div><div class="sb-tag">Production Tracker</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
+  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><div class="sb-mark">IMF</div><div class="sb-co">Indo Metaforge Pvt Ltd</div><div class="sb-tag">Production Tracker</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
   renderHome();
 }
 function snav(id){if(id==='home'){go('home');renderHome()}else if(id==='plan'){go('plan');renderPlanHub()}else if(id==='actual'){go('actual-hub');renderActualHub()}else if(id==='store'){go('store-hub');renderStoreHub()}else if(id==='reports'){go('reports');renderReports()}else if(id==='masters'){go('masters');renderMasters()}}
@@ -1522,6 +1527,8 @@ function stockFor(partId){
 function reloadStore(){
   if(S.cur==='store-inward')applyInwFilter();
   else if(S.cur==='store-stock')applyStockFilter();
+  else if(S.cur==='store-batches')renderBatchList();
+  else if(S.cur==='store-issue')updIssueBalance();
   else if(S.cur==='store-hub')renderStoreHub();
 }
 function renderStoreHub(){
@@ -1538,10 +1545,11 @@ function renderStoreHub(){
   <div class="mtiles">
     ${full?`<div class="mtile" onclick="go('store-inward','store-hub');renderStoreInward()"><div class="mtic">📥</div><div class="mtnm">Inward</div><div class="mtct">Record blanks coming in</div></div>`:''}
     <div class="mtile" onclick="go('store-stock','store-hub');renderStoreStock()"><div class="mtic">📦</div><div class="mtnm">Stock on Hand</div><div class="mtct">What store is holding</div></div>
-    ${full?`<div class="mtile" onclick="storeIssueSoon()"><div class="mtic">🏷️</div><div class="mtnm">Issue Material</div><div class="mtct">Batch &amp; route cards · soon</div></div>`:''}
+    ${full?`<div class="mtile" onclick="go('store-issue','store-hub');renderStoreIssue()"><div class="mtic">🏷️</div><div class="mtnm">Issue Material</div><div class="mtct">Batch &amp; route cards</div></div>`:''}
+    <div class="mtile" onclick="go('store-batches','store-hub');renderStoreBatches()"><div class="mtic">📑</div><div class="mtnm">Issued Batches</div><div class="mtct">View batches &amp; cards</div></div>
   </div></div>`;
 }
-function storeIssueSoon(){toast('Issue flow (batch + route cards) arrives in the next build');}
+function storeIssueSoon(){toast('Use the Issue Material tile to issue a batch');}
 
 // ── Inward ──
 let _inwSrch='',_inwPart=null;
@@ -1612,6 +1620,195 @@ function applyStockFilter(){
   const grand=list.reduce((s,x)=>s+x.balance,0);
   w.innerHTML=`<div class="card" style="background:var(--acc3);border-color:var(--bdr2)"><div class="fbw"><span class="tsm" style="font-weight:700">Total balance · ${list.length} part${list.length>1?'s':''}</span><span class="sv" style="font-size:20px">${grand}<span class="su"> pcs</span></span></div></div>`+
     list.map(({p,inQty,outQty,balance})=>`<div class="li"><div class="lic" style="background:${balance>0?'var(--okbg)':balance<0?'var(--erbg)':'var(--bg)'}">${balance<0?'⚠️':'📦'}</div><div class="lib"><div class="linm">${p.name}</div><div class="lisb">${p.no||''}${p.cust?' · '+p.cust:''} · In ${inQty} · Issued ${outQty}</div></div><div class="liac"><div style="text-align:right"><div class="sv" style="font-size:18px;color:var(--${balance>0?'ok':balance<0?'er':'mut'})">${balance}</div><div class="tsm tmut" style="font-size:10px">balance</div></div></div></div>`).join('');
+}
+
+// ════════════════ ISSUE FLOW (V2 · chunk 2) ════════════════
+let _issuePart=null,_issueStage='soft',_issueBins=[];
+
+function plannedTodayFor(partId){let q=0;const td=dateStr();S.plans.filter(p=>p.date===td).forEach(p=>(p.machineReports||p.entries||[]).forEach(r=>{if(r.used)(r.runs||[]).forEach(run=>{if(run.partId===partId)q+=(+run.plannedQty||0)})}));return q;}
+function barcodeUsed(code){const c=(code||'').trim();return c&&S.cards.some(x=>(x.barcode||'').trim()===c);}
+
+function renderStoreIssue(){
+  if(getPerm('store')!=='full'){toast('No access');go('store-hub');renderStoreHub();return;}
+  _issuePart=null;_issueStage='soft';_issueBins=[{qty:'',barcode:''}];
+  document.getElementById('s-store-issue').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Issue Material</div><div class="hdr-sub">Generate batch &amp; route cards</div></div></div>
+  <div class="pad">
+    <div class="card"><div class="card-hd">Material to Issue</div>
+      <div class="f" style="margin-bottom:0"><label>Part</label><input id="iss-part" type="text" placeholder="Search part..." oninput="spIssuePart(this)" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off"></div>
+      <div id="iss-partinfo" style="margin-top:12px"></div>
+    </div>
+    <div id="iss-rest"></div>
+  </div>`;
+}
+function spIssuePart(inp){const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}const m=S.parts.filter(p=>p.name.toLowerCase().includes(q)||(p.no||'').toLowerCase().includes(q)).slice(0,15);showGDrop(inp,m,p=>{_issuePart={id:p.id,no:p.no,name:p.name,cust:p.cust};inp.value=p.name;_issueBins=[{qty:'',barcode:''}];renderIssueRest();});}
+function renderIssueRest(){
+  const info=document.getElementById('iss-partinfo'),rest=document.getElementById('iss-rest');
+  if(!_issuePart){if(info)info.innerHTML='';if(rest)rest.innerHTML='';return;}
+  const st=stockFor(_issuePart.id),planned=plannedTodayFor(_issuePart.id),cap=Math.min(100,st.balance);
+  if(info)info.innerHTML=`<div class="s2" style="margin-bottom:0"><div class="sc"><div class="sl">In stock</div><div class="sv" style="color:var(--${st.balance>0?'ok':'er'})">${st.balance}<span class="su"> pcs</span></div></div><div class="sc"><div class="sl">Planned today</div><div class="sv">${planned}<span class="su"> pcs</span></div></div></div>`;
+  if(!rest)return;
+  if(st.balance<=0){rest.innerHTML=`<div class="card" style="background:var(--erbg);border-color:var(--er)"><div class="tsm" style="color:var(--er);font-weight:600">No stock available for this part. Record an inward receipt first.</div></div>`;return;}
+  rest.innerHTML=`
+    <div class="card"><div class="card-hd">Stage</div>
+      <div class="stage-sel" style="margin-bottom:0">${['soft','ht','hard'].map(s=>`<button class="stbtn ${s===_issueStage?'on-'+s:''}" id="is-${s}" onclick="selIssueStage('${s}')"><span class="si">${s==='soft'?'🔹':s==='ht'?'🔥':'⚙️'}</span><span class="sn">${slbl(s)}</span></button>`).join('')}</div>
+    </div>
+    <div class="card"><div class="fbw" style="margin-bottom:11px"><div class="card-hd" style="margin:0">Bins &amp; Route Cards</div><span class="tsm tmut">Max ${cap} pcs / batch</span></div>
+      <div id="iss-bins"></div>
+      <button class="btn-add" onclick="addIssueBin()">+ Add another bin</button>
+    </div>
+    <div class="card" id="iss-summary"></div>
+    <button class="btn btn-p" id="iss-btn" onclick="doIssue()">Generate Batch &amp; Issue</button>
+    <div class="tsm tmut" style="text-align:center;margin-top:8px">A batch code is generated for you to write on each card.</div>`;
+  renderIssueBins();
+}
+function selIssueStage(s){_issueStage=s;['soft','ht','hard'].forEach(x=>{const b=document.getElementById('is-'+x);if(b){b.className='stbtn';if(x===s)b.classList.add('on-'+s);}});}
+function renderIssueBins(){
+  const w=document.getElementById('iss-bins');if(!w)return;
+  w.innerHTML=_issueBins.map((b,i)=>`<div class="bin-row"><div class="bin-no">${i+1}</div>
+    <input type="number" min="1" value="${b.qty}" placeholder="Qty" style="width:72px;text-align:center;font-weight:700" onchange="setBin(${i},'qty',this.value)">
+    <div class="bin-bc"><input type="text" value="${b.barcode}" placeholder="Scan / type barcode" autocomplete="off" onchange="setBin(${i},'barcode',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></div>
+    <button class="scan-btn" type="button" onclick="scanForBin(${i})" title="Scan with camera">📷</button>
+    ${_issueBins.length>1?`<button class="scan-btn" type="button" style="background:var(--erbg);border-color:var(--er);color:var(--er)" onclick="removeIssueBin(${i})" title="Remove bin">✕</button>`:''}
+  </div>`).join('');
+  updIssueSummary();
+}
+function setBin(i,f,v){if(_issueBins[i]){_issueBins[i][f]=v;updIssueSummary();}}
+function addIssueBin(){_issueBins.push({qty:'',barcode:''});renderIssueBins();}
+function removeIssueBin(i){_issueBins.splice(i,1);renderIssueBins();}
+function issueValidation(){
+  if(!_issuePart)return{ok:false,msg:'Select a part'};
+  const st=stockFor(_issuePart.id);
+  const total=_issueBins.reduce((s,b)=>s+(+b.qty||0),0);
+  const codes=_issueBins.map(b=>(b.barcode||'').trim());
+  if(_issueBins.some(b=>!(+b.qty>0)))return{ok:false,msg:'Every bin needs a quantity',total,st};
+  if(codes.some(c=>!c))return{ok:false,msg:'Every bin needs a barcode',total,st};
+  const dup=codes.find((c,i)=>codes.indexOf(c)!==i);
+  if(dup)return{ok:false,msg:'Duplicate barcode in this batch: '+dup,total,st};
+  const used=codes.find(c=>barcodeUsed(c));
+  if(used)return{ok:false,msg:'Barcode already used: '+used,total,st};
+  if(total<1)return{ok:false,msg:'Total must be at least 1',total,st};
+  if(total>100)return{ok:false,msg:'A batch cannot exceed 100 pcs — issue a second batch',total,st};
+  if(total>st.balance)return{ok:false,msg:'Only '+st.balance+' pcs in stock',total,st};
+  return{ok:true,total,st};
+}
+function updIssueSummary(){
+  const sm=document.getElementById('iss-summary'),btn=document.getElementById('iss-btn');if(!sm||!_issuePart)return;
+  const v=issueValidation(),total=v.total||0,st=v.st||stockFor(_issuePart.id);
+  sm.innerHTML=`<div class="fbw"><span class="tsm tmut">Total to issue</span><span class="sv" style="font-size:20px">${total}<span class="su"> pcs</span></span></div>
+  <div class="fbw" style="margin-top:6px"><span class="tsm tmut">Bins / route cards</span><span class="tsm" style="font-weight:700">${_issueBins.length}</span></div>
+  <div class="fbw" style="margin-top:6px"><span class="tsm tmut">Stock after issue</span><span class="tsm" style="font-weight:700;color:var(--${(st.balance-total)>=0?'ok':'er'})">${st.balance-total} pcs</span></div>
+  <div class="tsm" style="margin-top:8px;font-weight:600;color:var(--${v.ok?'ok':'er'})">${v.ok?'✓ Ready to issue':'⚠️ '+v.msg}</div>`;
+  if(btn){btn.disabled=!v.ok;btn.style.opacity=v.ok?'1':'.5';}
+}
+function updIssueBalance(){if(S.cur==='store-issue'&&_issuePart)renderIssueRest();}
+
+// Daily-resetting batch counter via Firestore transaction (requires connectivity)
+async function nextBatchCode(){
+  const today=dateStr(),ymd=today.slice(2).replace(/-/g,'');
+  const ref=db.collection('config').doc('counters');
+  const seq=await db.runTransaction(async t=>{
+    const snap=await t.get(ref),d=snap.exists?snap.data():{};
+    const s=(d.batchDate===today)?(d.batchSeq||0):0;
+    t.set(ref,{batchDate:today,batchSeq:s+1},{merge:true});
+    return s;
+  });
+  return{code:`B-${ymd}-${String(seq).padStart(2,'0')}`,seq,date:today};
+}
+async function doIssue(){
+  const v=issueValidation();if(!v.ok){toast(v.msg);return;}
+  if(!navigator.onLine){toast('You are offline — issuing needs a connection to generate a unique batch code');return;}
+  const btn=document.getElementById('iss-btn');if(btn){btn.disabled=true;btn.textContent='Issuing...';}
+  try{
+    const codes=_issueBins.map(b=>b.barcode.trim());
+    const clash=codes.find(c=>barcodeUsed(c));
+    if(clash){toast('Barcode already used: '+clash);if(btn){btn.disabled=false;btn.textContent='Generate Batch & Issue';}return;}
+    const {code,seq,date}=await nextBatchCode();
+    const total=_issueBins.reduce((s,b)=>s+(+b.qty||0),0);
+    const batchRef=db.collection('batches').doc();
+    const wb=db.batch();
+    wb.set(batchRef,{batchCode:code,seq,date,partId:_issuePart.id,partNo:_issuePart.no,partName:_issuePart.name,cust:_issuePart.cust||'',stage:_issueStage,totalQty:total,binCount:_issueBins.length,status:'issued',issuedBy:S.sess.name,issuedById:S.sess.userId,createdAt:nowTS()});
+    const cardsInfo=[];
+    _issueBins.forEach((b,i)=>{const cardRef=db.collection('cards').doc();const card={barcode:b.barcode.trim(),batchId:batchRef.id,batchCode:code,partId:_issuePart.id,partNo:_issuePart.no,partName:_issuePart.name,qty:+b.qty,binNo:i+1,stage:_issueStage,status:'issued',createdAt:nowTS()};wb.set(cardRef,card);cardsInfo.push(card);});
+    await wb.commit();
+    showIssueResult(code,_issuePart,total,cardsInfo);
+  }catch(e){toast('Issue failed: '+e.message);const b2=document.getElementById('iss-btn');if(b2){b2.disabled=false;b2.textContent='Generate Batch & Issue';}}
+}
+function showIssueResult(code,part,total,cards){
+  openModal(`<div class="mtit" style="text-align:center">✅ Batch Issued</div>
+  <div style="text-align:center;margin:6px 0 16px"><div class="tsm tmut">Write this batch code on every card</div><div style="font-size:30px;font-weight:800;letter-spacing:.04em;color:var(--acc);font-family:monospace;margin-top:6px">${code}</div></div>
+  <div class="card" style="margin:0 0 12px"><div class="fbw"><span class="tsm" style="font-weight:600">${part.name}</span><span class="tsm tmut">${part.no||''}</span></div><div class="fbw" style="margin-top:6px"><span class="tsm tmut">Total issued</span><span class="tsm" style="font-weight:700">${total} pcs · ${cards.length} card${cards.length>1?'s':''}</span></div></div>
+  <div class="slbl">Route Cards</div>
+  ${cards.map(c=>`<div class="li"><div class="lic">🏷️</div><div class="lib"><div class="linm">Bin ${c.binNo} · ${c.qty} pcs</div><div class="lisb" style="font-family:monospace">${c.barcode}</div></div></div>`).join('')}
+  <button class="btn btn-p mt12" onclick="closeModal();renderStoreIssue()">Issue Another</button>
+  <button class="btn btn-s mt8" onclick="closeModal();go('store-hub');renderStoreHub()">Done</button>`);
+}
+
+// ── Camera barcode scanner (html5-qrcode) + keyboard-wedge friendly inputs ──
+let _scanCb=null,_scanner=null,_torchOn=false;
+function scanForBin(i){openScanner(code=>{if(_issueBins[i]){_issueBins[i].barcode=code;renderIssueBins();toast('Scanned: '+code);}});}
+function openScanner(cb){
+  _scanCb=cb;_torchOn=false;
+  openModal(`<div class="mtit">Scan Barcode</div>
+  <div id="scan-box" style="width:100%;border-radius:12px;overflow:hidden;background:#000;min-height:240px"></div>
+  <div class="tsm tmut" style="text-align:center;margin-top:10px">Point the camera at the barcode on the route card.</div>
+  <div class="row2" style="margin-top:12px"><button class="btn btn-s" id="scan-torch" onclick="toggleTorch()">🔦 Flash</button><button class="btn btn-s" onclick="closeScanner()">Cancel</button></div>`);
+  setTimeout(startScanner,220);
+}
+function startScanner(){
+  const box=document.getElementById('scan-box');
+  if(typeof Html5Qrcode==='undefined'){if(box)box.innerHTML='<div style="color:#fff;text-align:center;padding:46px 16px;font-size:13px">Camera scanner unavailable.<br>Type the barcode manually instead.</div>';return;}
+  try{
+    _scanner=new Html5Qrcode('scan-box');
+    const F=window.Html5QrcodeSupportedFormats;
+    const fmts=F?[F.CODE_128,F.CODE_39,F.CODE_93,F.EAN_13,F.ITF,F.QR_CODE]:undefined;
+    _scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:140},formatsToSupport:fmts},decoded=>{const cb=_scanCb;closeScanner();if(cb)cb(decoded);},()=>{}).catch(e=>{if(box)box.innerHTML='<div style="color:#fff;text-align:center;padding:46px 16px;font-size:13px">Cannot access camera.<br>'+((e&&e.message)||'')+'<br>Type the barcode manually.</div>';});
+  }catch(e){if(box)box.innerHTML='<div style="color:#fff;text-align:center;padding:46px">Scanner error — type manually.</div>';}
+}
+function toggleTorch(){if(!_scanner)return;_torchOn=!_torchOn;_scanner.applyVideoConstraints({advanced:[{torch:_torchOn}]}).then(()=>{const b=document.getElementById('scan-torch');if(b)b.style.background=_torchOn?'var(--acc2)':'';}).catch(()=>{_torchOn=false;toast('Flash not supported on this device');});}
+function closeScanner(){if(_scanner){const sc=_scanner;_scanner=null;sc.stop().then(()=>{try{sc.clear()}catch(e){}}).catch(()=>{});}_scanCb=null;closeModal();}
+
+// ── Issued Batches viewer ──
+let _batFrom='',_batTo='',_batExpand={};
+function renderStoreBatches(){
+  const td=dateStr();if(!_batFrom)_batFrom=td;if(!_batTo)_batTo=td;
+  document.getElementById('s-store-batches').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Issued Batches</div></div></div>
+  <div class="pad">
+    <div class="row2"><div class="f"><label>From</label><input type="date" id="bat-from" value="${_batFrom}" max="${td}" onchange="_batFrom=this.value;renderBatchList()"></div><div class="f"><label>To</label><input type="date" id="bat-to" value="${_batTo}" max="${td}" onchange="_batTo=this.value;renderBatchList()"></div></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn-sm btn-s" onclick="setBatRange('today')">Today</button><button class="btn-sm btn-s" onclick="setBatRange('7')">Last 7 Days</button><button class="btn-sm btn-s" onclick="setBatRange('month')">This Month</button></div>
+    <div id="bat-list"></div>
+  </div>`;
+  renderBatchList();
+}
+function setBatRange(t){const to=dateStr();let from=to;if(t==='7'){const d=new Date();d.setDate(d.getDate()-6);from=d.toISOString().slice(0,10);}else if(t==='month'){from=to.slice(0,8)+'01';}_batFrom=from;_batTo=to;const f=document.getElementById('bat-from'),tt=document.getElementById('bat-to');if(f)f.value=from;if(tt)tt.value=to;renderBatchList();}
+function renderBatchList(){
+  const list=S.batches.filter(b=>b.date>=_batFrom&&b.date<=_batTo).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.seq||0)-(a.seq||0));
+  const w=document.getElementById('bat-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">🏷️</div><h3>No batches</h3><p>No material issued in this range.</p></div>`;return;}
+  const totPcs=list.reduce((s,b)=>s+(+b.totalQty||0),0);
+  w.innerHTML=`<div class="card" style="background:var(--acc3);border-color:var(--bdr2)"><div class="fbw"><span class="tsm" style="font-weight:700">${list.length} batch${list.length>1?'es':''}</span><span class="sv" style="font-size:18px">${totPcs}<span class="su"> pcs</span></span></div></div>`+
+  list.map(b=>{
+    const cards=S.cards.filter(c=>c.batchId===b.id).sort((x,y)=>(x.binNo||0)-(y.binNo||0));
+    const open=_batExpand[b.id];
+    return `<div class="mc"><div class="mc-hd" onclick="togBatch('${b.id}')"><div class="mc-ic">🏷️</div><div style="flex:1;min-width:0"><div class="mc-nm" style="font-family:monospace">${b.batchCode}</div><div class="mc-mt">${b.partName||'—'} · ${b.totalQty} pcs · ${b.binCount} card${b.binCount>1?'s':''}</div></div><span class="bdg ${sbdg(b.stage)}" style="margin-right:6px">${slbl(b.stage)}</span><span class="mc-cv ${open?'op':''}">⌄</span></div>
+      <div class="mc-body ${open?'op':''}">
+        <div class="tsm tmut" style="margin-bottom:8px">${fmtD(b.date)} · issued by ${b.issuedBy||'—'}</div>
+        ${cards.length?cards.map(c=>`<div class="li" style="margin-bottom:6px"><div class="lic">📦</div><div class="lib"><div class="linm">Bin ${c.binNo} · ${c.qty} pcs</div><div class="lisb" style="font-family:monospace">${c.barcode}</div></div></div>`).join(''):`<div class="tsm tmut">No card records found.</div>`}
+        ${isTanmay()?`<button class="btn btn-d btn-sm mt8" onclick="delBatch('${b.id}')">Delete batch (restores stock)</button>`:''}
+      </div></div>`;
+  }).join('');
+}
+function togBatch(id){_batExpand[id]=!_batExpand[id];renderBatchList();}
+async function delBatch(id){
+  if(!isTanmay()){toast('Only Tanmay can delete');return;}
+  if(!confirm('Delete this batch and its route cards? Stock will be restored.'))return;
+  try{
+    const cards=S.cards.filter(c=>c.batchId===id);
+    const wb=db.batch();
+    wb.delete(db.collection('batches').doc(id));
+    cards.forEach(c=>wb.delete(db.collection('cards').doc(c.id)));
+    await wb.commit();
+    toast('Batch deleted · stock restored');
+  }catch(e){toast('Error: '+e.message);}
 }
 
 async function init(){
