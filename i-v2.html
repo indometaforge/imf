@@ -212,45 +212,8 @@ const PSEED=[
   {no:'BODGNV40TM5246AA',name:'FD GEAR PASS',cust:'CPGD',rate:332.04},{no:'BODGNV40TM5249AA',name:'FD GEAR COMM',cust:'CPGD',rate:395.96},{no:'BODGNV40TM5247AA',name:'IDLER GEAR PASS',cust:'CPGD',rate:250.00},{no:'BODGNV40TM5216AB',name:'2ND SPEED GEAR',cust:'CPGD',rate:169.18},{no:'BODGNV40TM5231AA',name:'MAIN SHAFT NEW',cust:'CPGD',rate:313.00},{no:'BODGNV40TM0559AA',name:'GEAR FAREMETER',cust:'CPGD',rate:29.42},{no:'BODGNV40TM5248AA',name:'RC GEAR PASS',cust:'CPGD',rate:234.55},{no:'BODGNV40TM5251AA',name:'RC GEAR COMM',cust:'CPGD',rate:194.30},{no:'BODGNV40TM5250AA',name:'IDLER GEAR COMM',cust:'CPGD',rate:238.22},{no:'2XV62100457AA',name:'PINION FAREMETER',cust:'CPGD',rate:42.50},{no:'BODGNV40TM5213AB',name:'1ST SPEED GEAR',cust:'CPGD',rate:214.05},{no:'BODGNV40TM5215AA',name:'4TH SPEED GEAR',cust:'CPGD',rate:115.70},{no:'BODGNV40TM5214AA',name:'3RD SPEED GEAR',cust:'CPGD',rate:137.60},{no:'BODGNV40I00221AB',name:'CLUSTER GEAR 501',cust:'CPGD',rate:529.57},
   {no:'10_2101_008',name:'1ST SPEED GEAR',cust:'MLR',rate:243.87},{no:'10_2101_001',name:'MAIN SHAFT NEW',cust:'MLR',rate:400.55},{no:'10_2101_005',name:'4TH SPEED GEAR',cust:'MLR',rate:134.84},{no:'10_2100_021',name:'CLUSTER GEAR REG.',cust:'MLR',rate:603.08},{no:'12_2300_002',name:'RC GEAR COMM',cust:'MLR',rate:228.00},{no:'11_2300_002',name:'RC GEAR PASS',cust:'MLR',rate:256.34},{no:'11_2101_007',name:'2ND SPEED GEAR',cust:'MLR',rate:196.23},{no:'10_2101_006',name:'3RD SPEED GEAR',cust:'MLR',rate:155.23},{no:'11_2300_001',name:'IDLER GEAR PASS',cust:'MLR',rate:276.40},{no:'11_2300_001B',name:'IDLER GEAR COMM',cust:'MLR',rate:280.00},{no:'11_2301_001',name:'FD GEAR PASS',cust:'MLR',rate:382.20},{no:'12_2301_001',name:'FD GEAR COMM',cust:'MLR',rate:420.97}
 ];
-  
-const S = {
-    sess: null, 
-    users: [], 
-    machines: [], 
-    parts: [], 
-    operations: [], 
-    partOps: [], 
-    suppliers: [], // <--- NEW
-    shifts: {
-        s1:{label:'Shift 1',start:'06:30',end:'15:00'},
-        s2:{label:'Shift 2',start:'15:00',end:'23:30'},
-        s3:{label:'Shift 3',start:'23:30',end:'06:30'}
-    },
-    plans: [], 
-    actuals: [], 
-    inward: [],    // <--- NEW
-    batches: [],   // <--- NEW
-    cards: [],     // <--- NEW
-    listeners: [], 
-    cur: 'home', 
-    prev: null, 
-    planEntries: [], 
-    planReports: {}, 
-    planStage: '', 
-    planType: 'today', 
-    planEC: 0, 
-    editingPlanId: null, 
-    planDayMode: false, 
-    planDayStage: '', 
-    planDayDate: '', 
-    planDayShift: '', 
-    actStage: '', 
-    actReports: {}, 
-    editingActualId: null, 
-    pf: '', 
-    storeSrch: '', 
-    storeCust: 'all'
-};
+
+const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:'',inward:[],batches:[],cards:[],storeSrch:'',storeCust:'all'};
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const nowTS=()=>new Date().toISOString();
