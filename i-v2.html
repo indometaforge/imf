@@ -145,7 +145,7 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   #toast{bottom:24px}.lform{border-radius:22px}.lwrap{padding:20px}
 }
 @media(min-width:1024px){.pad{padding:28px 36px}}
-
+ 
 .run-block{background:#fff;border-radius:var(--rs);padding:13px;margin-bottom:4px;border:.5px solid var(--acc2)}
 .run-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .run-hd-lbl{font-size:12px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
@@ -158,7 +158,7 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .rc-btn:active{background:var(--acc2)}
 .rc-num{font-size:16px;font-weight:700;min-width:24px;text-align:center;color:var(--acc)}
 .totals-bar{background:var(--acc3);border:.5px solid var(--acc2);border-radius:var(--rs);padding:10px 13px;margin:10px 0 4px;font-size:13px;color:var(--acc);font-weight:500;display:flex;gap:16px;flex-wrap:wrap}
-
+ 
 .sub-bar{display:none}
 @media(max-width:767px){
   .sub-bar{display:block;position:fixed;bottom:calc(var(--nh) + env(safe-area-inset-bottom));left:0;right:0;background:var(--sur);padding:10px 16px;border-top:.5px solid var(--bdr);z-index:95;box-shadow:0 -2px 16px rgba(0,0,0,.09)}
@@ -169,7 +169,7 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .sub-bar{display:none!important}
   .sub-bar-desktop{display:block}
 }
-
+ 
 .mfilt{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .mfilt input[type=search]{flex:1;min-width:140px;padding:8px 12px;font-size:13px;border:1.5px solid var(--bdr);border-radius:var(--rs);background:#fff;outline:none}
 .mfilt input[type=search]:focus{border-color:var(--acc)}
@@ -178,7 +178,7 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .li.li-drag{cursor:default}
 .li.is-dragging{opacity:.35;background:var(--acc3)}
 .li.drag-target{border:2px solid var(--acc);background:var(--acc3);border-radius:var(--rs)}
-
+ 
 .mc-err-banner{background:var(--erbg);color:var(--er);font-size:12px;padding:8px 12px;border-bottom:.5px solid #fecaca;line-height:1.6}
 .mc.has-err>.mc-hd{border:.5px solid var(--er);border-radius:var(--rs) var(--rs) 0 0;background:#fff5f5}
 .offline-bar{display:none;position:fixed;top:var(--hh);left:0;right:0;background:#fef2f2;border-bottom:1px solid #fecaca;padding:6px 16px;font-size:12px;color:#dc2626;text-align:center;z-index:90}
@@ -204,7 +204,7 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 firebase.initializeApp({apiKey:"AIzaSyA3-RPrX4ysIwTHAn_nnbMGJSghv3RRcLs",authDomain:"imf-pro-track.firebaseapp.com",projectId:"imf-pro-track",storageBucket:"imf-pro-track.firebasestorage.app",messagingSenderId:"288808983033",appId:"1:288808983033:web:0c02884447ba6f25734528"});
 const db=firebase.firestore();
 db.enablePersistence().catch(()=>{});
-
+ 
 const PSEED=[
   {no:'1A009578R',name:'1ST SPEED 501',cust:'PVPL',rate:191.56},{no:'1A010700R',name:'2ND SPEED 501',cust:'PVPL',rate:151.57},{no:'1A010698R',name:'CLUSTER G 501',cust:'PVPL',rate:485.34},{no:'127309515R',name:'REGULAR',cust:'PVPL',rate:192.14},{no:'127302517R',name:'1ST SPEED',cust:'PVPL',rate:152.10},{no:'127303016R',name:'2NT SPEED',cust:'PVPL',rate:122.32},{no:'127306513R',name:'3RD SPEED',cust:'PVPL',rate:106.06},{no:'127203010R',name:'4TH SPEED',cust:'PVPL',rate:495.71},{no:'127740018',name:'CLUSTER GEARS',cust:'PVPL',rate:169.46},{no:'127451019R',name:'CLUTCH SHAFT',cust:'PVPL',rate:323.94},{no:'227555010',name:'MAIN SHAFT',cust:'PVPL',rate:336.95},{no:'227571014R',name:'FD CARGO FOR SPD',cust:'PVPL',rate:213.97},{no:'227403011R',name:'IDLER CARGO',cust:'PVPL',rate:173.24},{no:'127555016',name:'RC CARGO FOR SPD',cust:'PVPL',rate:278.09},{no:'127571015R',name:'FD PASS',cust:'PVPL',rate:223.83},{no:'127404016R',name:'IDLER PASS',cust:'PVPL',rate:210.25},{no:'1A011810',name:'RC PASS',cust:'PVPL',rate:329.19},{no:'1A014033',name:'FD PASS 8HOLE',cust:'PVPL',rate:365.15},{no:'1A010160',name:'FD COMM 8HOLE',cust:'PVPL',rate:229.08},{no:'1A010161',name:'1ST SPEED B',cust:'PVPL',rate:177.60},{no:'1A010162',name:'2NT SPEED B',cust:'PVPL',rate:145.85},{no:'1A010163',name:'3RD SPEED B',cust:'PVPL',rate:122.25},{no:'1A010159',name:'4TH SPEED B',cust:'PVPL',rate:536.85},{no:'1A011044',name:'SECONDARY SHAFT',cust:'PVPL',rate:472.23},{no:'1A017329',name:'CLUSTER',cust:'PVPL',rate:216.63},{no:'1A017330',name:'1ST DRIVEN',cust:'PVPL',rate:179.71},{no:'1A013333',name:'2ND DRIVEN',cust:'PVPL',rate:149.26},{no:'1A013334',name:'3RT DRIVEN',cust:'PVPL',rate:115.44},{no:'1A018761',name:'4TH DRIVEN',cust:'PVPL',rate:92.48},{no:'1A013303',name:'5TH DRIVEN',cust:'PVPL',rate:0},{no:'1A013304',name:'2ND DRIVING',cust:'PVPL',rate:84.66},{no:'1A013305',name:'3RD DRIVING',cust:'PVPL',rate:100.76},{no:'1A004868',name:'4H DRIVING',cust:'PVPL',rate:140.44},{no:'1A013372',name:'STARTING AXEL WITH IP',cust:'PVPL',rate:226.28},{no:'1A014034',name:'SLIDING PASSENGER',cust:'PVPL',rate:338.47},{no:'1A013336',name:'DIFFERENTIAL CROWN PASS',cust:'PVPL',rate:332.62},{no:'1A003607R',name:'SECONDARY SHAFT MAIN',cust:'PVPL',rate:535.37},{no:'1A003607RB',name:'CLUSTER GEAR PAXX',cust:'PVPL',rate:535.37},
   {no:'3601011903',name:'GEAR OIL PUMP DRIVE NE',cust:'ATUL',rate:74.32},{no:'3603001202',name:'3RD DRIVEN GEAR NE',cust:'ATUL',rate:212.89},{no:'3603001302',name:'2ND DRIVEN GEAR NE',cust:'ATUL',rate:239.89},{no:'3603001403',name:'1ST DRIVEN GEAR OLD',cust:'ATUL',rate:307.47},{no:'3603002005',name:'SHAFT MULTIPLAY GEAR',cust:'ATUL',rate:278.75},{no:'3603004602',name:'GEAR HAND START',cust:'ATUL',rate:201.67},{no:'3603005204',name:'GEAR SECTOR ASSLY',cust:'ATUL',rate:462.42},{no:'3601104301',name:'1ST DRIVEN GEAR NE',cust:'ATUL',rate:307.47},{no:'3602002703',name:'PRIMARY DRIVE GEAR NE',cust:'ATUL',rate:137.64},{no:'3603002103',name:'GEAR MULTIPLAY 2/3/4',cust:'ATUL',rate:233.80},{no:'3603011001',name:'FARE METER PINION ASSY',cust:'ATUL',rate:45.30},{no:'4404000306',name:'FINAL DRIVE GEAR ELE',cust:'ATUL',rate:587.08},{no:'3603002506',name:'GEAR DIFFERENTIAL DRIVE',cust:'ATUL',rate:511.00},{no:'4403000105',name:'GEAR IDLER ELE',cust:'ATUL',rate:350.61},{no:'3603002306',name:'GEAR IDLER NE',cust:'ATUL',rate:308.12},{no:'680400080A',name:'FINAL DRIVE GEAR SAMPLE',cust:'ATUL',rate:519.05},{no:'3603000806',name:'GEAR REVERSE CONTROL NE',cust:'ATUL',rate:265.89},{no:'3603007407',name:'GEAR RC ELE',cust:'ATUL',rate:261.62},{no:'680300020A',name:'GEAR IDLER SAMPLE',cust:'ATUL',rate:341.75},{no:'680300010A',name:'RC GEAR SAMPLE',cust:'ATUL',rate:264.24},{no:'3603001103',name:'4TH DRIVEN GEAR NE',cust:'ATUL',rate:180.39},{no:'2603000404',name:'2ND SPEED GEAR',cust:'ATUL',rate:198.15},{no:'2613004604',name:'RC GEAR PASS',cust:'ATUL',rate:249.72},{no:'2603000504',name:'3RD SPEED GEAR',cust:'ATUL',rate:159.35},{no:'2603001504',name:'4TH SPEED GEAR',cust:'ATUL',rate:135.97},{no:'2603004905',name:'IDLER GEAR PASS',cust:'ATUL',rate:276.13},{no:'2604205905',name:'FD GEAR PASSENGER',cust:'ATUL',rate:426.97},{no:'2613000203',name:'MAIN SHAFT ATUL',cust:'ATUL',rate:372.67},{no:'2703000101',name:'1ST SPEED GEAR 501',cust:'ATUL',rate:238.78},{no:'2703000202',name:'2ND SPEED GEAR 501',cust:'ATUL',rate:192.02},{no:'2703000302',name:'CLUSTER GEAR 501',cust:'ATUL',rate:556.76},{no:'2602102002',name:'CLUTCH SHAFT ASSY',cust:'ATUL',rate:165.41},
@@ -212,9 +212,9 @@ const PSEED=[
   {no:'BODGNV40TM5246AA',name:'FD GEAR PASS',cust:'CPGD',rate:332.04},{no:'BODGNV40TM5249AA',name:'FD GEAR COMM',cust:'CPGD',rate:395.96},{no:'BODGNV40TM5247AA',name:'IDLER GEAR PASS',cust:'CPGD',rate:250.00},{no:'BODGNV40TM5216AB',name:'2ND SPEED GEAR',cust:'CPGD',rate:169.18},{no:'BODGNV40TM5231AA',name:'MAIN SHAFT NEW',cust:'CPGD',rate:313.00},{no:'BODGNV40TM0559AA',name:'GEAR FAREMETER',cust:'CPGD',rate:29.42},{no:'BODGNV40TM5248AA',name:'RC GEAR PASS',cust:'CPGD',rate:234.55},{no:'BODGNV40TM5251AA',name:'RC GEAR COMM',cust:'CPGD',rate:194.30},{no:'BODGNV40TM5250AA',name:'IDLER GEAR COMM',cust:'CPGD',rate:238.22},{no:'2XV62100457AA',name:'PINION FAREMETER',cust:'CPGD',rate:42.50},{no:'BODGNV40TM5213AB',name:'1ST SPEED GEAR',cust:'CPGD',rate:214.05},{no:'BODGNV40TM5215AA',name:'4TH SPEED GEAR',cust:'CPGD',rate:115.70},{no:'BODGNV40TM5214AA',name:'3RD SPEED GEAR',cust:'CPGD',rate:137.60},{no:'BODGNV40I00221AB',name:'CLUSTER GEAR 501',cust:'CPGD',rate:529.57},
   {no:'10_2101_008',name:'1ST SPEED GEAR',cust:'MLR',rate:243.87},{no:'10_2101_001',name:'MAIN SHAFT NEW',cust:'MLR',rate:400.55},{no:'10_2101_005',name:'4TH SPEED GEAR',cust:'MLR',rate:134.84},{no:'10_2100_021',name:'CLUSTER GEAR REG.',cust:'MLR',rate:603.08},{no:'12_2300_002',name:'RC GEAR COMM',cust:'MLR',rate:228.00},{no:'11_2300_002',name:'RC GEAR PASS',cust:'MLR',rate:256.34},{no:'11_2101_007',name:'2ND SPEED GEAR',cust:'MLR',rate:196.23},{no:'10_2101_006',name:'3RD SPEED GEAR',cust:'MLR',rate:155.23},{no:'11_2300_001',name:'IDLER GEAR PASS',cust:'MLR',rate:276.40},{no:'11_2300_001B',name:'IDLER GEAR COMM',cust:'MLR',rate:280.00},{no:'11_2301_001',name:'FD GEAR PASS',cust:'MLR',rate:382.20},{no:'12_2301_001',name:'FD GEAR COMM',cust:'MLR',rate:420.97}
 ];
-
+ 
 const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:'',inward:[],batches:[],cards:[],storeSrch:'',storeCust:'all'};
-
+ 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const nowTS=()=>new Date().toISOString();
 const dateStr=()=>new Date().toISOString().slice(0,10);
@@ -231,7 +231,7 @@ const sSess=s=>s?localStorage.setItem('imf_s',JSON.stringify(s)):localStorage.re
 function toast(m,d=2800){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),d)}
 function openModal(h){document.getElementById('mcont').innerHTML='<div class="mhnd"></div>'+h;document.getElementById('mov').classList.add('op')}
 function closeModal(){document.getElementById('mov').classList.remove('op')}
-
+ 
 async function loadMasters(){
   const[u,m,p,o,po,sd,iw,bt,cd]=await Promise.all([db.collection('users').get(),db.collection('machines').get(),db.collection('parts').get(),db.collection('operations').get(),db.collection('partOps').get(),db.collection('config').doc('shifts').get(),db.collection('inward').get(),db.collection('batches').get(),db.collection('cards').get()]);
   S.users=u.docs.map(d=>({id:d.id,...d.data()}));S.machines=m.docs.map(d=>({id:d.id,...d.data()}));S.parts=p.docs.map(d=>({id:d.id,...d.data()}));S.operations=o.docs.map(d=>({id:d.id,...d.data()}));S.partOps=po.docs.map(d=>({id:d.id,...d.data()}));
@@ -283,7 +283,7 @@ function updateAllOpDropdowns(){
   const opts=`<option value="">— Select —</option><option value="_add" style="color:var(--acc);font-weight:600">+ Add new operator...</option>`+usrs.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
   document.querySelectorAll('[id^="mcop-"]').forEach(sel=>{const v=sel.value;sel.innerHTML=opts;sel.value=v;});
 }
-
+ 
 async function seedParts(){const s=await db.collection('parts').limit(1).get();if(!s.empty)return;const b=db.batch();PSEED.forEach(p=>{b.set(db.collection('parts').doc(),{...p,createdAt:nowTS()})});await b.commit();toast('Parts master loaded ('+PSEED.length+' parts)');}
 function setupListeners(){
   S.listeners.forEach(u=>u());S.listeners=[];
@@ -301,7 +301,7 @@ function setupListeners(){
     db.collection('cards').onSnapshot(sn=>{S.cards=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='store-batches')renderBatchList();})
   );
 }
-
+ 
 function go(scr,prev){
   S.prev=prev!==undefined?prev:S.cur;S.cur=scr;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
@@ -313,7 +313,7 @@ function go(scr,prev){
   });
 }
 function goBack(){go(S.prev||'home')}
-
+ 
 let _gdCb=null,_gdInp=null;
 function showGDrop(inp,matches,cb){
   const dr=document.getElementById('gdrop');
@@ -334,7 +334,7 @@ function pickGDrop(pid){
   if(p&&_gdCb)_gdCb(p);
   hideGlobalDrop();
 }
-
+ 
 function getDefaultPerms(role){
   const d={
     operator:{plan:'full',actual:'full',reports:'view',store:'view'},
@@ -359,7 +359,7 @@ function viewOnlyBanner(screen){
   if(p==='view')return`<div class="ibox" style="display:flex;align-items:center;gap:8px;margin-bottom:14px">👁 You have view-only access to this screen</div>`;
   return'';
 }
-
+ 
 let _pv='',_pc=null,_pd='';
 function initPIN(padId,dotsId,cb){
   _pv='';_pc=cb;_pd=dotsId;
@@ -368,7 +368,7 @@ function initPIN(padId,dotsId,cb){
   document.getElementById(padId).innerHTML=nums.map(k=>{if(k===null)return`<div class="kk emp"></div>`;if(k==='del')return`<button class="kk del" onclick="pk('del')">⌫</button>`;return`<button class="kk" onclick="pk('${k}')">${k}</button>`;}).join('');
 }
 function pk(k){if(k==='del'){_pv=_pv.slice(0,-1)}else if(_pv.length<4){_pv+=k}for(let i=0;i<4;i++){const d=document.getElementById(_pd+'-'+i);if(d)d.classList.toggle('on',i<_pv.length)}if(_pv.length===4&&_pc){setTimeout(()=>{const p=_pv;_pv='';for(let i=0;i<4;i++){const d=document.getElementById(_pd+'-'+i);if(d)d.classList.remove('on')};_pc(p)},180)}}
-
+ 
 let _sp='';
 function showSetup(){
   document.getElementById('app').innerHTML=`<div class="lwrap"><div class="lbox"><div class="lhero"><div class="llogo">IMF</div><div class="lco">Indo Metaforge Pvt Ltd</div><div class="ltag">First Time Setup</div></div><div class="lform"><h2>Create Admin Account</h2><p class="tsm tmut" style="margin-bottom:18px">This admin will manage all masters — machines, people, operations.</p><div class="f"><label>Your Full Name</label><input id="su-n" type="text" placeholder="e.g. Rajesh Kumar" oninput="suc()"></div><div class="f"><label>Set 4-digit PIN</label><div class="pdots" id="su-dots"></div><div class="kpad" id="su-pad"></div></div><div id="su-msg" style="min-height:18px;font-size:13px;color:var(--er);margin-bottom:10px"></div><button class="btn btn-p" id="su-btn" onclick="doSetup()" disabled>Create Admin &amp; Launch</button></div></div></div>`;
@@ -384,7 +384,7 @@ async function doSetup(){
   try{const id=uid();await db.collection('users').doc(id).set({name,role:'admin',stage:'general',pin:_sp,appUser:true,createdAt:nowTS()});await seedParts();sSess({userId:id,role:'admin',name,stage:'general',loginAt:nowTS()});S.sess=gSess();await loadMasters();setupListeners();renderApp();toast('Welcome, '+name+'! App is ready 🎉');}
   catch(e){document.getElementById('su-msg').textContent='Error: '+e.message;btn.disabled=false;btn.textContent='Create Admin & Launch'}
 }
-
+ 
 let _lu=null;
 function showLogin(){
   document.getElementById('app').innerHTML=`<div class="lwrap"><div class="lbox"><div class="lhero"><div class="llogo">IMF</div><div class="lco">Indo Metaforge Pvt Ltd</div><div class="ltag">Production Tracker</div></div><div class="lform"><h2>Sign In</h2>${S.users.length===0?`<div class="empty"><div class="empty-ic">👤</div><h3>No users found</h3><p>Ask your admin to add you to the system.</p></div>`:`<div class="f"><label>Select Your Name</label><select id="l-u" onchange="lpu(this.value)"><option value="">— Choose your name —</option>${S.users.filter(u=>u.appUser!==false).map(u=>`<option value="${u.id}">${u.name} (${rlbl(u.role)})</option>`).join('')}</select></div><div id="l-pw" style="display:none"><label style="display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bottom:5px">Enter PIN</label><div class="pdots" id="l-dots"></div><div class="kpad" id="l-pad"></div></div><div id="l-err" style="min-height:18px;font-size:13px;color:var(--er);text-align:center;margin-top:6px"></div>`}</div></div></div>`;
@@ -405,9 +405,9 @@ function renderApp(){
   renderHome();
 }
 function snav(id){if(id==='home'){go('home');renderHome()}else if(id==='plan'){go('plan');renderPlanHub()}else if(id==='actual'){go('actual-hub');renderActualHub()}else if(id==='store'){go('store-hub');renderStoreHub()}else if(id==='reports'){go('reports');renderReports()}else if(id==='masters'){go('masters');renderMasters()}}
-
+ 
 function getActiveSh(){const h=new Date().getHours()*60+new Date().getMinutes();const toM=t=>{const[hh,mm]=t.split(':').map(Number);return hh*60+mm};for(const[k,v]of Object.entries(S.shifts)){const s=toM(v.start),e=toM(v.end);if(s<e){if(h>=s&&h<e)return v}else{if(h>=s||h<e)return v}}return Object.values(S.shifts)[0]}
-
+ 
 function checkPlanAlert(){
   if(!S.sess)return'';
   const role=S.sess.role;
@@ -444,14 +444,14 @@ function renderHome(){
       </div>`:''}
   <div class="slbl" style="margin-top:16px">Shift Timings</div><div class="card">${Object.values(S.shifts).map(s=>`<div class="rrow"><span class="tsm" style="font-weight:600">${s.label}</span><span class="tsm tmut">${s.start} – ${s.end}</span></div>`).join('')}</div></div>`;
 }
-
+ 
 function renderActualHub(){
   document.getElementById('s-actual-hub').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Actual Output</div></div></div><div class="pad">
   <div class="hcard" onclick="go('actual','actual-hub');renderActual()"><div class="hcard-ic" style="background:#dcfce7">✅</div><div><div class="hcard-nm">Submit Shift Report</div><div class="hcard-sub">Fill actual output for end of shift</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
   <div class="hcard" onclick="go('view-actuals','actual-hub');renderViewActuals()"><div class="hcard-ic" style="background:var(--acc2)">📋</div><div><div class="hcard-nm">View All Reports</div><div class="hcard-sub">Browse, filter and edit submitted reports</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
   </div>`;
 }
-
+ 
 function renderPlanHub(){
   document.getElementById('s-plan').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Production Planning</div></div></div><div class="pad">
   <div class="hcard" onclick="go('plan-day','plan');renderPlanDay()"><div class="hcard-ic" style="background:#ede9fe">📆</div><div><div class="hcard-nm">Plan for a Day</div><div class="hcard-sub">Fill Shift 1, 2 &amp; 3 for any date</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
@@ -521,7 +521,7 @@ function openPlanDayShift(shiftKey,date){
     if(S.editingPlanId)toast('Editing existing plan for this shift');
   },100);
 }
-
+ 
 function renderPlanForm(type){
   S.planType=type;if(!S.editingPlanId)S.editingPlanId=null;
   if(!S.planDayMode){S.planReports={};S.planStage='';}
@@ -571,7 +571,7 @@ function renderPlanForm(type){
     renderPlanMachines();
   }
 }
-
+ 
 function selPlanStage(st){
   S.planStage=st;S.planReports={};
   ['soft','ht','hard'].forEach(s=>{const b=document.getElementById('ps-'+s);if(b){b.className='stbtn';if(s===st)b.classList.add('on-'+st)}});
@@ -580,7 +580,7 @@ function selPlanStage(st){
   if(sup){sup.innerHTML=`<option value="">— Select —</option>`+S.users.filter(u=>(u.role==='supervisor'||u.role==='manager')&&(u.stage===st||u.stage==='general')).map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}
   renderPlanMachines();
 }
-
+ 
 function renderPlanMachines(){
   const mach=[...S.machines].filter(m=>m.stage===S.planStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
   const w=document.getElementById('plan-mach');if(!w)return;
@@ -591,7 +591,7 @@ function renderPlanMachines(){
   document.getElementById('plan-sub').style.display='block';const _psb=document.getElementById('plan-sub-bar');if(_psb&&getPerm('plan')==='full')_psb.style.display='block';
   if(hadDraft)toast('Draft restored — continue from where you left off',3500);
 }
-
+ 
 function fillSamplePlan(){
   if(!isTanmay()){toast('Only Tanmay can use this feature');return}
   const allMach=[...S.machines].filter(m=>m.stage===S.planStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
@@ -614,7 +614,7 @@ function fillSamplePlan(){
   toast('⚡ Top 5 filled, rest marked Not Used — ready to submit',3000);
 }
 function planMCStat(r){if(r.used===null||r.used===undefined)return['Not filled','bdg-gr'];if(!r.used)return['Not planned','bdg-r'];const runs=r.runs||[];const filled=runs.filter(ru=>ru.plannedQty);if(filled.length===runs.length&&runs.length>0)return['Planned ✓','bdg-g'];return['Partial','bdg-a']}
-
+ 
 function buildPlanRunsHTML(mid,r,ops){const runs=r.runs||[{}];const setups=r.setupTimes||[];const tot=runs.length;let h='';runs.forEach((run,idx)=>{h+=buildPlanRunBlock(mid,idx,run,ops,tot);if(idx<runs.length-1)h+=`<div class="setup-blk" id="pmc-setup-${mid}-${idx}"><span class="setup-lbl">🔧 Setup Change ${idx+1}→${idx+2}</span><input type="number" min="0" value="${setups[idx]||''}" placeholder="mins" style="width:80px;padding:7px 10px;font-size:14px;font-weight:600;text-align:center;background:#fff;border:1.5px solid var(--bdr);border-radius:6px" onchange="setPlanSetup('${mid}',${idx},this.value)"><span style="font-size:12px;color:#92400e;font-weight:500">mins</span></div>`;});return h;}
 function buildPlanRunBlock(mid,idx,run,ops,tot){const multi=(tot||1)>1;return`<div class="run-block" id="pmc-run-${mid}-${idx}"><div class="run-hd"><span class="run-hd-lbl">Run ${idx+1}</span></div><div class="f"><input type="text" placeholder="Search part..." value="${run.partName||''}" oninput="spPlanRun(this,'${mid}',${idx})" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off" style="font-size:14px"></div><div class="${multi?'row2':'f'}"><div class="f"><label>Operation</label><select onchange="setPlanRunOp('${mid}',${idx},this.value,this.options[this.selectedIndex].text)"><option value="">— Select —</option>${ops.map(o=>`<option value="${o.id}" ${run.opId===o.id?'selected':''}>${o.name}</option>`).join('')}</select></div>${multi?`<div class="f"><label>Estimated Hours</label><input type="number" min="0" step="0.5" value="${run.hoursPlanned||''}" placeholder="e.g. 3.5" onchange="setPlanRun('${mid}',${idx},'hoursPlanned',this.value);updPlanRunQty('${mid}',${idx})"></div>`:''}</div><div class="f"><label>Planned Qty</label><input type="number" id="pmc-qty-${mid}-${idx}" min="0" value="${run.plannedQty||''}" placeholder="${multi?'Auto':'Enter qty'}" onchange="setPlanRun('${mid}',${idx},'plannedQty',this.value);updPlanMCBdg('${mid}')"></div></div>`;}
 function buildPlanMC(m){
@@ -723,7 +723,7 @@ function highlightErrs(errs,prefix,bodyPrefix,chevPrefix){
 }
 function highlightPlanErrs(errs){highlightErrs(errs,'pmc-','pmcb-','pmcc-');}
 function highlightActErrs(errs){highlightErrs(errs,'mc-','mcb-','mcc-');}
-
+ 
 async function submitPlan(){
   if(!S.planStage){toast('Please select a stage');return}
   const planErrs=validatePlanReports();if(planErrs.length>0){highlightPlanErrs(planErrs);return}
@@ -750,8 +750,8 @@ async function submitPlan(){
     }
   }catch(e){toast('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent=S.editingPlanId?'Update Plan':'Save Plan'}}
 }
-
-
+ 
+ 
 let _vpD='',_vpDFrom='',_vpSh='all',_vpSt='all';
 function rvp(){
   const sevenAgo=new Date();sevenAgo.setDate(sevenAgo.getDate()-7);
@@ -1041,7 +1041,7 @@ function buildPlanActualLink(){
     <div style="padding:8px 12px;background:var(--bg);font-size:11px;color:var(--mut)">Planned = supervisor's plan &nbsp;·&nbsp; Target = cycle time standard &nbsp;·&nbsp; Actual = produced</div>
   </div>`;
 }
-
+ 
 async function deletePlan(id){
   if(!isTanmay())return;
   if(!confirm('Delete this plan permanently? This cannot be undone.'))return;
@@ -1088,7 +1088,7 @@ function editPlan(id){
     toast('Editing existing plan — make changes and save');
   },150);
 }
-
+ 
 let _vad='',_vadFrom='',_vas='all',_vast='all';
 function renderViewActuals(){
   const sevenAgo=new Date();sevenAgo.setDate(sevenAgo.getDate()-7);
@@ -1178,7 +1178,7 @@ function editActual(id){
     toast('Editing existing report — make changes and resubmit');
   },100);
 }
-
+ 
 function downloadReport(){
   const acts=S.actuals.filter(a=>a.date>=_rd&&a.date<=(_rdTo||_rd)&&(_rs==='all'||a.shift===_rs)&&(_rst==='all'||a.stage===_rst));
   if(!acts.length){toast('No data for selected filters');return}
@@ -1208,7 +1208,7 @@ function downloadReport(){
   const w=window.open('','_blank');if(!w){toast('Please allow popups to download report');return}
   w.document.write(html);w.document.close();
 }
-
+ 
 // ── Masters filter state ──
 let _mSrch='',_mStagF='all';
 let _pplSrch='',_pplRole='all',_pplStage='all';
@@ -1217,7 +1217,7 @@ let _opSrch='',_opStage='all';
 let _poSrch='',_poFilt='all';
 // ── Drag state ──
 let _dragId=null,_dragEl=null;
-
+ 
 function renderMasters(){
   document.getElementById('s-masters').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Masters &amp; Settings</div></div></div><div class="pad">
   <div class="mtiles">
@@ -1229,7 +1229,7 @@ function renderMasters(){
     <div class="mtile" onclick="go('m-shifts','masters');renderShifts()"><div class="mtic">🕐</div><div class="mtnm">Shift Timings</div><div class="mtct">Edit times</div></div>
   </div></div>`;
 }
-
+ 
 function showMachHist(machId){
   const m=S.machines.find(x=>x.id===machId);if(!m)return;
   go('m-machine-hist','m-machines');
@@ -1330,7 +1330,7 @@ function addMachModal(){openModal(`<div class="mtit">Add Machine</div>${mchF(nul
 function editMachModal(id){const m=S.machines.find(m=>m.id===id);if(!m)return;openModal(`<div class="mtit">Edit Machine</div>${mchF(m)}<button class="btn btn-p mt12" onclick="saveMach('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delMach('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
 async function saveMach(id){const n=document.getElementById('mm-n').value.trim();if(!n){toast('Name required');return}const actEl=document.getElementById('mm-active');const d={name:n,id_code:document.getElementById('mm-c').value,type:document.getElementById('mm-t').value,stage:document.getElementById('mm-s').value,active:actEl?actEl.checked:true};try{if(id){await db.collection('machines').doc(id).update(d)}else{await db.collection('machines').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderMachines();toast(id?'Updated ✓':'Machine added ✓')}catch(e){toast('Error: '+e.message)}}
 async function delMach(id){if(!confirm('Delete this machine?'))return;await db.collection('machines').doc(id).delete();await reloadM();closeModal();renderMachines();toast('Deleted')}
-
+ 
 function applyPplFilter(){
   const q=_pplSrch.toLowerCase(),rf=_pplRole,sf=_pplStage;
   const list=S.users.filter(u=>{
@@ -1392,7 +1392,7 @@ async function savePers(id){
   catch(e){toast('Error: '+e.message)}
 }
 async function delPers(id){if(id===S.sess.userId){toast('Cannot delete yourself');return}if(!confirm('Delete?'))return;await db.collection('users').doc(id).delete();await reloadM();closeModal();renderPeople();toast('Deleted')}
-
+ 
 let _pf='';
 function applyPartsFilter(){
   const q=_ptSrch.toLowerCase(),cf=_ptCust;
@@ -1418,7 +1418,7 @@ function renderParts(){
   _ptSrch='';_ptCust='all';
   applyPartsFilter();
 }
-
+ 
 function applyOpsFilter(){
   const q=_opSrch.toLowerCase(),sf=_opStage;
   const list=S.operations.filter(o=>{
@@ -1447,7 +1447,7 @@ function addOpModal(){openModal(`<div class="mtit">Add Operation</div>${opF(null
 function editOpModal(id){const o=S.operations.find(o=>o.id===id);if(!o)return;openModal(`<div class="mtit">Edit Operation</div>${opF(o)}<button class="btn btn-p mt12" onclick="saveOp('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delOp('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
 async function saveOp(id){const n=document.getElementById('op-n').value.trim();if(!n){toast('Name required');return}const d={name:n,stage:document.getElementById('op-s').value};try{if(id){await db.collection('operations').doc(id).update(d)}else{await db.collection('operations').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderOps();toast(id?'Updated ✓':'Operation added ✓')}catch(e){toast('Error: '+e.message)}}
 async function delOp(id){if(!confirm('Delete?'))return;await db.collection('operations').doc(id).delete();await reloadM();closeModal();renderOps();toast('Deleted')}
-
+ 
 function applyPOFilter(){
   const q=_poSrch.toLowerCase(),ff=_poFilt;
   const list=S.partOps.filter(po=>{
@@ -1501,12 +1501,12 @@ async function savePOInline(id,field,val){
   }catch(e){toast('Error: '+e.message);}
 }
 async function delPO(id){if(!confirm('Delete?'))return;await db.collection('partOps').doc(id).delete();await reloadM();closeModal();renderPartOps();toast('Deleted')}
-
+ 
 function renderShifts(){document.getElementById('s-m-shifts').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Shift Timings</div></div></div><div class="pad"><div class="wbox">Changes here affect shift display across the entire app.</div>${Object.entries(S.shifts).map(([k,v])=>`<div class="card"><div class="card-hd">${v.label}</div><div class="row2"><div class="f"><label>Start Time</label><input type="time" id="sh-${k}-s" value="${v.start}"></div><div class="f"><label>End Time</label><input type="time" id="sh-${k}-e" value="${v.end}"></div></div><div class="f" style="margin:0"><label>Label</label><input type="text" id="sh-${k}-l" value="${v.label}"></div></div>`).join('')}<button class="btn btn-p" onclick="saveShifts()">Save Timings</button></div>`}
 async function saveShifts(){const sh={};Object.keys(S.shifts).forEach(k=>{sh[k]={start:document.getElementById('sh-'+k+'-s').value,end:document.getElementById('sh-'+k+'-e').value,label:document.getElementById('sh-'+k+'-l').value}});await db.collection('config').doc('shifts').set(sh);S.shifts=sh;toast('Shift timings saved ✓');go('masters');renderMasters()}
-
+ 
 function logout(){S.listeners.forEach(u=>u());S.listeners=[];sSess(null);location.reload()}
-
+ 
 function initBackBtn(){
   window.history.pushState({imf:true},'');
   window.addEventListener('popstate',()=>{
@@ -1514,7 +1514,7 @@ function initBackBtn(){
     goBack();
   });
 }
-
+ 
 // ════════════════ STORE / WIP MODULE (V2) ════════════════
 // Stock balance is DERIVED, all-time (stock carries forever, no 90-day window):
 //   balance(part) = Σ inward.qty  −  Σ batches.totalQty
@@ -1550,7 +1550,7 @@ function renderStoreHub(){
   </div></div>`;
 }
 function storeIssueSoon(){toast('Use the Issue Material tile to issue a batch');}
-
+ 
 // ── Inward ──
 let _inwSrch='',_inwPart=null;
 function renderStoreInward(){
@@ -1597,7 +1597,7 @@ async function saveInw(id){
   }catch(e){toast('Error: '+e.message)}
 }
 async function delInw(id){if(!isTanmay()){toast('Only Tanmay can delete');return}if(!confirm('Delete this inward record? This reduces stock.'))return;try{await db.collection('inward').doc(id).delete();toast('Deleted');}catch(e){toast('Error: '+e.message)}}
-
+ 
 // ── Stock on hand ──
 function renderStoreStock(){
   const custs=[...new Set(S.parts.map(p=>p.cust).filter(Boolean))].sort();
@@ -1621,13 +1621,13 @@ function applyStockFilter(){
   w.innerHTML=`<div class="card" style="background:var(--acc3);border-color:var(--bdr2)"><div class="fbw"><span class="tsm" style="font-weight:700">Total balance · ${list.length} part${list.length>1?'s':''}</span><span class="sv" style="font-size:20px">${grand}<span class="su"> pcs</span></span></div></div>`+
     list.map(({p,inQty,outQty,balance})=>`<div class="li"><div class="lic" style="background:${balance>0?'var(--okbg)':balance<0?'var(--erbg)':'var(--bg)'}">${balance<0?'⚠️':'📦'}</div><div class="lib"><div class="linm">${p.name}</div><div class="lisb">${p.no||''}${p.cust?' · '+p.cust:''} · In ${inQty} · Issued ${outQty}</div></div><div class="liac"><div style="text-align:right"><div class="sv" style="font-size:18px;color:var(--${balance>0?'ok':balance<0?'er':'mut'})">${balance}</div><div class="tsm tmut" style="font-size:10px">balance</div></div></div></div>`).join('');
 }
-
+ 
 // ════════════════ ISSUE FLOW (V2 · chunk 2) ════════════════
 let _issuePart=null,_issueStage='soft',_issueBins=[];
-
+ 
 function plannedTodayFor(partId){let q=0;const td=dateStr();S.plans.filter(p=>p.date===td).forEach(p=>(p.machineReports||p.entries||[]).forEach(r=>{if(r.used)(r.runs||[]).forEach(run=>{if(run.partId===partId)q+=(+run.plannedQty||0)})}));return q;}
 function barcodeUsed(code){const c=(code||'').trim();return c&&S.cards.some(x=>(x.barcode||'').trim()===c);}
-
+ 
 function renderStoreIssue(){
   if(getPerm('store')!=='full'){toast('No access');go('store-hub');renderStoreHub();return;}
   _issuePart=null;_issueStage='soft';_issueBins=[{qty:'',barcode:''}];
@@ -1701,7 +1701,7 @@ function updIssueSummary(){
   if(btn){btn.disabled=!v.ok;btn.style.opacity=v.ok?'1':'.5';}
 }
 function updIssueBalance(){if(S.cur==='store-issue'&&_issuePart)renderIssueRest();}
-
+ 
 // Daily-resetting batch counter via Firestore transaction (requires connectivity)
 async function nextBatchCode(){
   const today=dateStr(),ymd=today.slice(2).replace(/-/g,'');
@@ -1742,7 +1742,7 @@ function showIssueResult(code,part,total,cards){
   <button class="btn btn-p mt12" onclick="closeModal();renderStoreIssue()">Issue Another</button>
   <button class="btn btn-s mt8" onclick="closeModal();go('store-hub');renderStoreHub()">Done</button>`);
 }
-
+ 
 // ── Camera barcode scanner (html5-qrcode) + keyboard-wedge friendly inputs ──
 let _scanCb=null,_scanner=null,_torchOn=false;
 function scanForBin(i){openScanner(code=>{if(_issueBins[i]){_issueBins[i].barcode=code;renderIssueBins();toast('Scanned: '+code);}});}
@@ -1766,7 +1766,7 @@ function startScanner(){
 }
 function toggleTorch(){if(!_scanner)return;_torchOn=!_torchOn;_scanner.applyVideoConstraints({advanced:[{torch:_torchOn}]}).then(()=>{const b=document.getElementById('scan-torch');if(b)b.style.background=_torchOn?'var(--acc2)':'';}).catch(()=>{_torchOn=false;toast('Flash not supported on this device');});}
 function closeScanner(){if(_scanner){const sc=_scanner;_scanner=null;sc.stop().then(()=>{try{sc.clear()}catch(e){}}).catch(()=>{});}_scanCb=null;closeModal();}
-
+ 
 // ── Issued Batches viewer ──
 let _batFrom='',_batTo='',_batExpand={};
 function renderStoreBatches(){
@@ -1810,7 +1810,7 @@ async function delBatch(id){
     toast('Batch deleted · stock restored');
   }catch(e){toast('Error: '+e.message);}
 }
-
+ 
 async function init(){
   try{
     const us=await db.collection('users').limit(1).get();
@@ -1828,14 +1828,14 @@ async function init(){
     document.getElementById('app').innerHTML=`<div class="loading"><div style="color:#fff;text-align:center"><div class="lspin" style="margin:0 auto 16px"></div><div style="font-size:14px">Connecting...</div><div style="font-size:12px;margin-top:8px;opacity:.6">${e.message}</div><div style="margin-top:16px"><button onclick="init()" style="background:var(--acc);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px">Retry</button></div></div></div>`;
   }
 }
-
+ 
 if('serviceWorker' in navigator){
   let _swReg=null;
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{
       _swReg=reg;
       reg.update(); // check for new version on every load
-
+ 
       function showUpdateBanner(){
         if(document.getElementById('sw-update-banner'))return;
         const b=document.createElement('div');
@@ -1851,7 +1851,7 @@ if('serviceWorker' in navigator){
           }
         };
       }
-
+ 
       // New SW found while page is open
       reg.addEventListener('updatefound',()=>{
         const nw=reg.installing;
@@ -1862,12 +1862,12 @@ if('serviceWorker' in navigator){
           }
         });
       });
-
+ 
       // If there's already a waiting SW when page loads (e.g. user had tab open)
       if(reg.waiting&&navigator.serviceWorker.controller){
         showUpdateBanner();
       }
-
+ 
       // After user taps Update, new SW activates — reload to use it
       navigator.serviceWorker.addEventListener('controllerchange',()=>{
         window.location.reload();
@@ -1880,3 +1880,4 @@ window.addEventListener('scroll',hideGlobalDrop,true);
 </script>
 </body>
 </html>
+ 
