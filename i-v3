@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>IMF ProTrack</title>
+<style>
+/* (Keep all your existing CSS here) */
+</style>
+</head>
+<body>
+<div id="app"><div class="loading"><div class="lspin"></div></div></div>
+<div id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({/* YOUR FIREBASE CONFIG */});
+const db = firebase.firestore();
+
+const S = {
+    sess: null, users: [], machines: [], parts: [], operations: [], partOps: [],
+    suppliers: [], /* NEW */
+    shifts: {s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},
+    plans: [], actuals: [], inward: [], batches: [], cards: [], /* NEW */
+    listeners: [], cur: 'home', actReports: {}, planReports: {}, actStage: ''
+};
+// ... (The rest of your script logic continues in Part 2)
+// --- PART 2: SUPPLIER MASTER & STORE LOGIC ---
+
+// 1. Supplier Master
+async function renderSuppliers() {
+    document.getElementById('s-masters').innerHTML = `
+        <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
+        <div class="hdr-info"><div class="hdr-title">Suppliers</div></div>
+        <button class="hdr-act" onclick="addSupplierModal()">+ Add</button></div>
+        <div class="pad"><div id="sup-list"></div></div>`;
+    const w = document.getElementById('sup-list');
+    w.innerHTML = S.suppliers.map(s => `
+        <div class="li"><div class="lib"><div class="linm">${s.name}</div>
+        <div class="lisb">${s.code} · ${s.contact} · ${s.mobile}</div></div>
+        <button class="btn btn-s btn-sm" onclick="editSupplierModal('${s.id}')">Edit</button></div>
+    `).join('');
+}
+
+function addSupplierModal() {
+    openModal(`<div class="mtit">Add Supplier</div>
+    <div class="f"><label>Name</label><input id="sup-n" type="text"></div>
+    <div class="f"><label>Code (e.g. TATA)</label><input id="sup-c" type="text"></div>
+    <div class="f"><label>Contact Name</label><input id="sup-con" type="text"></div>
+    <div class="f"><label>Mobile</label><input id="sup-m" type="tel"></div>
+    <button class="btn btn-p" onclick="saveSupplier()">Save</button>`);
+}
+
+async function saveSupplier() {
+    const d = { name: document.getElementById('sup-n').value, code: document.getElementById('sup-c').value, contact: document.getElementById('sup-con').value, mobile: document.getElementById('sup-m').value };
+    await db.collection('suppliers').add(d);
+    closeModal(); toast('Supplier added'); reloadM();
+}
+
+// 2. Updated Bulk Inward (Auto-calculates Delivery Number per Part+Supplier)
+async function saveInw(id) {
+    if(!_inwPart){toast('Select a part');return}
+    const supCode = document.getElementById('inw-sup-dropdown').value;
+    if(!supCode){toast('Supplier required');return}
+    
+    // Auto-calculate Delivery No: Count existing inward for this part+supplier + 1
+    const existingCount = S.inward.filter(r => r.partId === _inwPart.id && r.supplierCode === supCode).length;
+    const deliveryNo = String(existingCount + 1).padStart(3, '0');
+    const masterLotCode = `${dateStr().replace(/-/g,'')}-${supCode}-DLV${deliveryNo}`;
+
+    const qty = parseInt(document.getElementById('inw-qty').value)||0;
+    const d = {
+        partId: _inwPart.id, partNo: _inwPart.no, partName: _inwPart.name,
+        supplierCode: supCode,
+        masterLotCode: masterLotCode,
+        qty: qty,
+        type: document.getElementById('inw-type').value,
+        date: document.getElementById('inw-date').value
+    };
+    
+    try {
+        await db.collection('inward').add({...d, createdAt: nowTS()});
+        closeModal(); toast('Inward recorded: ' + masterLotCode);
+    } catch(e) { toast('Error: ' + e.message); }
+}
+
+// 3. Intelligent Batch Issue Logic
+async function doIssue(){
+    const v = issueValidation();
+    if(!v.ok){toast(v.msg); return;}
+    
+    const btn = document.getElementById('iss-btn');
+    btn.disabled = true; btn.textContent = 'Issuing...';
+    
+    try {
+        // Generate Child Batch Code: {MasterLotCode}-{IssueDate}-{IssueCount}
+        // Need to fetch current Master Lot details from inward collection
+        const masterLotRecord = S.inward.find(r => r.partId === _issuePart.id); 
+        const issueCount = S.batches.filter(b => b.masterLotCode === masterLotRecord.masterLotCode).length + 1;
+        const childBatchCode = `${masterLotRecord.masterLotCode}-${dateStr().replace(/-/g,'')}-${issueCount}`;
+
+        const batchRef = db.collection('batches').doc();
+        const wb = db.batch();
+        
+        wb.set(batchRef, {
+            batchCode: childBatchCode,
+            masterLotCode: masterLotRecord.masterLotCode,
+            partId: _issuePart.id,
+            totalQty: v.total,
+            stage: 'soft', // Hardcoded as requested
+            createdAt: nowTS()
+        });
+        
+        await wb.commit();
+        toast('Batch Issued: ' + childBatchCode);
+        closeModal();
+    } catch(e) { toast('Issue failed: ' + e.message); btn.disabled = false; }
+}
+// --- PART 3: SETUP-BASED EFFICIENCY MATH ---
+
+// Update Actual Run Efficiency Calculation
+function updActRunEff(mid, idx) {
+    const r = S.actReports[mid];
+    if (!r || !r.runs || !r.runs[idx]) return;
+
+    // Logic for Setup Time Integration (Soft/Hard Stages only)
+    const totalSetup = (r.setupTimes || []).reduce((s, v) => s + (+v || 0), 0);
+    const otherDT = r.hasOtherDowntime ? (+r.otherDowntimeMins || 0) : 0;
+    const totalDowntime = (S.actStage === 'soft' || S.actStage === 'hard') ? (totalSetup + otherDT) : otherDT;
+    
+    // Efficiency = Actual / Target, where Target is now adjusted for downtime
+    const operatingTime = 450 - totalDowntime;
+    const run = r.runs[idx];
+    
+    // Recalculate target based on adjusted operating time
+    const po = S.partOps.find(p => p.partId === run.partId && p.opId === run.opId);
+    if (po && po.cycleTime > 0) {
+        run.targetQty = Math.round(operatingTime / po.cycleTime);
+        const el = document.getElementById('mc-tgt-' + mid + '-' + idx);
+        if (el) el.value = run.targetQty;
+    }
+
+    const eff = run.targetQty && run.actualQty ? Math.round(+run.actualQty / +run.targetQty * 100) : 0;
+    
+    const d = document.getElementById('mc-run-eff-' + mid + '-' + idx);
+    if (d) {
+        d.style.display = 'block';
+        const pf = document.getElementById('mc-run-pf-' + mid + '-' + idx);
+        if (pf) {
+            pf.style.width = Math.min(eff, 100) + '%';
+            pf.className = 'pf ' + effcls(eff);
+        }
+        const lb = document.getElementById('mc-run-el-' + mid + '-' + idx);
+        if (lb) lb.textContent = 'Efficiency: ' + eff + '%';
+    }
+    updMCBdg(mid);
+}
+
+// Ensure the setup fields trigger a re-calculation
+function updateTotalSetup(mid) {
+    const r = S.actReports[mid];
+    if (!r) return;
+    // Calculate total and refresh all runs for this machine
+    (r.runs || []).forEach((_, idx) => updActRunEff(mid, idx));
+    updActTotals(mid);
+    saveDraft('actual');
+}
+
+// Final closing script tags
+</script>
+</body>
+</html>
