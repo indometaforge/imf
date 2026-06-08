@@ -145,7 +145,6 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   #toast{bottom:24px}.lform{border-radius:22px}.lwrap{padding:20px}
 }
 @media(min-width:1024px){.pad{padding:28px 36px}}
- 
 .run-block{background:#fff;border-radius:var(--rs);padding:13px;margin-bottom:4px;border:.5px solid var(--acc2)}
 .run-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .run-hd-lbl{font-size:12px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
@@ -158,7 +157,6 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .rc-btn:active{background:var(--acc2)}
 .rc-num{font-size:16px;font-weight:700;min-width:24px;text-align:center;color:var(--acc)}
 .totals-bar{background:var(--acc3);border:.5px solid var(--acc2);border-radius:var(--rs);padding:10px 13px;margin:10px 0 4px;font-size:13px;color:var(--acc);font-weight:500;display:flex;gap:16px;flex-wrap:wrap}
- 
 .sub-bar{display:none}
 @media(max-width:767px){
   .sub-bar{display:block;position:fixed;bottom:calc(var(--nh) + env(safe-area-inset-bottom));left:0;right:0;background:var(--sur);padding:10px 16px;border-top:.5px solid var(--bdr);z-index:95;box-shadow:0 -2px 16px rgba(0,0,0,.09)}
@@ -169,7 +167,6 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .sub-bar{display:none!important}
   .sub-bar-desktop{display:block}
 }
- 
 .mfilt{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .mfilt input[type=search]{flex:1;min-width:140px;padding:8px 12px;font-size:13px;border:1.5px solid var(--bdr);border-radius:var(--rs);background:#fff;outline:none}
 .mfilt input[type=search]:focus{border-color:var(--acc)}
@@ -178,7 +175,6 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .li.li-drag{cursor:default}
 .li.is-dragging{opacity:.35;background:var(--acc3)}
 .li.drag-target{border:2px solid var(--acc);background:var(--acc3);border-radius:var(--rs)}
- 
 .mc-err-banner{background:var(--erbg);color:var(--er);font-size:12px;padding:8px 12px;border-bottom:.5px solid #fecaca;line-height:1.6}
 .mc.has-err>.mc-hd{border:.5px solid var(--er);border-radius:var(--rs) var(--rs) 0 0;background:#fff5f5}
 .offline-bar{display:none;position:fixed;top:var(--hh);left:0;right:0;background:#fef2f2;border-bottom:1px solid #fecaca;padding:6px 16px;font-size:12px;color:#dc2626;text-align:center;z-index:90}
@@ -186,10 +182,22 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .shift-tile:active{box-shadow:0 0 0 2px var(--acc)}
 .shift-tile-ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .print-btn{background:var(--hdr);color:#fff;border:none;padding:9px 18px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+/* ── Store: bin row redesign — large scan button ── */
 .bin-row{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--bdr);border-radius:var(--rs);padding:9px 10px;margin-bottom:8px}
 .bin-no{width:26px;height:26px;border-radius:7px;background:var(--acc2);color:var(--acc);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
-.bin-bc{flex:1;min-width:0}.bin-bc input{padding:9px 11px;font-size:14px}
+.bin-bc{flex:1;min-width:0}
+.bin-bc input{padding:7px 10px;font-size:12px;color:var(--mut)}
+.scan-btn-lg{flex-shrink:0;width:56px;height:56px;border-radius:12px;border:none;background:var(--acc);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.35);transition:background .12s}
+.scan-btn-lg:active{background:var(--acch)}
 .scan-btn{flex-shrink:0;width:40px;height:40px;border-radius:8px;border:1.5px solid var(--bdr2);background:var(--acc3);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* ── Inward bottom-FAB ── */
+.inw-fab{position:fixed;bottom:calc(var(--nh) + env(safe-area-inset-bottom) + 12px);left:50%;transform:translateX(-50%);z-index:95;background:var(--acc);color:#fff;border:none;padding:13px 28px;border-radius:99px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(37,99,235,.4);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.inw-fab:active{background:var(--acch)}
+@media(min-width:768px){.inw-fab{bottom:24px}}
+/* ── Master Lot code badge ── */
+.lot-badge{background:#f0fdf4;border:.5px solid var(--ok);border-radius:var(--rs);padding:10px 14px;font-size:13px;font-weight:700;color:var(--ok);letter-spacing:.04em;font-family:monospace;margin-top:8px;text-align:center}
+/* ── Supplier form extras ── */
+.sup-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
 </style>
 </head>
 <body>
@@ -204,7 +212,7 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 firebase.initializeApp({apiKey:"AIzaSyA3-RPrX4ysIwTHAn_nnbMGJSghv3RRcLs",authDomain:"imf-pro-track.firebaseapp.com",projectId:"imf-pro-track",storageBucket:"imf-pro-track.firebasestorage.app",messagingSenderId:"288808983033",appId:"1:288808983033:web:0c02884447ba6f25734528"});
 const db=firebase.firestore();
 db.enablePersistence().catch(()=>{});
- 
+
 const PSEED=[
   {no:'1A009578R',name:'1ST SPEED 501',cust:'PVPL',rate:191.56},{no:'1A010700R',name:'2ND SPEED 501',cust:'PVPL',rate:151.57},{no:'1A010698R',name:'CLUSTER G 501',cust:'PVPL',rate:485.34},{no:'127309515R',name:'REGULAR',cust:'PVPL',rate:192.14},{no:'127302517R',name:'1ST SPEED',cust:'PVPL',rate:152.10},{no:'127303016R',name:'2NT SPEED',cust:'PVPL',rate:122.32},{no:'127306513R',name:'3RD SPEED',cust:'PVPL',rate:106.06},{no:'127203010R',name:'4TH SPEED',cust:'PVPL',rate:495.71},{no:'127740018',name:'CLUSTER GEARS',cust:'PVPL',rate:169.46},{no:'127451019R',name:'CLUTCH SHAFT',cust:'PVPL',rate:323.94},{no:'227555010',name:'MAIN SHAFT',cust:'PVPL',rate:336.95},{no:'227571014R',name:'FD CARGO FOR SPD',cust:'PVPL',rate:213.97},{no:'227403011R',name:'IDLER CARGO',cust:'PVPL',rate:173.24},{no:'127555016',name:'RC CARGO FOR SPD',cust:'PVPL',rate:278.09},{no:'127571015R',name:'FD PASS',cust:'PVPL',rate:223.83},{no:'127404016R',name:'IDLER PASS',cust:'PVPL',rate:210.25},{no:'1A011810',name:'RC PASS',cust:'PVPL',rate:329.19},{no:'1A014033',name:'FD PASS 8HOLE',cust:'PVPL',rate:365.15},{no:'1A010160',name:'FD COMM 8HOLE',cust:'PVPL',rate:229.08},{no:'1A010161',name:'1ST SPEED B',cust:'PVPL',rate:177.60},{no:'1A010162',name:'2NT SPEED B',cust:'PVPL',rate:145.85},{no:'1A010163',name:'3RD SPEED B',cust:'PVPL',rate:122.25},{no:'1A010159',name:'4TH SPEED B',cust:'PVPL',rate:536.85},{no:'1A011044',name:'SECONDARY SHAFT',cust:'PVPL',rate:472.23},{no:'1A017329',name:'CLUSTER',cust:'PVPL',rate:216.63},{no:'1A017330',name:'1ST DRIVEN',cust:'PVPL',rate:179.71},{no:'1A013333',name:'2ND DRIVEN',cust:'PVPL',rate:149.26},{no:'1A013334',name:'3RT DRIVEN',cust:'PVPL',rate:115.44},{no:'1A018761',name:'4TH DRIVEN',cust:'PVPL',rate:92.48},{no:'1A013303',name:'5TH DRIVEN',cust:'PVPL',rate:0},{no:'1A013304',name:'2ND DRIVING',cust:'PVPL',rate:84.66},{no:'1A013305',name:'3RD DRIVING',cust:'PVPL',rate:100.76},{no:'1A004868',name:'4H DRIVING',cust:'PVPL',rate:140.44},{no:'1A013372',name:'STARTING AXEL WITH IP',cust:'PVPL',rate:226.28},{no:'1A014034',name:'SLIDING PASSENGER',cust:'PVPL',rate:338.47},{no:'1A013336',name:'DIFFERENTIAL CROWN PASS',cust:'PVPL',rate:332.62},{no:'1A003607R',name:'SECONDARY SHAFT MAIN',cust:'PVPL',rate:535.37},{no:'1A003607RB',name:'CLUSTER GEAR PAXX',cust:'PVPL',rate:535.37},
   {no:'3601011903',name:'GEAR OIL PUMP DRIVE NE',cust:'ATUL',rate:74.32},{no:'3603001202',name:'3RD DRIVEN GEAR NE',cust:'ATUL',rate:212.89},{no:'3603001302',name:'2ND DRIVEN GEAR NE',cust:'ATUL',rate:239.89},{no:'3603001403',name:'1ST DRIVEN GEAR OLD',cust:'ATUL',rate:307.47},{no:'3603002005',name:'SHAFT MULTIPLAY GEAR',cust:'ATUL',rate:278.75},{no:'3603004602',name:'GEAR HAND START',cust:'ATUL',rate:201.67},{no:'3603005204',name:'GEAR SECTOR ASSLY',cust:'ATUL',rate:462.42},{no:'3601104301',name:'1ST DRIVEN GEAR NE',cust:'ATUL',rate:307.47},{no:'3602002703',name:'PRIMARY DRIVE GEAR NE',cust:'ATUL',rate:137.64},{no:'3603002103',name:'GEAR MULTIPLAY 2/3/4',cust:'ATUL',rate:233.80},{no:'3603011001',name:'FARE METER PINION ASSY',cust:'ATUL',rate:45.30},{no:'4404000306',name:'FINAL DRIVE GEAR ELE',cust:'ATUL',rate:587.08},{no:'3603002506',name:'GEAR DIFFERENTIAL DRIVE',cust:'ATUL',rate:511.00},{no:'4403000105',name:'GEAR IDLER ELE',cust:'ATUL',rate:350.61},{no:'3603002306',name:'GEAR IDLER NE',cust:'ATUL',rate:308.12},{no:'680400080A',name:'FINAL DRIVE GEAR SAMPLE',cust:'ATUL',rate:519.05},{no:'3603000806',name:'GEAR REVERSE CONTROL NE',cust:'ATUL',rate:265.89},{no:'3603007407',name:'GEAR RC ELE',cust:'ATUL',rate:261.62},{no:'680300020A',name:'GEAR IDLER SAMPLE',cust:'ATUL',rate:341.75},{no:'680300010A',name:'RC GEAR SAMPLE',cust:'ATUL',rate:264.24},{no:'3603001103',name:'4TH DRIVEN GEAR NE',cust:'ATUL',rate:180.39},{no:'2603000404',name:'2ND SPEED GEAR',cust:'ATUL',rate:198.15},{no:'2613004604',name:'RC GEAR PASS',cust:'ATUL',rate:249.72},{no:'2603000504',name:'3RD SPEED GEAR',cust:'ATUL',rate:159.35},{no:'2603001504',name:'4TH SPEED GEAR',cust:'ATUL',rate:135.97},{no:'2603004905',name:'IDLER GEAR PASS',cust:'ATUL',rate:276.13},{no:'2604205905',name:'FD GEAR PASSENGER',cust:'ATUL',rate:426.97},{no:'2613000203',name:'MAIN SHAFT ATUL',cust:'ATUL',rate:372.67},{no:'2703000101',name:'1ST SPEED GEAR 501',cust:'ATUL',rate:238.78},{no:'2703000202',name:'2ND SPEED GEAR 501',cust:'ATUL',rate:192.02},{no:'2703000302',name:'CLUSTER GEAR 501',cust:'ATUL',rate:556.76},{no:'2602102002',name:'CLUTCH SHAFT ASSY',cust:'ATUL',rate:165.41},
@@ -212,9 +220,9 @@ const PSEED=[
   {no:'BODGNV40TM5246AA',name:'FD GEAR PASS',cust:'CPGD',rate:332.04},{no:'BODGNV40TM5249AA',name:'FD GEAR COMM',cust:'CPGD',rate:395.96},{no:'BODGNV40TM5247AA',name:'IDLER GEAR PASS',cust:'CPGD',rate:250.00},{no:'BODGNV40TM5216AB',name:'2ND SPEED GEAR',cust:'CPGD',rate:169.18},{no:'BODGNV40TM5231AA',name:'MAIN SHAFT NEW',cust:'CPGD',rate:313.00},{no:'BODGNV40TM0559AA',name:'GEAR FAREMETER',cust:'CPGD',rate:29.42},{no:'BODGNV40TM5248AA',name:'RC GEAR PASS',cust:'CPGD',rate:234.55},{no:'BODGNV40TM5251AA',name:'RC GEAR COMM',cust:'CPGD',rate:194.30},{no:'BODGNV40TM5250AA',name:'IDLER GEAR COMM',cust:'CPGD',rate:238.22},{no:'2XV62100457AA',name:'PINION FAREMETER',cust:'CPGD',rate:42.50},{no:'BODGNV40TM5213AB',name:'1ST SPEED GEAR',cust:'CPGD',rate:214.05},{no:'BODGNV40TM5215AA',name:'4TH SPEED GEAR',cust:'CPGD',rate:115.70},{no:'BODGNV40TM5214AA',name:'3RD SPEED GEAR',cust:'CPGD',rate:137.60},{no:'BODGNV40I00221AB',name:'CLUSTER GEAR 501',cust:'CPGD',rate:529.57},
   {no:'10_2101_008',name:'1ST SPEED GEAR',cust:'MLR',rate:243.87},{no:'10_2101_001',name:'MAIN SHAFT NEW',cust:'MLR',rate:400.55},{no:'10_2101_005',name:'4TH SPEED GEAR',cust:'MLR',rate:134.84},{no:'10_2100_021',name:'CLUSTER GEAR REG.',cust:'MLR',rate:603.08},{no:'12_2300_002',name:'RC GEAR COMM',cust:'MLR',rate:228.00},{no:'11_2300_002',name:'RC GEAR PASS',cust:'MLR',rate:256.34},{no:'11_2101_007',name:'2ND SPEED GEAR',cust:'MLR',rate:196.23},{no:'10_2101_006',name:'3RD SPEED GEAR',cust:'MLR',rate:155.23},{no:'11_2300_001',name:'IDLER GEAR PASS',cust:'MLR',rate:276.40},{no:'11_2300_001B',name:'IDLER GEAR COMM',cust:'MLR',rate:280.00},{no:'11_2301_001',name:'FD GEAR PASS',cust:'MLR',rate:382.20},{no:'12_2301_001',name:'FD GEAR COMM',cust:'MLR',rate:420.97}
 ];
- 
-const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:'',inward:[],batches:[],cards:[],storeSrch:'',storeCust:'all'};
- 
+
+const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:'',inward:[],batches:[],cards:[],storeSrch:'',storeCust:'all',suppliers:[]};
+
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const nowTS=()=>new Date().toISOString();
 const dateStr=()=>new Date().toISOString().slice(0,10);
@@ -231,18 +239,19 @@ const sSess=s=>s?localStorage.setItem('imf_s',JSON.stringify(s)):localStorage.re
 function toast(m,d=2800){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),d)}
 function openModal(h){document.getElementById('mcont').innerHTML='<div class="mhnd"></div>'+h;document.getElementById('mov').classList.add('op')}
 function closeModal(){document.getElementById('mov').classList.remove('op')}
- 
+
 async function loadMasters(){
-  const[u,m,p,o,po,sd,iw,bt,cd]=await Promise.all([db.collection('users').get(),db.collection('machines').get(),db.collection('parts').get(),db.collection('operations').get(),db.collection('partOps').get(),db.collection('config').doc('shifts').get(),db.collection('inward').get(),db.collection('batches').get(),db.collection('cards').get()]);
+  const[u,m,p,o,po,sd,iw,bt,cd,sup]=await Promise.all([db.collection('users').get(),db.collection('machines').get(),db.collection('parts').get(),db.collection('operations').get(),db.collection('partOps').get(),db.collection('config').doc('shifts').get(),db.collection('inward').get(),db.collection('batches').get(),db.collection('cards').get(),db.collection('suppliers').get()]);
   S.users=u.docs.map(d=>({id:d.id,...d.data()}));S.machines=m.docs.map(d=>({id:d.id,...d.data()}));S.parts=p.docs.map(d=>({id:d.id,...d.data()}));S.operations=o.docs.map(d=>({id:d.id,...d.data()}));S.partOps=po.docs.map(d=>({id:d.id,...d.data()}));
   S.inward=iw.docs.map(d=>({id:d.id,...d.data()}));S.batches=bt.docs.map(d=>({id:d.id,...d.data()}));S.cards=cd.docs.map(d=>({id:d.id,...d.data()}));
+  S.suppliers=sup.docs.map(d=>({id:d.id,...d.data()}));
   if(sd.exists)S.shifts=sd.data();
 }
 async function reloadM(){
-  const[u,m,p,o,po]=await Promise.all([db.collection('users').get(),db.collection('machines').get(),db.collection('parts').get(),db.collection('operations').get(),db.collection('partOps').get()]);
+  const[u,m,p,o,po,sup]=await Promise.all([db.collection('users').get(),db.collection('machines').get(),db.collection('parts').get(),db.collection('operations').get(),db.collection('partOps').get(),db.collection('suppliers').get()]);
   S.users=u.docs.map(d=>({id:d.id,...d.data()}));S.machines=m.docs.map(d=>({id:d.id,...d.data()}));S.parts=p.docs.map(d=>({id:d.id,...d.data()}));S.operations=o.docs.map(d=>({id:d.id,...d.data()}));S.partOps=po.docs.map(d=>({id:d.id,...d.data()}));
+  S.suppliers=sup.docs.map(d=>({id:d.id,...d.data()}));
 }
-// ── Draft helpers ──
 function getDraftKey(type){
   try{
     if(type==='actual'){const sh=document.getElementById('act-sh')?.value||'s1';return`actDraft_${S.actStage}_${sh}`;}
@@ -254,7 +263,7 @@ function saveDraft(type){
     const k=getDraftKey(type);if(!k)return;
     const stage=type==='actual'?S.actStage:S.planStage;
     const data=type==='actual'?S.actReports:S.planReports;
-    if(!stage||!Object.keys(data).length)return; // don't save empty/stageless drafts
+    if(!stage||!Object.keys(data).length)return;
     localStorage.setItem(k,JSON.stringify({stage,data}));
   }catch(e){}
 }
@@ -264,10 +273,8 @@ function loadDraft(type){
     const d=localStorage.getItem(k);if(!d)return false;
     const saved=JSON.parse(d);
     const curStage=type==='actual'?S.actStage:S.planStage;
-    // Support both old format (direct object) and new format ({stage, data})
     const stage=saved.stage||null;
     const data=saved.data||saved;
-    // If stage info present, validate it matches current stage
     if(stage&&stage!==curStage)return false;
     if(!data||typeof data!=='object'||!Object.keys(data).length)return false;
     if(type==='actual')S.actReports=data;else S.planReports=data;
@@ -277,14 +284,14 @@ function loadDraft(type){
 function clearDraft(type){
   try{const k=getDraftKey(type);if(k)localStorage.removeItem(k);}catch(e){}
 }
-// ── Update all operator dropdowns on screen (called by real-time listener) ──
 function updateAllOpDropdowns(){
   const usrs=S.users.filter(u=>u.role==='operator'&&(u.stage===S.actStage||u.stage==='general'));
   const opts=`<option value="">— Select —</option><option value="_add" style="color:var(--acc);font-weight:600">+ Add new operator...</option>`+usrs.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
   document.querySelectorAll('[id^="mcop-"]').forEach(sel=>{const v=sel.value;sel.innerHTML=opts;sel.value=v;});
 }
- 
+
 async function seedParts(){const s=await db.collection('parts').limit(1).get();if(!s.empty)return;const b=db.batch();PSEED.forEach(p=>{b.set(db.collection('parts').doc(),{...p,createdAt:nowTS()})});await b.commit();toast('Parts master loaded ('+PSEED.length+' parts)');}
+
 function setupListeners(){
   S.listeners.forEach(u=>u());S.listeners=[];
   const ago=new Date();ago.setDate(ago.getDate()-90);const agoS=ago.toISOString().slice(0,10);
@@ -298,10 +305,11 @@ function setupListeners(){
     db.collection('partOps').onSnapshot(sn=>{S.partOps=sn.docs.map(d=>({id:d.id,...d.data()}));}),
     db.collection('inward').onSnapshot(sn=>{S.inward=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur&&S.cur.startsWith('store'))reloadStore();if(S.cur==='home')renderHome();}),
     db.collection('batches').onSnapshot(sn=>{S.batches=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur&&S.cur.startsWith('store'))reloadStore();}),
-    db.collection('cards').onSnapshot(sn=>{S.cards=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='store-batches')renderBatchList();})
+    db.collection('cards').onSnapshot(sn=>{S.cards=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='store-batches')renderBatchList();}),
+    db.collection('suppliers').onSnapshot(sn=>{S.suppliers=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='m-suppliers')renderSuppliers();})
   );
 }
- 
+
 function go(scr,prev){
   S.prev=prev!==undefined?prev:S.cur;S.cur=scr;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
@@ -313,7 +321,7 @@ function go(scr,prev){
   });
 }
 function goBack(){go(S.prev||'home')}
- 
+
 let _gdCb=null,_gdInp=null;
 function showGDrop(inp,matches,cb){
   const dr=document.getElementById('gdrop');
@@ -321,7 +329,6 @@ function showGDrop(inp,matches,cb){
   const r=inp.getBoundingClientRect();
   dr.style.left=r.left+'px';
   dr.style.width=r.width+'px';
-  dr.style.top=(r.bottom+window.scrollY+4)+'px';
   dr.style.position='fixed';
   dr.style.top=(r.bottom+4)+'px';
   dr.innerHTML=matches.map(p=>`<div class="popt" onmousedown="event.preventDefault();pickGDrop('${p.id}')"><div class="ponm">${p.name}</div><div class="pome">${p.no} · ${p.cust}</div></div>`).join('');
@@ -334,7 +341,7 @@ function pickGDrop(pid){
   if(p&&_gdCb)_gdCb(p);
   hideGlobalDrop();
 }
- 
+
 function getDefaultPerms(role){
   const d={
     operator:{plan:'full',actual:'full',reports:'view',store:'view'},
@@ -359,7 +366,7 @@ function viewOnlyBanner(screen){
   if(p==='view')return`<div class="ibox" style="display:flex;align-items:center;gap:8px;margin-bottom:14px">👁 You have view-only access to this screen</div>`;
   return'';
 }
- 
+
 let _pv='',_pc=null,_pd='';
 function initPIN(padId,dotsId,cb){
   _pv='';_pc=cb;_pd=dotsId;
@@ -368,7 +375,7 @@ function initPIN(padId,dotsId,cb){
   document.getElementById(padId).innerHTML=nums.map(k=>{if(k===null)return`<div class="kk emp"></div>`;if(k==='del')return`<button class="kk del" onclick="pk('del')">⌫</button>`;return`<button class="kk" onclick="pk('${k}')">${k}</button>`;}).join('');
 }
 function pk(k){if(k==='del'){_pv=_pv.slice(0,-1)}else if(_pv.length<4){_pv+=k}for(let i=0;i<4;i++){const d=document.getElementById(_pd+'-'+i);if(d)d.classList.toggle('on',i<_pv.length)}if(_pv.length===4&&_pc){setTimeout(()=>{const p=_pv;_pv='';for(let i=0;i<4;i++){const d=document.getElementById(_pd+'-'+i);if(d)d.classList.remove('on')};_pc(p)},180)}}
- 
+
 let _sp='';
 function showSetup(){
   document.getElementById('app').innerHTML=`<div class="lwrap"><div class="lbox"><div class="lhero"><div class="llogo">IMF</div><div class="lco">Indo Metaforge Pvt Ltd</div><div class="ltag">First Time Setup</div></div><div class="lform"><h2>Create Admin Account</h2><p class="tsm tmut" style="margin-bottom:18px">This admin will manage all masters — machines, people, operations.</p><div class="f"><label>Your Full Name</label><input id="su-n" type="text" placeholder="e.g. Rajesh Kumar" oninput="suc()"></div><div class="f"><label>Set 4-digit PIN</label><div class="pdots" id="su-dots"></div><div class="kpad" id="su-pad"></div></div><div id="su-msg" style="min-height:18px;font-size:13px;color:var(--er);margin-bottom:10px"></div><button class="btn btn-p" id="su-btn" onclick="doSetup()" disabled>Create Admin &amp; Launch</button></div></div></div>`;
@@ -384,13 +391,15 @@ async function doSetup(){
   try{const id=uid();await db.collection('users').doc(id).set({name,role:'admin',stage:'general',pin:_sp,appUser:true,createdAt:nowTS()});await seedParts();sSess({userId:id,role:'admin',name,stage:'general',loginAt:nowTS()});S.sess=gSess();await loadMasters();setupListeners();renderApp();toast('Welcome, '+name+'! App is ready 🎉');}
   catch(e){document.getElementById('su-msg').textContent='Error: '+e.message;btn.disabled=false;btn.textContent='Create Admin & Launch'}
 }
- 
+
 let _lu=null;
 function showLogin(){
-  document.getElementById('app').innerHTML=`<div class="lwrap"><div class="lbox"><div class="lhero"><div class="llogo">IMF</div><div class="lco">Indo Metaforge Pvt Ltd</div><div class="ltag">Production Tracker</div></div><div class="lform"><h2>Sign In</h2>${S.users.length===0?`<div class="empty"><div class="empty-ic">👤</div><h3>No users found</h3><p>Ask your admin to add you to the system.</p></div>`:`<div class="f"><label>Select Your Name</label><select id="l-u" onchange="lpu(this.value)"><option value="">— Choose your name —</option>${S.users.filter(u=>u.appUser!==false).map(u=>`<option value="${u.id}">${u.name} (${rlbl(u.role)})</option>`).join('')}</select></div><div id="l-pw" style="display:none"><label style="display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bottom:5px">Enter PIN</label><div class="pdots" id="l-dots"></div><div class="kpad" id="l-pad"></div></div><div id="l-err" style="min-height:18px;font-size:13px;color:var(--er);text-align:center;margin-top:6px"></div>`}</div></div></div>`;
+  if(S.users.length===0){showSetup();return;}
+  document.getElementById('app').innerHTML=`<div class="lwrap"><div class="lbox"><div class="lhero"><div class="llogo">IMF</div><div class="lco">Indo Metaforge Pvt Ltd</div><div class="ltag">Production Tracker</div></div><div class="lform"><h2>Sign In</h2><div class="f"><label>Select Your Name</label><select id="l-u" onchange="lpu(this.value)"><option value="">— Choose your name —</option>${S.users.filter(u=>u.appUser!==false).map(u=>`<option value="${u.id}">${u.name} (${rlbl(u.role)})</option>`).join('')}</select></div><div id="l-pw" style="display:none"><label style="display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bottom:5px">Enter PIN</label><div class="pdots" id="l-dots"></div><div class="kpad" id="l-pad"></div></div><div id="l-err" style="min-height:18px;font-size:13px;color:var(--er);text-align:center;margin-top:6px"></div></div></div></div>`;
 }
 function lpu(id){_lu=id;if(!id){document.getElementById('l-pw').style.display='none';return}document.getElementById('l-err').textContent='';document.getElementById('l-pw').style.display='block';initPIN('l-pad','l-dots',lcp);}
 function lcp(pin){const u=S.users.find(u=>u.id===_lu);if(!u)return;if(pin===u.pin){sSess({userId:u.id,role:u.role,name:u.name,stage:u.stage,permissions:u.permissions||getDefaultPerms(u.role),loginAt:nowTS()});S.sess=gSess();renderApp();toast('Welcome, '+u.name+'!');}else{document.getElementById('l-err').textContent='Wrong PIN. Try again.';}}
+
 function renderApp(){
   const isA=S.sess.role==='admin';
   const nav=[
@@ -401,38 +410,17 @@ function renderApp(){
     {id:'reports',svg:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',l:'Reports',s:getPerm('reports')!=='hidden'},
     {id:'masters',svg:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',l:'Masters',s:isA}
   ].filter(n=>n.s);
-  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><div class="sb-mark">IMF</div><div class="sb-co">Indo Metaforge Pvt Ltd</div><div class="sb-tag">Production Tracker</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
+  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><div class="sb-mark">IMF</div><div class="sb-co">Indo Metaforge Pvt Ltd</div><div class="sb-tag">Production Tracker</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div><div class="screen" id="s-m-suppliers"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
   renderHome();
 }
 function snav(id){if(id==='home'){go('home');renderHome()}else if(id==='plan'){go('plan');renderPlanHub()}else if(id==='actual'){go('actual-hub');renderActualHub()}else if(id==='store'){go('store-hub');renderStoreHub()}else if(id==='reports'){go('reports');renderReports()}else if(id==='masters'){go('masters');renderMasters()}}
- 
+
 function getActiveSh(){const h=new Date().getHours()*60+new Date().getMinutes();const toM=t=>{const[hh,mm]=t.split(':').map(Number);return hh*60+mm};for(const[k,v]of Object.entries(S.shifts)){const s=toM(v.start),e=toM(v.end);if(s<e){if(h>=s&&h<e)return v}else{if(h>=s||h<e)return v}}return Object.values(S.shifts)[0]}
- 
-function checkPlanAlert(){
-  if(!S.sess)return'';
-  const role=S.sess.role;
-  if(role!=='admin'&&role!=='manager')return'';
-  const now=new Date();if(now.getHours()<18)return'';
-  const tom=tomStr();
-  const missing=[];
-  ['soft','ht','hard'].forEach(stage=>{
-    Object.keys(S.shifts).forEach(shift=>{
-      if(!S.plans.some(p=>p.date===tom&&p.stage===stage&&p.shift===shift)){
-        missing.push(slbl(stage)+' · '+(S.shifts[shift]?.label||shift));
-      }
-    });
-  });
-  if(!missing.length)return`<div style="background:var(--okbg);border:.5px solid var(--ok);border-radius:var(--rs);padding:11px 14px;margin-bottom:12px;font-size:13px;color:var(--ok);font-weight:500">✅ Tomorrow's plan is fully filled</div>`;
-  return`<div style="background:#fef2f2;border:.5px solid #fecaca;border-radius:var(--rs);padding:11px 14px;margin-bottom:12px;cursor:pointer" onclick="go('plan-day');renderPlanDay()">
-    <div style="font-weight:700;color:#dc2626;margin-bottom:4px">⚠️ Tomorrow's plan incomplete</div>
-    <div style="font-size:11px;color:#dc2626">${missing.join(' · ')}</div>
-    <div style="font-size:11px;color:var(--mut);margin-top:4px">Tap to fill →</div>
-  </div>`;
-}
+
 function renderHome(){
   const td=dateStr();const ta=S.actuals.filter(a=>a.date===td);
   let tt=0,tac=0,tr=0;ta.forEach(a=>(a.machineReports||[]).forEach(m=>{if(m.used){(m.runs||[]).forEach(run=>{tt+=(+run.targetQty||0);tac+=(+run.actualQty||0);tr+=(+run.rejectionQty||0)})}}));
-  const te=tt>0?Math.round(tac/tt*100):0;const cf=getPerm('plan')!=='hidden'||getPerm('actual')!=='hidden';const sh=getActiveSh();
+  const te=tt>0?Math.round(tac/tt*100):0;const sh=getActiveSh();
   document.getElementById('s-home').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Indo Metaforge Pvt Ltd</div><div class="hdr-sub">${fmtD(td)} · ${sh.label}</div></div><div class="hdr-pill">${rlbl(S.sess.role)}</div></div><div class="pad"><div class="fbw" style="margin-bottom:20px"><div><div style="font-size:19px;font-weight:700">Good ${greet()}, ${S.sess.name.split(' ')[0]}</div><div class="tsm tmut mt8">${fmtD(td)}</div></div><button class="btn btn-s btn-sm" onclick="logout()">Sign Out</button></div>
   <div class="slbl">Today's Overview</div>
   <div class="s2"><div class="sc"><div class="sl">Target</div><div class="sv">${tt}<span class="su"> pcs</span></div></div><div class="sc"><div class="sl">Produced</div><div class="sv">${tac}<span class="su"> pcs</span></div></div><div class="sc"><div class="sl">Efficiency</div><div class="sv" style="color:var(--${te>=90?'ok':te>=70?'wa':'er'})">${te}<span class="su">%</span></div></div><div class="sc"><div class="sl">Rejections</div><div class="sv" style="color:${tr>0?'var(--er)':'var(--ok)'}">${tr}</div></div></div>
@@ -444,14 +432,14 @@ function renderHome(){
       </div>`:''}
   <div class="slbl" style="margin-top:16px">Shift Timings</div><div class="card">${Object.values(S.shifts).map(s=>`<div class="rrow"><span class="tsm" style="font-weight:600">${s.label}</span><span class="tsm tmut">${s.start} – ${s.end}</span></div>`).join('')}</div></div>`;
 }
- 
+
 function renderActualHub(){
   document.getElementById('s-actual-hub').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Actual Output</div></div></div><div class="pad">
   <div class="hcard" onclick="go('actual','actual-hub');renderActual()"><div class="hcard-ic" style="background:#dcfce7">✅</div><div><div class="hcard-nm">Submit Shift Report</div><div class="hcard-sub">Fill actual output for end of shift</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
   <div class="hcard" onclick="go('view-actuals','actual-hub');renderViewActuals()"><div class="hcard-ic" style="background:var(--acc2)">📋</div><div><div class="hcard-nm">View All Reports</div><div class="hcard-sub">Browse, filter and edit submitted reports</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
   </div>`;
 }
- 
+
 function renderPlanHub(){
   document.getElementById('s-plan').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Production Planning</div></div></div><div class="pad">
   <div class="hcard" onclick="go('plan-day','plan');renderPlanDay()"><div class="hcard-ic" style="background:#ede9fe">📆</div><div><div class="hcard-nm">Plan for a Day</div><div class="hcard-sub">Fill Shift 1, 2 &amp; 3 for any date</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
@@ -500,7 +488,6 @@ function renderPlanDayShifts(){
 function openPlanDayShift(shiftKey,date){
   S.planDayMode=true;S.planDayShift=shiftKey;S.planDayDate=date||S.planDayDate;
   S.editingPlanId=null;S.planReports={};
-  // Check if existing plan for this shift
   const existing=S.plans.find(p=>p.date===S.planDayDate&&p.stage===S.planDayStage&&p.shift===shiftKey);
   if(existing){
     S.editingPlanId=existing.id;
@@ -521,13 +508,12 @@ function openPlanDayShift(shiftKey,date){
     if(S.editingPlanId)toast('Editing existing plan for this shift');
   },100);
 }
- 
+
 function renderPlanForm(type){
   S.planType=type;if(!S.editingPlanId)S.editingPlanId=null;
   if(!S.planDayMode){S.planReports={};S.planStage='';}
   const isT=type==='today';const date=isT?dateStr():tomStr();const sid=isT?'plan-today':'plan-next';
   const sh=S.planDayMode?S.shifts[S.planDayShift]:null;
-  const lbl=S.editingPlanId?'Update Plan':'Save Shift Plan';
   document.getElementById('s-'+sid).innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">${isT?"Today's Plan":"Next Day Plan"}</div><div class="hdr-sub">${fmtD(S.planDayMode?S.planDayDate:date)}</div></div></div>
   <div class="pad">
   ${viewOnlyBanner("plan")}
@@ -562,16 +548,14 @@ function renderPlanForm(type){
   </div>
   <div id="plan-sub-bar" class="sub-bar">${getPerm("plan")==="full"?`<button class="btn btn-p" onclick="submitPlan()">${S.editingPlanId?"Update Plan":S.planDayMode?"Save Shift Plan":"Save Plan"}</button>`:""}</div></div>`;
   if(S.planDayMode){
-    // Populate supervisor immediately
     const _sup=document.getElementById('pf-sup');
     if(_sup)_sup.innerHTML=`<option value="">— Select —</option>`+
       S.users.filter(u=>(u.role==='supervisor'||u.role==='manager')&&(u.stage===S.planDayStage||u.stage==='general'))
       .map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
-    // Render machines immediately
     renderPlanMachines();
   }
 }
- 
+
 function selPlanStage(st){
   S.planStage=st;S.planReports={};
   ['soft','ht','hard'].forEach(s=>{const b=document.getElementById('ps-'+s);if(b){b.className='stbtn';if(s===st)b.classList.add('on-'+st)}});
@@ -580,7 +564,7 @@ function selPlanStage(st){
   if(sup){sup.innerHTML=`<option value="">— Select —</option>`+S.users.filter(u=>(u.role==='supervisor'||u.role==='manager')&&(u.stage===st||u.stage==='general')).map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}
   renderPlanMachines();
 }
- 
+
 function renderPlanMachines(){
   const mach=[...S.machines].filter(m=>m.stage===S.planStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
   const w=document.getElementById('plan-mach');if(!w)return;
@@ -591,11 +575,10 @@ function renderPlanMachines(){
   document.getElementById('plan-sub').style.display='block';const _psb=document.getElementById('plan-sub-bar');if(_psb&&getPerm('plan')==='full')_psb.style.display='block';
   if(hadDraft)toast('Draft restored — continue from where you left off',3500);
 }
- 
+
 function fillSamplePlan(){
   if(!isTanmay()){toast('Only Tanmay can use this feature');return}
   const allMach=[...S.machines].filter(m=>m.stage===S.planStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
-  const top5=allMach.slice(0,5);
   const ops=S.operations.filter(o=>o.stage===S.planStage);
   const parts=S.parts.slice(0,5);
   allMach.forEach((m,i)=>{
@@ -614,7 +597,7 @@ function fillSamplePlan(){
   toast('⚡ Top 5 filled, rest marked Not Used — ready to submit',3000);
 }
 function planMCStat(r){if(r.used===null||r.used===undefined)return['Not filled','bdg-gr'];if(!r.used)return['Not planned','bdg-r'];const runs=r.runs||[];const filled=runs.filter(ru=>ru.plannedQty);if(filled.length===runs.length&&runs.length>0)return['Planned ✓','bdg-g'];return['Partial','bdg-a']}
- 
+
 function buildPlanRunsHTML(mid,r,ops){const runs=r.runs||[{}];const setups=r.setupTimes||[];const tot=runs.length;let h='';runs.forEach((run,idx)=>{h+=buildPlanRunBlock(mid,idx,run,ops,tot);if(idx<runs.length-1)h+=`<div class="setup-blk" id="pmc-setup-${mid}-${idx}"><span class="setup-lbl">🔧 Setup Change ${idx+1}→${idx+2}</span><input type="number" min="0" value="${setups[idx]||''}" placeholder="mins" style="width:80px;padding:7px 10px;font-size:14px;font-weight:600;text-align:center;background:#fff;border:1.5px solid var(--bdr);border-radius:6px" onchange="setPlanSetup('${mid}',${idx},this.value)"><span style="font-size:12px;color:#92400e;font-weight:500">mins</span></div>`;});return h;}
 function buildPlanRunBlock(mid,idx,run,ops,tot){const multi=(tot||1)>1;return`<div class="run-block" id="pmc-run-${mid}-${idx}"><div class="run-hd"><span class="run-hd-lbl">Run ${idx+1}</span></div><div class="f"><input type="text" placeholder="Search part..." value="${run.partName||''}" oninput="spPlanRun(this,'${mid}',${idx})" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off" style="font-size:14px"></div><div class="${multi?'row2':'f'}"><div class="f"><label>Operation</label><select onchange="setPlanRunOp('${mid}',${idx},this.value,this.options[this.selectedIndex].text)"><option value="">— Select —</option>${ops.map(o=>`<option value="${o.id}" ${run.opId===o.id?'selected':''}>${o.name}</option>`).join('')}</select></div>${multi?`<div class="f"><label>Estimated Hours</label><input type="number" min="0" step="0.5" value="${run.hoursPlanned||''}" placeholder="e.g. 3.5" onchange="setPlanRun('${mid}',${idx},'hoursPlanned',this.value);updPlanRunQty('${mid}',${idx})"></div>`:''}</div><div class="f"><label>Planned Qty</label><input type="number" id="pmc-qty-${mid}-${idx}" min="0" value="${run.plannedQty||''}" placeholder="${multi?'Auto':'Enter qty'}" onchange="setPlanRun('${mid}',${idx},'plannedQty',this.value);updPlanMCBdg('${mid}')"></div></div>`;}
 function buildPlanMC(m){
@@ -647,9 +630,8 @@ function removePlanRun(mid){const r=S.planReports[mid];if(!r||!r.runs||r.runs.le
 function updPlanRunQty(mid,idx){const r=S.planReports[mid];if(!r||!r.runs||!r.runs[idx])return;const run=r.runs[idx];if(!run.opId||!run.partId)return;const po=S.partOps.find(p=>p.partId===run.partId&&p.opId===run.opId);if(!po||po.cycleTime<=0)return;const multi=r.runs.length>1;let qty;if(multi){if(!run.hoursPlanned)return;qty=Math.round(+run.hoursPlanned*60/po.cycleTime);}else{const dtMins=r.hasDowntime?(+r.downtimeMins||0):0;const setupMins=(r.setupTimes||[]).reduce((s,v)=>s+(+v||0),0);qty=Math.round((450-dtMins-setupMins)/po.cycleTime);}run.plannedQty=qty;const el=document.getElementById('pmc-qty-'+mid+'-'+idx);if(el)el.value=qty;updPlanMCBdg(mid);}
 function updPlanSetupTotal(mid){const r=S.planReports[mid];if(!r)return;const t=(r.setupTimes||[]).reduce((s,v)=>s+(+v||0),0);const el=document.getElementById('pmc-setup-total-'+mid);if(el)el.textContent=t}
 function spPlanRun(inp,mid,idx){const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}const m=S.parts.filter(p=>p.name.toLowerCase().includes(q)||p.no.toLowerCase().includes(q)).slice(0,15);showGDrop(inp,m,p=>{const r=S.planReports[mid];if(!r||!r.runs||!r.runs[idx])return;r.runs[idx].partId=p.id;r.runs[idx].partNo=p.no;r.runs[idx].partName=p.name;r.runs[idx].customer=p.cust;inp.value=p.name;updPlanRunQty(mid,idx);})}
-function cpdPlan(id){hideGlobalDrop()}
-function selPartPlanMC(mid,pid){pickGDrop(pid)}
 function updPlanMCBdg(id){const r=S.planReports[id];if(!r)return;const[stat,scls]=planMCStat(r);const b=document.getElementById('pmcs-'+id);if(b){b.textContent=stat;b.className='bdg '+scls}}
+
 function validatePlanReports(){
   const errs=[];
   Object.entries(S.planReports).forEach(([id,r])=>{
@@ -701,7 +683,6 @@ function validateActualReports(){
   return errs;
 }
 function highlightErrs(errs,prefix,bodyPrefix,chevPrefix){
-  // Clear previous
   document.querySelectorAll('.mc-err-banner').forEach(e=>e.remove());
   document.querySelectorAll('.mc.has-err').forEach(e=>e.classList.remove('has-err'));
   let firstEl=null;
@@ -712,7 +693,6 @@ function highlightErrs(errs,prefix,bodyPrefix,chevPrefix){
     banner.className='mc-err-banner';
     banner.innerHTML=msgs.map(m=>'⚠️ '+m).join('<br>');
     const hd=card.querySelector('.mc-hd');if(hd)hd.after(banner);
-    // Open card
     const body=document.getElementById(bodyPrefix+machineId);
     const chev=document.getElementById(chevPrefix+machineId);
     if(body&&!body.classList.contains('op')){body.classList.add('op');if(chev)chev.classList.add('op');}
@@ -723,7 +703,7 @@ function highlightErrs(errs,prefix,bodyPrefix,chevPrefix){
 }
 function highlightPlanErrs(errs){highlightErrs(errs,'pmc-','pmcb-','pmcc-');}
 function highlightActErrs(errs){highlightErrs(errs,'mc-','mcb-','mcc-');}
- 
+
 async function submitPlan(){
   if(!S.planStage){toast('Please select a stage');return}
   const planErrs=validatePlanReports();if(planErrs.length>0){highlightPlanErrs(planErrs);return}
@@ -750,8 +730,7 @@ async function submitPlan(){
     }
   }catch(e){toast('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent=S.editingPlanId?'Update Plan':'Save Plan'}}
 }
- 
- 
+
 let _vpD='',_vpDFrom='',_vpSh='all',_vpSt='all';
 function rvp(){
   const sevenAgo=new Date();sevenAgo.setDate(sevenAgo.getDate()-7);
@@ -782,6 +761,7 @@ function rfvp(){const plans=S.plans.filter(p=>p.date>=(_vpDFrom||_vpD)&&p.date<=
         <button class="btn btn-s btn-sm" style="flex:1;font-size:11px;color:var(--mut)" disabled>🕐 ${p.createdAt?new Date(p.createdAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'—'}</button>
       </div>
     </div>`}).join('')}
+
 function renderActual(){
   S.actStage='';S.actReports={};
   document.getElementById('s-actual').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Actual Output</div><div class="hdr-sub">End of Shift Report</div></div></div>
@@ -870,9 +850,7 @@ function fillSampleActual(){
       r.used=true;r.operatorId=opId;
       r.runs=[{partId:parts[i%parts.length]?.id||'',partNo:parts[i%parts.length]?.no||'',partName:parts[i%parts.length]?.name||'Sample',customer:parts[i%parts.length]?.cust||'',opId:ops[0]?.id||'',opName:ops[0]?.name||'',hoursRun:'',targetQty:'100',actualQty:'95',rejectionQty:0,rejectionReason:''}];
       r.setupTimes=[];r.hasOtherDowntime=false;
-    }else{
-      r.used=false;r.unusedReason='other';r.unusedOther='Sample — not used';
-    }
+    }else{r.used=false;r.unusedReason='other';r.unusedOther='Sample — not used';}
     const card=document.getElementById('mc-'+m.id);
     if(card)card.outerHTML=buildMC(m);
   });
@@ -900,12 +878,9 @@ async function saveQuickOp(mid){
   const btn=document.querySelector('#mcont .btn-p');if(btn){btn.disabled=true;btn.textContent='Adding...';}
   try{
     const ref=await db.collection('users').add({name:n,role:'operator',stage:st,appUser:false,permissions:{plan:'hidden',actual:'hidden',reports:'hidden'},createdAt:nowTS()});
-    // Set operator in this machine's report
     if(S.actReports[mid])S.actReports[mid].operatorId=ref.id;
-    // Update ALL operator dropdowns on screen immediately (real-time listener will also fire)
     S.users=[...S.users,{id:ref.id,name:n,role:'operator',stage:st,appUser:false}];
     updateAllOpDropdowns();
-    // Restore the selection for this specific machine
     setTimeout(()=>{const sel=document.getElementById('mcop-'+mid);if(sel)sel.value=ref.id;},30);
     saveDraft('actual');
     closeModal();toast(n+' added as operator ✓');
@@ -956,6 +931,7 @@ async function submitActual(){
     }
   }catch(e){toast('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent=S.editingActualId?'Update Report':'Submit Shift Report'}}
 }
+
 let _rd='',_rdTo='',_rs='all',_rst='all';
 function renderReports(){
   _rd=dateStr();_rdTo=dateStr();
@@ -980,19 +956,11 @@ function renderReports(){
 }
 function setRepRange(type){
   const today=new Date();
-  if(type==='today'){
-    _rd=_rdTo=dateStr();
-  }else if(type==='week'){
-    const mon=new Date(today);
-    const day=today.getDay()||7;
-    mon.setDate(today.getDate()-day+1);
-    _rd=mon.toISOString().slice(0,10);_rdTo=dateStr();
-  }else if(type==='month'){
-    _rd=today.toISOString().slice(0,8)+'01';_rdTo=dateStr();
-  }
+  if(type==='today'){_rd=_rdTo=dateStr();}
+  else if(type==='week'){const mon=new Date(today);const day=today.getDay()||7;mon.setDate(today.getDate()-day+1);_rd=mon.toISOString().slice(0,10);_rdTo=dateStr();}
+  else if(type==='month'){_rd=today.toISOString().slice(0,8)+'01';_rdTo=dateStr();}
   const f=document.getElementById('rep-d-from'),t=document.getElementById('rep-d-to');
-  if(f)f.value=_rd;if(t)t.value=_rdTo;
-  rfr();
+  if(f)f.value=_rd;if(t)t.value=_rdTo;rfr();
 }
 function rfr(){
   const acts=S.actuals.filter(a=>a.date>=_rd&&a.date<=(_rdTo||_rd)&&(_rs==='all'||a.shift===_rs)&&(_rst==='all'||a.stage===_rst));
@@ -1027,8 +995,6 @@ function buildPlanActualLink(){
       </tr></thead>
       <tbody>${Object.values(map).map(r=>{
         const eff=r.target>0?Math.round(r.actual/r.target*100):0;
-        const planGap=r.planned-r.target;
-        const execGap=r.actual-r.planned;
         return`<tr style="border-top:.5px solid var(--bdr)">
           <td style="padding:9px 12px"><div style="font-size:12px;font-weight:600">${r.machineName}</div><div style="font-size:11px;color:var(--mut)">${r.partName}</div></td>
           <td style="padding:9px 8px;text-align:right;font-weight:600">${r.planned||'—'}</td>
@@ -1041,7 +1007,7 @@ function buildPlanActualLink(){
     <div style="padding:8px 12px;background:var(--bg);font-size:11px;color:var(--mut)">Planned = supervisor's plan &nbsp;·&nbsp; Target = cycle time standard &nbsp;·&nbsp; Actual = produced</div>
   </div>`;
 }
- 
+
 async function deletePlan(id){
   if(!isTanmay())return;
   if(!confirm('Delete this plan permanently? This cannot be undone.'))return;
@@ -1056,39 +1022,23 @@ async function deleteActual(id){
 }
 function editPlan(id){
   const p=S.plans.find(x=>x.id===id);if(!p)return;
-  S.editingPlanId=id;
-  S.planStage=p.stage;
-  S.planType=p.type||'today';
-  S.planReports={};
+  S.editingPlanId=id;S.planStage=p.stage;S.planType=p.type||'today';S.planReports={};
   (p.machineReports||[]).forEach(r=>{if(!r.machineId)return;const n={...r};if(!n.runs){n.runs=[{partId:r.partId||'',partNo:r.partNo||'',partName:r.partName||'',customer:r.customer||'',opId:r.opId||'',opName:r.opName||'',hoursPlanned:'',plannedQty:r.plannedQty||''}];n.setupTimes=[];}S.planReports[r.machineId]=n;});
   const sid=S.planType==='next'?'plan-next':'plan-today';
-  go(sid,'view-plan');
-  renderPlanForm(S.planType);
+  go(sid,'view-plan');renderPlanForm(S.planType);
   setTimeout(()=>{
-    // Restore stage selection
-    ['soft','ht','hard'].forEach(s=>{
-      const b=document.getElementById('ps-'+s);
-      if(b){b.className='stbtn';if(s===p.stage)b.classList.add('on-'+p.stage)}
-    });
-    // Restore shift + date + supervisor
+    ['soft','ht','hard'].forEach(s=>{const b=document.getElementById('ps-'+s);if(b){b.className='stbtn';if(s===p.stage)b.classList.add('on-'+p.stage)}});
     const dateEl=document.getElementById('pf-date');if(dateEl)dateEl.value=p.date;
     const shiftEl=document.getElementById('pf-shift');if(shiftEl)shiftEl.value=p.shift;
     const supEl=document.getElementById('pf-sup');
-    if(supEl){
-      supEl.innerHTML=`<option value="">— Select —</option>`+
-        S.users.filter(u=>(u.role==='supervisor'||u.role==='manager')&&(u.stage===p.stage||u.stage==='general'))
-        .map(u=>`<option value="${u.id}" ${u.id===p.supervisorId?'selected':''}>${u.name}</option>`).join('');
-    }
+    if(supEl){supEl.innerHTML=`<option value="">— Select —</option>`+S.users.filter(u=>(u.role==='supervisor'||u.role==='manager')&&(u.stage===p.stage||u.stage==='general')).map(u=>`<option value="${u.id}" ${u.id===p.supervisorId?'selected':''}>${u.name}</option>`).join('');}
     const notesEl=document.getElementById('pf-notes');if(notesEl)notesEl.value=p.notes||'';
     const matEl=document.getElementById('pf-mat');if(matEl)matEl.value=p.matStatus||'ready';
-    // Show plan-rest and render machine cards
-    S.planStage=S.planDayStage;
-    document.getElementById('plan-rest').style.display='block';
-    renderPlanMachines();
+    S.planStage=S.planDayStage;document.getElementById('plan-rest').style.display='block';renderPlanMachines();
     toast('Editing existing plan — make changes and save');
   },150);
 }
- 
+
 let _vad='',_vadFrom='',_vas='all',_vast='all';
 function renderViewActuals(){
   const sevenAgo=new Date();sevenAgo.setDate(sevenAgo.getDate()-7);
@@ -1112,11 +1062,9 @@ function setVARange(type){
   else if(type==='week'){const d=new Date();d.setDate(d.getDate()-7);_vadFrom=d.toISOString().slice(0,10);_vad=dateStr();}
   else if(type==='month'){_vadFrom=today.toISOString().slice(0,8)+'01';_vad=dateStr();}
   const f=document.getElementById('va-d-from'),t=document.getElementById('va-d');
-  if(f)f.value=_vadFrom;if(t)t.value=_vad;
-  rfva();
+  if(f)f.value=_vadFrom;if(t)t.value=_vad;rfva();
 }
 async function rfva(){
-  // If selected date range is outside the 90-day listener window, fetch from Firestore directly
   const ago90=new Date();ago90.setDate(ago90.getDate()-90);const ago90S=ago90.toISOString().slice(0,10);
   const fromDate=_vadFrom||_vad;
   if(fromDate<ago90S){
@@ -1124,7 +1072,6 @@ async function rfva(){
     try{
       const sn=await db.collection('actuals').where('date','>=',fromDate).where('date','<=',_vad).get();
       const fetched=sn.docs.map(d=>({id:d.id,...d.data()}));
-      // Merge into S.actuals without duplicates
       fetched.forEach(f=>{if(!S.actuals.find(a=>a.id===f.id))S.actuals.push(f);});
     }catch(e){console.error(e);}
   }
@@ -1144,9 +1091,7 @@ async function rfva(){
       ${used.map(r=>`<div class="rrow" style="padding:6px 0">
         <div><div class="tsm" style="font-weight:600">${r.machineName||'—'} <span class="tsm tmut">(${(r.runs||[]).length} run${(r.runs||[]).length!==1?'s':''})</span></div>
         <div style="font-size:11px;color:var(--mut)">${(r.runs||[]).map(run=>run.partName||'—').filter((v,i,a)=>a.indexOf(v)===i).join(', ')}</div></div>
-        <div style="text-align:right">
-          <div class="tsm" style="font-weight:700">${(r.runs||[]).reduce((s,run)=>s+(+run.actualQty||0),0)} pcs</div>
-        </div>
+        <div style="text-align:right"><div class="tsm" style="font-weight:700">${(r.runs||[]).reduce((s,run)=>s+(+run.actualQty||0),0)} pcs</div></div>
       </div>
       ${(r.runs||[]).map((run,ri)=>`<div style="padding:4px 0 4px 12px;border-left:2px solid var(--acc2);margin:2px 0">
         <div style="font-size:12px;font-weight:600">${run.partName||'—'} <span style="font-weight:400;color:var(--mut)">(${run.opName||'—'})</span></div>
@@ -1165,20 +1110,16 @@ async function rfva(){
 }
 function editActual(id){
   const a=S.actuals.find(x=>x.id===id);if(!a)return;
-  S.actStage=a.stage;S.editingActualId=id;
-  S.actReports={};
+  S.actStage=a.stage;S.editingActualId=id;S.actReports={};
   (a.machineReports||[]).forEach(r=>{if(!r.machineId)return;const n={...r};if(!n.runs){n.runs=[{partId:r.partId||'',partNo:r.partNo||'',partName:r.partName||'',customer:r.customer||'',opId:r.opId||'',opName:r.opName||'',hoursRun:'',targetQty:r.targetQty||'',actualQty:r.actualQty||'',rejectionQty:r.rejectionQty||0,rejectionReason:r.rejectionReason||''}];n.setupTimes=[];n.operatorId=r.operatorId||'';n.hasOtherDowntime=r.hasDowntime||false;n.otherDowntimeReason=r.downtimeReason||'material';n.otherDowntimeOther=r.downtimeOther||'';n.otherDowntimeMins=r.downtimeMins||'';}S.actReports[r.machineId]=n;});
-  go('actual','view-actuals');
-  renderActual();
-  // After render, restore stage selection and reports
+  go('actual','view-actuals');renderActual();
   setTimeout(()=>{
     ['soft','ht','hard'].forEach(s=>{const b=document.getElementById('as-'+s);if(b){b.className='stbtn';if(s===a.stage)b.classList.add('on-'+a.stage)}});
     const shEl=document.getElementById('act-sh');if(shEl)shEl.value=a.shift;
-    renderActMachines();
-    toast('Editing existing report — make changes and resubmit');
+    renderActMachines();toast('Editing existing report — make changes and resubmit');
   },100);
 }
- 
+
 function downloadReport(){
   const acts=S.actuals.filter(a=>a.date>=_rd&&a.date<=(_rdTo||_rd)&&(_rs==='all'||a.shift===_rs)&&(_rst==='all'||a.stage===_rst));
   if(!acts.length){toast('No data for selected filters');return}
@@ -1208,16 +1149,15 @@ function downloadReport(){
   const w=window.open('','_blank');if(!w){toast('Please allow popups to download report');return}
   w.document.write(html);w.document.close();
 }
- 
+
 // ── Masters filter state ──
 let _mSrch='',_mStagF='all';
 let _pplSrch='',_pplRole='all',_pplStage='all';
 let _ptSrch='',_ptCust='all';
 let _opSrch='',_opStage='all';
 let _poSrch='',_poFilt='all';
-// ── Drag state ──
 let _dragId=null,_dragEl=null;
- 
+
 function renderMasters(){
   document.getElementById('s-masters').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Masters &amp; Settings</div></div></div><div class="pad">
   <div class="mtiles">
@@ -1227,187 +1167,242 @@ function renderMasters(){
     <div class="mtile" onclick="go('m-ops','masters');renderOps()"><div class="mtic">🔧</div><div class="mtnm">Operations</div><div class="mtct">${S.operations.length} ops</div></div>
     <div class="mtile" onclick="go('m-partops','masters');renderPartOps()"><div class="mtic">📐</div><div class="mtnm">Part-Operations</div><div class="mtct">${S.partOps.length} records</div></div>
     <div class="mtile" onclick="go('m-shifts','masters');renderShifts()"><div class="mtic">🕐</div><div class="mtnm">Shift Timings</div><div class="mtct">Edit times</div></div>
+    <div class="mtile" onclick="go('m-suppliers','masters');renderSuppliers()"><div class="mtic">🏭</div><div class="mtnm">Suppliers</div><div class="mtct">${S.suppliers.length} suppliers</div></div>
   </div></div>`;
 }
- 
-function showMachHist(machId){
-  const m=S.machines.find(x=>x.id===machId);if(!m)return;
-  go('m-machine-hist','m-machines');
-  const ago30=new Date();ago30.setDate(ago30.getDate()-30);const from=ago30.toISOString().slice(0,10);
-  const acts=S.actuals.filter(a=>a.date>=from);
-  const records=[];
-  acts.forEach(a=>{(a.machineReports||[]).forEach(r=>{if(r.machineId===machId&&r.used){
-    const act=(r.runs||[]).reduce((s,run)=>s+(+run.actualQty||0),0);
-    const tgt=(r.runs||[]).reduce((s,run)=>s+(+run.targetQty||0),0);
-    const rej=(r.runs||[]).reduce((s,run)=>s+(+run.rejectionQty||0),0);
-    records.push({date:a.date,shift:a.shift,act,tgt,rej,runs:(r.runs||[]).length});
-  }});});
-  records.sort((a,b)=>b.date.localeCompare(a.date));
-  const totAct=records.reduce((s,r)=>s+r.act,0);
-  const totTgt=records.reduce((s,r)=>s+r.tgt,0);
-  const totRej=records.reduce((s,r)=>s+r.rej,0);
-  const avgEff=totTgt>0?Math.round(totAct/totTgt*100):0;
-  document.getElementById('s-m-machine-hist').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">${m.name}</div><div class="hdr-sub">Last 30 days</div></div></div>
+
+// ═══════════════════════════════════════════════
+// SUPPLIER MASTER (NEW — Change 1)
+// ═══════════════════════════════════════════════
+let _supSrch='';
+function renderSuppliers(){
+  document.getElementById('s-m-suppliers').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Suppliers</div><div class="hdr-sub">${S.suppliers.length} records</div></div><button class="hdr-act" onclick="addSupModal()">+ Add</button></div>
   <div class="pad">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div class="card" style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--acc)">${avgEff}%</div><div style="font-size:11px;color:var(--mut)">Avg Efficiency</div></div>
-      <div class="card" style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--ok)">${totAct}</div><div style="font-size:11px;color:var(--mut)">Total Produced</div></div>
-      <div class="card" style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--er)">${totRej}</div><div style="font-size:11px;color:var(--mut)">Total Rejections</div></div>
-      <div class="card" style="padding:12px;text-align:center"><div style="font-size:22px;font-weight:800">${records.length}</div><div style="font-size:11px;color:var(--mut)">Shifts Recorded</div></div>
-    </div>
-    ${records.length===0?`<div class="empty"><div class="empty-ic">📊</div><h3>No data yet</h3><p>No actual reports found for this machine in the last 30 days.</p></div>`:`
-    <div class="slbl">Shift History</div>
-    ${records.map(r=>{const eff=r.tgt>0?Math.round(r.act/r.tgt*100):0;const sh=S.shifts[r.shift];return`<div class="card" style="margin-bottom:8px;padding:12px">
-      <div class="fbw"><div><span style="font-size:13px;font-weight:600">${fmtD(r.date)}</span> <span class="bdg bdg-b">${sh?sh.label:r.shift}</span></div><span class="bdg ${effb(eff)}">${eff}%</span></div>
-      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--mut)"><span>✅ ${r.act} pcs</span><span>🎯 ${r.tgt} tgt</span>${r.rej>0?`<span style="color:var(--er)">❌ ${r.rej} rej</span>`:''}${r.runs>1?`<span>🔄 ${r.runs} runs</span>`:''}</div>
-    </div>`}).join('')}`}
+    <div class="mfilt"><input type="search" placeholder="Search suppliers..." oninput="_supSrch=this.value;applySupFilter()"></div>
+    <div id="sup-list"></div>
   </div>`;
+  _supSrch='';applySupFilter();
 }
-function applyMachFilter(){
-  const srch=_mSrch.toLowerCase(),stagf=_mStagF;
-  const sorted=[...S.machines].sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
-  const list=sorted.filter(m=>{
-    const matchS=stagf==='all'||m.stage===stagf;
-    const matchQ=!srch||m.name.toLowerCase().includes(srch)||(m.id_code||'').toLowerCase().includes(srch)||(m.type||'').toLowerCase().includes(srch);
-    return matchS&&matchQ;
-  });
-  const w=document.getElementById('mach-list');if(!w)return;
-  w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">⚙️</div><h3>No results</h3><p>Try a different search or filter.</p></div>`:
-    list.map(m=>`<div class="li li-drag is-drag-item" data-id="${m.id}" draggable="true" ondragstart="onMachDragStart(event,'${m.id}')" ondragover="onMachDragOver(event)" ondrop="onMachDrop(event,'${m.id}')" ondragend="onMachDragEnd()" style="${m.active===false?'opacity:0.5':''}">
-    <div class="drag-handle" ontouchstart="onMachTouchStart(event,'${m.id}')" ontouchmove="onMachTouchMove(event)" ontouchend="onMachTouchEnd(event,'${m.id}')">⠿</div>
-    <div class="lic">⚙️</div>
-    <div class="lib"><div class="linm">${m.name}</div><div class="lisb"><span class="bdg ${sbdg(m.stage)}">${slbl(m.stage)}</span>${m.active===false?'<span class="bdg bdg-r" style="margin-left:4px">Inactive</span>':'<span class="bdg bdg-g" style="margin-left:4px">Active</span>'}${m.id_code?' · '+m.id_code:''}${m.type?' · '+m.type:''}</div></div>
-    <div class="liac"><button class="btn btn-s btn-sm" onclick="showMachHist('${m.id}')">📊</button><button class="btn btn-s btn-sm" onclick="editMachModal('${m.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delMach('${m.id}')">Del</button>`:''}</div>
-  </div>`).join('');
+function applySupFilter(){
+  const q=_supSrch.toLowerCase();
+  const list=S.suppliers.filter(s=>!q||s.name.toLowerCase().includes(q)||(s.code||'').toLowerCase().includes(q)||(s.contact||'').toLowerCase().includes(q));
+  const w=document.getElementById('sup-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">🏭</div><h3>No suppliers yet</h3><p>Add suppliers to use them in inward receipts.</p></div>`;return}
+  w.innerHTML=list.map(s=>`<div class="li"><div class="lic" style="background:${s.active===false?'#f1f5f9':'var(--acc2)'}">🏭</div><div class="lib"><div class="linm">${s.name} <span class="mono" style="font-size:11px;color:var(--mut);font-weight:400">${s.code?'['+s.code+']':''}</span></div><div class="lisb">${s.contact||''}${s.mobile?' · '+s.mobile:''} · <span class="${s.active===false?'bdg bdg-r':'bdg bdg-g'}">${s.active===false?'Inactive':'Active'}</span></div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editSupModal('${s.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delSup('${s.id}')">Del</button>`:''}</div></div>`).join('');
 }
+function supF(s){
+  return`<div class="f"><label>Supplier Name *</label><input id="sp-n" type="text" value="${s?s.name:''}" placeholder="e.g. Tata Steel Ltd"></div>
+  <div class="f"><label>Supplier Code * <span style="color:var(--mut);font-weight:400">(used in lot codes)</span></label><input id="sp-c" type="text" value="${s?s.code||'':''}" placeholder="e.g. TATA" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"></div>
+  <div class="row2">
+    <div class="f"><label>Contact Person</label><input id="sp-cp" type="text" value="${s?s.contact||'':''}" placeholder="e.g. Ramesh Sharma"></div>
+    <div class="f"><label>Mobile Number</label><input id="sp-mb" type="tel" value="${s?s.mobile||'':''}" placeholder="e.g. 9876543210"></div>
+  </div>
+  <div class="utog"><label style="font-size:13px;font-weight:600;color:var(--txt)">Active</label><label class="tsw"><input type="checkbox" id="sp-act" ${!s||s.active!==false?'checked':''}><span class="tsl"></span></label></div>`;
+}
+function addSupModal(){openModal(`<div class="mtit">Add Supplier</div>${supF(null)}<button class="btn btn-p mt12" onclick="saveSup()">Add Supplier</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+function editSupModal(id){const s=S.suppliers.find(x=>x.id===id);if(!s)return;openModal(`<div class="mtit">Edit Supplier</div>${supF(s)}<button class="btn btn-p mt12" onclick="saveSup('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delSup('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+async function saveSup(id){
+  const n=document.getElementById('sp-n').value.trim();
+  const c=document.getElementById('sp-c').value.trim().toUpperCase();
+  if(!n){toast('Supplier name required');return}
+  if(!c){toast('Supplier code required');return}
+  if(c.length<2||c.length>8){toast('Code must be 2–8 characters');return}
+  // Unique code check (excluding self)
+  const dup=S.suppliers.find(s=>s.code===c&&s.id!==id);
+  if(dup){toast('Code "'+c+'" is already used by '+dup.name);return}
+  const d={name:n,code:c,contact:document.getElementById('sp-cp').value.trim(),mobile:document.getElementById('sp-mb').value.trim(),active:document.getElementById('sp-act').checked};
+  try{
+    if(id){await db.collection('suppliers').doc(id).update(d);}
+    else{await db.collection('suppliers').add({...d,createdAt:nowTS()});}
+    closeModal();toast(id?'Supplier updated ✓':'Supplier added ✓');
+  }catch(e){toast('Error: '+e.message)}
+}
+async function delSup(id){
+  if(!isAdmin())return;
+  if(!confirm('Delete this supplier? Existing inward records will not be affected.'))return;
+  try{await db.collection('suppliers').doc(id).delete();closeModal();toast('Deleted');}
+  catch(e){toast('Error: '+e.message)}
+}
+
+// ══════════════════════════════════════════
+// MACHINES MASTER
+// ══════════════════════════════════════════
 function renderMachines(){
-  document.getElementById('s-m-machines').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Machines</div><div class="hdr-sub">${S.machines.length} records</div></div><button class="hdr-act" onclick="addMachModal()">+ Add</button></div>
+  document.getElementById('s-m-machines').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Machines</div><div class="hdr-sub">${S.machines.length} records</div></div>${isAdmin()?`<button class="hdr-act" onclick="addMachModal()">+ Add</button>`:''}</div>
   <div class="pad">
     <div class="mfilt">
       <input type="search" placeholder="Search machines..." oninput="_mSrch=this.value;applyMachFilter()">
       <select onchange="_mStagF=this.value;applyMachFilter()"><option value="all">All Stages</option><option value="soft">Soft</option><option value="ht">HT</option><option value="hard">Hard</option></select>
     </div>
-    <div style="font-size:11px;color:var(--mut);margin-bottom:8px">Hold ⠿ and drag to reorder</div>
+    <div class="tsm tmut" style="margin-bottom:8px;padding:0 2px">💡 Drag rows to reorder machines within each stage</div>
     <div id="mach-list"></div>
   </div>`;
-  _mSrch='';_mStagF='all';
+  _mSrch='';_mStagF='all';applyMachFilter();
+}
+function applyMachFilter(){
+  const q=_mSrch.toLowerCase();
+  const list=[...S.machines].filter(m=>(_mStagF==='all'||m.stage===_mStagF)&&(!q||m.name.toLowerCase().includes(q)||(m.id_code||'').toLowerCase().includes(q)||(m.type||'').toLowerCase().includes(q))).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+  const w=document.getElementById('mach-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">⚙️</div><h3>No machines</h3><p>Add machines to start tracking production.</p></div>`;return}
+  w.innerHTML=list.map(m=>`<div class="li drag-item" id="dli-${m.id}" draggable="true" ondragstart="dStart(event,'${m.id}')" ondragover="dOver(event,'${m.id}')" ondrop="dDrop(event,'${m.id}')" ondragend="dEnd()">
+    <div class="drag-handle">⋮⋮</div>
+    <div class="lic" style="background:${m.active===false?'#f1f5f9':'var(--acc2)'}">⚙️</div>
+    <div class="lib"><div class="linm">${m.name} ${m.active===false?'<span class="bdg bdg-r">Inactive</span>':''}</div>
+    <div class="lisb">${m.id_code||'—'} · ${slbl(m.stage)} · ${m.type||'CNC'}</div></div>
+    <div class="liac">
+      <button class="btn btn-s btn-sm" onclick="showMachHist('${m.id}')">📊 Hist</button>
+      ${isAdmin()?`<button class="btn btn-s btn-sm" onclick="editMachModal('${m.id}')">Edit</button>`:''}
+    </div>
+  </div>`).join('');
+}
+function dStart(e,id){_dragId=id;_dragEl=document.getElementById('dli-'+id);if(_dragEl)_dragEl.style.opacity='0.5';e.dataTransfer.effectAllowed='move';}
+function dOver(e,id){e.preventDefault();e.dataTransfer.dropEffect='move';const el=document.getElementById('dli-'+id);if(el&&id!==_dragId)el.style.background='var(--acc2)';}
+function dDrop(e,targetId){
+  e.preventDefault();
+  if(!_dragId||_dragId===targetId)return;
+  const dragMach=S.machines.find(m=>m.id===_dragId);
+  const targetMach=S.machines.find(m=>m.id===targetId);
+  if(!dragMach||!targetMach)return;
+  // Reorder within stage
+  const sameStageMachs=[...S.machines].filter(m=>m.stage===dragMach.stage).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+  const fromIdx=sameStageMachs.findIndex(m=>m.id===_dragId);
+  const toIdx=sameStageMachs.findIndex(m=>m.id===targetId);
+  if(fromIdx<0||toIdx<0)return;
+  sameStageMachs.splice(toIdx,0,sameStageMachs.splice(fromIdx,1)[0]);
+  const batch=db.batch();
+  sameStageMachs.forEach((m,i)=>{batch.update(db.collection('machines').doc(m.id),{sortOrder:i});m.sortOrder=i;});
+  batch.commit().catch(console.error);
   applyMachFilter();
 }
-// ── Machine drag-and-drop (desktop HTML5 + mobile touch) ──
-function onMachDragStart(e,id){_dragId=id;_dragEl=e.currentTarget;e.dataTransfer.effectAllowed='move';e.currentTarget.classList.add('is-dragging');}
-function onMachDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';document.querySelectorAll('.is-drag-item').forEach(el=>el.classList.remove('drag-target'));e.currentTarget.classList.add('drag-target');}
-function onMachDrop(e,targetId){e.preventDefault();if(_dragId&&_dragId!==targetId)reorderMachines(_dragId,targetId);onMachDragEnd();}
-function onMachDragEnd(){document.querySelectorAll('.is-drag-item').forEach(el=>{el.classList.remove('is-dragging');el.classList.remove('drag-target');});_dragId=null;_dragEl=null;}
-// Touch drag
-let _touchOverId=null;
-function onMachTouchStart(e,id){_dragId=id;_dragEl=e.currentTarget.closest('.is-drag-item');_dragEl.classList.add('is-dragging');e.preventDefault();}
-function onMachTouchMove(e){
-  e.preventDefault();
-  const t=e.touches[0];
-  document.querySelectorAll('.is-drag-item').forEach(el=>el.classList.remove('drag-target'));
-  const els=document.elementsFromPoint(t.clientX,t.clientY);
-  const over=els.find(el=>el.classList&&el.classList.contains('is-drag-item')&&el!==_dragEl);
-  if(over){over.classList.add('drag-target');_touchOverId=over.dataset.id;}else{_touchOverId=null;}
+function dEnd(){if(_dragEl){_dragEl.style.opacity='';_dragEl=null;}_dragId=null;document.querySelectorAll('.drag-item').forEach(el=>el.style.background='');}
+function machF(m){
+  return`<div class="f"><label>Machine Name *</label><input id="mf-n" type="text" value="${m?m.name:''}" placeholder="e.g. CNC VMC-1"></div>
+  <div class="row2">
+    <div class="f"><label>ID / Code</label><input id="mf-id" type="text" value="${m?m.id_code||'':''}" placeholder="e.g. M001"></div>
+    <div class="f"><label>Type</label><input id="mf-tp" type="text" value="${m?m.type||'':''}" placeholder="e.g. CNC VMC"></div>
+  </div>
+  <div class="f"><label>Stage</label><select id="mf-st"><option value="soft" ${(!m||m.stage==='soft')?'selected':''}>Soft</option><option value="ht" ${m&&m.stage==='ht'?'selected':''}>Heat Treatment</option><option value="hard" ${m&&m.stage==='hard'?'selected':''}>Hard</option></select></div>
+  <div class="utog"><label style="font-size:13px;font-weight:600;color:var(--txt)">Active</label><label class="tsw"><input type="checkbox" id="mf-act" ${!m||m.active!==false?'checked':''}><span class="tsl"></span></label></div>`;
 }
-function onMachTouchEnd(e,id){
-  if(_touchOverId&&_touchOverId!==_dragId)reorderMachines(_dragId,_touchOverId);
-  onMachDragEnd();_touchOverId=null;
-}
-async function reorderMachines(srcId,tgtId){
-  const sorted=[...S.machines].sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
-  const si=sorted.findIndex(m=>m.id===srcId),ti=sorted.findIndex(m=>m.id===tgtId);
-  if(si===-1||ti===-1)return;
-  const[moved]=sorted.splice(si,1);sorted.splice(ti,0,moved);
+function addMachModal(){openModal(`<div class="mtit">Add Machine</div>${machF(null)}<button class="btn btn-p mt12" onclick="saveMach()">Add Machine</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+function editMachModal(id){const m=S.machines.find(x=>x.id===id);if(!m)return;openModal(`<div class="mtit">Edit Machine</div>${machF(m)}<button class="btn btn-p mt12" onclick="saveMach('${id}')">Update</button>${isTanmay()?`<button class="btn btn-d mt8" onclick="delMach('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+async function saveMach(id){
+  const n=document.getElementById('mf-n').value.trim();
+  if(!n){toast('Name required');return}
+  const d={name:n,id_code:document.getElementById('mf-id').value.trim(),type:document.getElementById('mf-tp').value.trim(),stage:document.getElementById('mf-st').value,active:document.getElementById('mf-act').checked};
   try{
-    const batch=db.batch();
-    sorted.forEach((m,i)=>{batch.update(db.collection('machines').doc(m.id),{sortOrder:i});const sm=S.machines.find(x=>x.id===m.id);if(sm)sm.sortOrder=i;});
-    await batch.commit();
-    applyMachFilter();toast('Order saved ✓');
-  }catch(err){toast('Error: '+err.message);}
+    if(id){await db.collection('machines').doc(id).update(d);}
+    else{const maxOrd=S.machines.filter(m=>m.stage===d.stage).reduce((mx,m)=>Math.max(mx,m.sortOrder||0),0);await db.collection('machines').add({...d,sortOrder:maxOrd+1,createdAt:nowTS()});}
+    closeModal();toast(id?'Machine updated ✓':'Machine added ✓');
+  }catch(e){toast('Error: '+e.message)}
 }
-function mchF(m){return`<div class="f"><label>Machine Name</label><input id="mm-n" type="text" value="${m?m.name:''}" placeholder="e.g. Hobbing Machine 1"></div><div class="f"><label>Machine Code</label><input id="mm-c" type="text" value="${m?m.id_code||'':''}" placeholder="e.g. M-01"></div><div class="f"><label>Type</label><input id="mm-t" type="text" value="${m?m.type||'':''}" placeholder="e.g. CNC, Lathe, Hobbing..."></div><div class="f"><label>Stage</label><select id="mm-s"><option value="soft" ${m&&m.stage==='soft'?'selected':''}>Soft</option><option value="ht" ${m&&m.stage==='ht'?'selected':''}>HT</option><option value="hard" ${m&&m.stage==='hard'?'selected':''}>Hard</option></select></div><div class="utog" style="margin-top:10px"><label style="font-size:13px;font-weight:600">Active <span style="font-size:11px;color:var(--mut);font-weight:400">(shows in Plan &amp; Actual forms)</span></label><label class="tsw"><input type="checkbox" id="mm-active" ${!m||m.active!==false?'checked':''}><span class="tsl"></span></label></div>`}
-function addMachModal(){openModal(`<div class="mtit">Add Machine</div>${mchF(null)}<button class="btn btn-p mt12" onclick="saveMach()">Add Machine</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-function editMachModal(id){const m=S.machines.find(m=>m.id===id);if(!m)return;openModal(`<div class="mtit">Edit Machine</div>${mchF(m)}<button class="btn btn-p mt12" onclick="saveMach('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delMach('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-async function saveMach(id){const n=document.getElementById('mm-n').value.trim();if(!n){toast('Name required');return}const actEl=document.getElementById('mm-active');const d={name:n,id_code:document.getElementById('mm-c').value,type:document.getElementById('mm-t').value,stage:document.getElementById('mm-s').value,active:actEl?actEl.checked:true};try{if(id){await db.collection('machines').doc(id).update(d)}else{await db.collection('machines').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderMachines();toast(id?'Updated ✓':'Machine added ✓')}catch(e){toast('Error: '+e.message)}}
-async function delMach(id){if(!confirm('Delete this machine?'))return;await db.collection('machines').doc(id).delete();await reloadM();closeModal();renderMachines();toast('Deleted')}
- 
-function applyPplFilter(){
-  const q=_pplSrch.toLowerCase(),rf=_pplRole,sf=_pplStage;
-  const list=S.users.filter(u=>{
-    const mq=!q||u.name.toLowerCase().includes(q);
-    const mr=rf==='all'||u.role===rf;
-    const ms=sf==='all'||u.stage===sf;
-    return mq&&mr&&ms;
-  });
-  const w=document.getElementById('ppl-list');if(!w)return;
-  w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">👤</div><h3>No results</h3></div>`:
-    list.map(u=>`<div class="li"><div class="lic" style="background:#e0e7ff;color:#3730a3;font-weight:700;font-size:15px">${u.name.charAt(0).toUpperCase()}</div><div class="lib"><div class="linm">${u.name}</div><div class="lisb">${rlbl(u.role)} · <span class="bdg ${sbdg(u.stage)}">${slbl(u.stage)}</span>${u.appUser!==false?` · <span class="bdg bdg-b">App user</span>`:' · <span class="bdg bdg-gr">Record only</span>'}</div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editPersModal('${u.id}')">Edit</button>${isAdmin()&&u.id!==S.sess.userId?`<button class="btn btn-d btn-sm" onclick="delPers('${u.id}')">Del</button>`:''}</div></div>`).join('');
+async function delMach(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this machine? All historical data for this machine will remain but machine will be removed from active list.'))return;
+  try{await db.collection('machines').doc(id).delete();closeModal();toast('Deleted');}
+  catch(e){toast('Error: '+e.message)}
 }
+function showMachHist(id){
+  const m=S.machines.find(x=>x.id===id);if(!m)return;
+  const acts=S.actuals.filter(a=>a.machineReports&&a.machineReports.some(r=>r.machineId===id&&r.used));
+  let h=`<div class="mtit">📊 ${m.name} — History</div>`;
+  if(!acts.length){h+=`<div class="tsm tmut" style="padding:16px 0">No data yet for this machine.</div>`;}
+  else{
+    const rows=acts.slice(-10).reverse();
+    h+=`<div style="font-size:12px">`;
+    rows.forEach(a=>{
+      const r=a.machineReports.find(r=>r.machineId===id);if(!r)return;
+      const sh=S.shifts[a.shift];
+      const tgt=(r.runs||[]).reduce((s,run)=>s+(+run.targetQty||0),0);
+      const act=(r.runs||[]).reduce((s,run)=>s+(+run.actualQty||0),0);
+      const eff=tgt>0?Math.round(act/tgt*100):0;
+      h+=`<div class="rrow" style="padding:8px 0;border-bottom:.5px solid var(--bdr)"><div><div style="font-weight:600">${a.date} · ${sh?sh.label:a.shift}</div><div class="tsm tmut">${(r.runs||[]).map(run=>run.partName||'—').filter((v,i,ar)=>ar.indexOf(v)===i).join(', ')}</div></div><div style="text-align:right"><div style="font-weight:700">${act} pcs</div><span class="bdg ${effb(eff)}">${eff}%</span></div></div>`;
+    });
+    h+=`</div>`;
+  }
+  h+=`<button class="btn btn-s mt12" onclick="closeModal()">Close</button>`;
+  openModal(h);
+}
+
+// ══════════════════════════════════════════
+// PEOPLE MASTER
+// ══════════════════════════════════════════
 function renderPeople(){
-  document.getElementById('s-m-people').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">People</div><div class="hdr-sub">${S.users.length} users</div></div><button class="hdr-act" onclick="addPersModal()">+ Add</button></div>
+  document.getElementById('s-m-people').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">People</div><div class="hdr-sub">${S.users.length} users</div></div>${isAdmin()?`<button class="hdr-act" onclick="addPersonModal()">+ Add</button>`:''}</div>
   <div class="pad">
     <div class="mfilt">
-      <input type="search" placeholder="Search people..." oninput="_pplSrch=this.value;applyPplFilter()" style="min-width:100px">
-      <select onchange="_pplRole=this.value;applyPplFilter()"><option value="all">All Roles</option><option value="admin">Admin</option><option value="supervisor">Supervisor</option><option value="manager">Manager</option><option value="operator">Operator</option><option value="dispatch">Dispatch</option><option value="owner">Owner</option></select>
-      <select onchange="_pplStage=this.value;applyPplFilter()"><option value="all">All Stages</option><option value="soft">Soft</option><option value="ht">HT</option><option value="hard">Hard</option><option value="general">General</option></select>
+      <input type="search" placeholder="Search people..." oninput="_pplSrch=this.value;applyPplFilter()">
+      <select onchange="_pplRole=this.value;applyPplFilter()"><option value="all">All Roles</option><option value="admin">Admin</option><option value="manager">Manager</option><option value="supervisor">Supervisor</option><option value="operator">Operator</option></select>
     </div>
     <div id="ppl-list"></div>
   </div>`;
-  _pplSrch='';_pplRole='all';_pplStage='all';
-  applyPplFilter();
+  _pplSrch='';_pplRole='all';applyPplFilter();
 }
-function persF(u){
-  const au=u?u.appUser!==false:false;
-  const dp=u&&u.permissions?u.permissions:getDefaultPerms(u?u.role:'operator');
-  const pOpt=(field,val)=>['full','view','hidden'].map(v=>`<option value="${v}" ${val===v?'selected':''}>${{full:'Full Access',view:'View Only',hidden:'Hidden'}[v]}</option>`).join('');
-  return`<div class="f"><label>Full Name</label><input id="pm-n" type="text" value="${u?u.name:''}" placeholder="e.g. Ramesh Kumar"></div>
-  <div class="f"><label>Role</label><select id="pm-r" onchange="updDefPerms(this.value)">${['operator','supervisor','manager','dispatch','owner','admin'].map(r=>`<option value="${r}" ${u&&u.role===r?'selected':''}>${rlbl(r)}</option>`).join('')}</select></div>
-  <div class="f"><label>Stage Assignment</label><select id="pm-s"><option value="soft" ${u&&u.stage==='soft'?'selected':''}>Soft</option><option value="ht" ${u&&u.stage==='ht'?'selected':''}>HT</option><option value="hard" ${u&&u.stage==='hard'?'selected':''}>Hard</option><option value="general" ${!u||u.stage==='general'?'selected':''}>General (all stages)</option></select></div>
-  <div id="pm-bd-wrap" style="display:${u&&u.role==='manager'?'block':'none'}"><div class="utog" style="margin-bottom:14px"><label style="font-size:13px;font-weight:600;color:var(--txt)">Allow backdated entry</label><label class="tsw"><input type="checkbox" id="pm-bd" ${u&&u.allowBackdate?'checked':''}><span class="tsl"></span></label></div></div>
-  <div class="utog" style="margin-bottom:14px"><label style="font-size:13px;font-weight:600;color:var(--txt)">Will this person use the app?</label><label class="tsw"><input type="checkbox" id="pm-au" ${au?'checked':''} onchange="togPMPin(this.checked)"><span class="tsl"></span></label></div>
-  <div id="pm-app-wrap" style="display:${au?'block':'none'}">
-    <div id="pm-pin-wrap"><div class="f"><label>4-digit PIN ${u?'(blank = keep current)':''}</label><input id="pm-p" type="password" inputmode="numeric" maxlength="4" placeholder="${u?'Enter new PIN to change':'Required'}" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,4)"></div></div>
-    <div class="slbl">Screen Permissions</div>
-    <div class="ibox" style="margin-bottom:12px">Home is always visible. Masters is admin-only.</div>
-    <div class="f"><label>Plan Screen</label><select id="pm-pp">${pOpt('plan',dp.plan)}</select></div>
-    <div class="f"><label>Actual Output Screen</label><select id="pm-pa">${pOpt('actual',dp.actual)}</select></div>
-    <div class="f"><label>Reports Screen</label><select id="pm-pr">${pOpt('reports',dp.reports)}</select></div>
-    <div class="f"><label>Store Screen <span style="color:var(--mut);font-weight:400">(Inward / Stock / Issue)</span></label><select id="pm-pst">${pOpt('store',dp.store||'hidden')}</select></div>
-  </div>`}
-function togPMPin(v){const w=document.getElementById('pm-app-wrap');if(w)w.style.display=v?'block':'none'}
-function updDefPerms(role){const dp=getDefaultPerms(role);const pp=document.getElementById('pm-pp'),pa=document.getElementById('pm-pa'),pr=document.getElementById('pm-pr'),pst=document.getElementById('pm-pst');if(pp)pp.value=dp.plan;if(pa)pa.value=dp.actual;if(pr)pr.value=dp.reports;if(pst)pst.value=dp.store;const bdw=document.getElementById('pm-bd-wrap');if(bdw)bdw.style.display=role==='manager'?'block':'none';}
-function addPersModal(){openModal(`<div class="mtit">Add Person</div>${persF(null)}<button class="btn btn-p mt12" onclick="savePers()">Add Person</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-function editPersModal(id){const u=S.users.find(u=>u.id===id);if(!u)return;openModal(`<div class="mtit">Edit Person</div>${persF(u)}<button class="btn btn-p mt12" onclick="savePers('${id}')">Update</button>${isAdmin()&&id!==S.sess.userId?`<button class="btn btn-d mt8" onclick="delPers('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-async function savePers(id){
-  const n=document.getElementById('pm-n').value.trim(),r=document.getElementById('pm-r').value,st=document.getElementById('pm-s').value;
-  const auEl=document.getElementById('pm-au');const au=auEl?auEl.checked:true;
-  const pEl=document.getElementById('pm-p');const p=pEl?pEl.value:'';
+function applyPplFilter(){
+  const q=_pplSrch.toLowerCase();
+  const list=S.users.filter(u=>(_pplRole==='all'||u.role===_pplRole)&&(!q||u.name.toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)));
+  const w=document.getElementById('ppl-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">👤</div><h3>No people found</h3></div>`;return}
+  const roleIc={admin:'👑',manager:'🏭',supervisor:'📋',operator:'⚙️'};
+  w.innerHTML=list.map(u=>`<div class="li"><div class="lic">${roleIc[u.role]||'👤'}</div><div class="lib"><div class="linm">${u.name}${u.appUser===false?'':' <span class="tsm" style="color:var(--acc);font-size:11px">App</span>'}</div><div class="lisb">${u.role}${u.stage&&u.stage!=='general'?' · '+slbl(u.stage):''}${u.email?' · '+u.email:''}</div></div><div class="liac">${isAdmin()?`<button class="btn btn-s btn-sm" onclick="editPersonModal('${u.id}')">Edit</button>`+`${isTanmay()?`<button class="btn btn-d btn-sm" onclick="delPerson('${u.id}')">Del</button>`:''}`:''}
+    </div></div>`).join('');
+}
+function personF(u){
+  const perms=u&&u.permissions?u.permissions:{plan:'full',actual:'full',reports:'full'};
+  return`<div class="f"><label>Full Name *</label><input id="pf-n" type="text" value="${u?u.name:''}" placeholder="e.g. Suresh Kumar"></div>
+  <div class="f"><label>Role</label><select id="pf-r" onchange="togPersonRole(this.value)"><option value="admin" ${u&&u.role==='admin'?'selected':''}>Admin</option><option value="manager" ${u&&u.role==='manager'?'selected':''}>Manager</option><option value="supervisor" ${(!u||u.role==='supervisor')?'selected':''}>Supervisor</option><option value="operator" ${u&&u.role==='operator'?'selected':''}>Operator</option></select></div>
+  <div class="f"><label>Stage</label><select id="pf-st"><option value="general" ${!u||u.stage==='general'?'selected':''}>General (All Stages)</option><option value="soft" ${u&&u.stage==='soft'?'selected':''}>Soft</option><option value="ht" ${u&&u.stage==='ht'?'selected':''}>HT</option><option value="hard" ${u&&u.stage==='hard'?'selected':''}>Hard</option></select></div>
+  <div class="f" id="pf-email-row"><label>Email (for app login)</label><input id="pf-e" type="email" value="${u?u.email||'':''}" placeholder="email@company.com"></div>
+  <div id="pf-perm-row">
+    <div class="slbl" style="font-size:11px;margin-bottom:8px">Permissions</div>
+    <div class="row2">
+      <div class="f" style="margin:0"><label>Plans</label><select id="pf-pp"><option value="full" ${perms.plan==='full'?'selected':''}>Full</option><option value="view" ${perms.plan==='view'?'selected':''}>View</option><option value="hidden" ${perms.plan==='hidden'?'selected':''}>Hidden</option></select></div>
+      <div class="f" style="margin:0"><label>Actuals</label><select id="pf-pa"><option value="full" ${perms.actual==='full'?'selected':''}>Full</option><option value="view" ${perms.actual==='view'?'selected':''}>View</option><option value="hidden" ${perms.actual==='hidden'?'selected':''}>Hidden</option></select></div>
+    </div>
+    <div class="f" style="margin-top:10px"><label>Reports</label><select id="pf-pr"><option value="full" ${perms.reports==='full'?'selected':''}>Full</option><option value="view" ${perms.reports==='view'?'selected':''}>View</option><option value="hidden" ${perms.reports==='hidden'?'selected':''}>Hidden</option></select></div>
+  </div>`;
+}
+function togPersonRole(role){
+  const er=document.getElementById('pf-email-row');
+  const pr=document.getElementById('pf-perm-row');
+  if(er)er.style.display=role==='operator'?'none':'block';
+  if(pr)pr.style.display='block';
+}
+function addPersonModal(){openModal(`<div class="mtit">Add Person</div>${personF(null)}<button class="btn btn-p mt12" onclick="savePerson()">Add Person</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+function editPersonModal(id){const u=S.users.find(x=>x.id===id);if(!u)return;openModal(`<div class="mtit">Edit Person</div>${personF(u)}<button class="btn btn-p mt12" onclick="savePerson('${id}')">Update</button>${isTanmay()?`<button class="btn btn-d mt8" onclick="delPerson('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);togPersonRole(u.role);}
+async function savePerson(id){
+  const n=document.getElementById('pf-n').value.trim();
   if(!n){toast('Name required');return}
-  if(!id&&au&&p.length!==4){toast('4-digit PIN required for app users');return}
-  const ppEl=document.getElementById('pm-pp'),paEl=document.getElementById('pm-pa'),prEl=document.getElementById('pm-pr'),pstEl=document.getElementById('pm-pst');
-  const perms={plan:ppEl?ppEl.value:'full',actual:paEl?paEl.value:'full',reports:prEl?prEl.value:'view',store:pstEl?pstEl.value:'view'};
-  const bdEl=document.getElementById('pm-bd');const d={name:n,role:r,stage:st,appUser:au,permissions:perms,allowBackdate:r==='manager'&&bdEl?bdEl.checked:false};
-  if(au&&p&&p.length===4)d.pin=p;
-  try{if(id){await db.collection('users').doc(id).update(d)}else{await db.collection('users').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderPeople();toast(id?'Updated ✓':'Person added ✓')}
+  const role=document.getElementById('pf-r').value;
+  const d={name:n,role,stage:document.getElementById('pf-st').value,email:document.getElementById('pf-e')?.value.trim()||'',permissions:{plan:document.getElementById('pf-pp')?.value||'full',actual:document.getElementById('pf-pa')?.value||'full',reports:document.getElementById('pf-pr')?.value||'full'},appUser:role!=='operator'};
+  try{
+    if(id){await db.collection('users').doc(id).update(d);}
+    else{await db.collection('users').add({...d,createdAt:nowTS()});}
+    closeModal();toast(id?'Updated ✓':'Person added ✓');
+  }catch(e){toast('Error: '+e.message)}
+}
+async function delPerson(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this person?'))return;
+  try{await db.collection('users').doc(id).delete();closeModal();toast('Deleted');}
   catch(e){toast('Error: '+e.message)}
 }
-async function delPers(id){if(id===S.sess.userId){toast('Cannot delete yourself');return}if(!confirm('Delete?'))return;await db.collection('users').doc(id).delete();await reloadM();closeModal();renderPeople();toast('Deleted')}
- 
-let _pf='';
-function applyPartsFilter(){
-  const q=_ptSrch.toLowerCase(),cf=_ptCust;
-  const list=S.parts.filter(p=>{
-    const mq=!q||p.name.toLowerCase().includes(q)||(p.no||'').toLowerCase().includes(q)||(p.cust||'').toLowerCase().includes(q);
-    const mc=cf==='all'||(p.cust||'')=== cf;
-    return mq&&mc;
+function updateAllOpDropdowns(){
+  document.querySelectorAll('select[id^="mcop-"]').forEach(sel=>{
+    const mid=sel.id.replace('mcop-','');
+    const stage=S.actStage;
+    const usrs=S.users.filter(u=>u.role==='operator'&&(u.stage===stage||u.stage==='general'));
+    const cur=sel.value;
+    sel.innerHTML=`<option value="">— Select —</option><option value="_add" style="color:var(--acc);font-weight:600">+ Add new operator...</option>`+usrs.map(u=>`<option value="${u.id}" ${u.id===cur?'selected':''}>${u.name}</option>`).join('');
   });
-  const w=document.getElementById('parts-list');if(!w)return;
-  w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">⚙️</div><h3>No results</h3></div>`:
-    list.map(p=>`<div class="li"><div class="lic">⚙️</div><div class="lib"><div class="linm">${p.name}</div><div class="lisb">${p.no||''}${p.cust?' · '+p.cust:''}${p.rate?' · ₹'+p.rate:''}</div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editPartModal('${p.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delPart('${p.id}')">Del</button>`:''}</div></div>`).join('');
 }
+
+// ══════════════════════════════════════════
+// PARTS MASTER
+// ══════════════════════════════════════════
 function renderParts(){
   const custs=[...new Set(S.parts.map(p=>p.cust).filter(Boolean))].sort();
-  document.getElementById('s-m-parts').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Parts</div><div class="hdr-sub">${S.parts.length} records</div></div><button class="hdr-act" onclick="addPartModal()">+ Add</button></div>
+  document.getElementById('s-m-parts').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Parts</div><div class="hdr-sub">${S.parts.length} parts</div></div>${isAdmin()?`<button class="hdr-act" onclick="addPartModal()">+ Add</button>`:''}</div>
   <div class="pad">
     <div class="mfilt">
       <input type="search" placeholder="Search parts..." oninput="_ptSrch=this.value;applyPartsFilter()">
@@ -1415,23 +1410,50 @@ function renderParts(){
     </div>
     <div id="parts-list"></div>
   </div>`;
-  _ptSrch='';_ptCust='all';
-  applyPartsFilter();
+  _ptSrch='';_ptCust='all';applyPartsFilter();
 }
- 
-function applyOpsFilter(){
-  const q=_opSrch.toLowerCase(),sf=_opStage;
-  const list=S.operations.filter(o=>{
-    const mq=!q||o.name.toLowerCase().includes(q);
-    const ms=sf==='all'||o.stage===sf;
-    return mq&&ms;
-  });
-  const w=document.getElementById('ops-list');if(!w)return;
-  w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">🔧</div><h3>No results</h3></div>`:
-    list.map(o=>`<div class="li"><div class="lic">🔧</div><div class="lib"><div class="linm">${o.name}</div><div class="lisb"><span class="bdg ${sbdg(o.stage)}">${slbl(o.stage)}</span></div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="editOpModal('${o.id}')">Edit</button>${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delOp('${o.id}')">Del</button>`:''}</div></div>`).join('');
+function applyPartsFilter(){
+  const q=_ptSrch.toLowerCase();
+  const list=S.parts.filter(p=>(_ptCust==='all'||p.cust===_ptCust)&&(!q||p.name.toLowerCase().includes(q)||p.no.toLowerCase().includes(q)||(p.cust||'').toLowerCase().includes(q)));
+  const w=document.getElementById('parts-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">🔩</div><h3>No parts found</h3></div>`;return}
+  w.innerHTML=list.map(p=>`<div class="li"><div class="lic">🔩</div><div class="lib"><div class="linm">${p.name}</div><div class="lisb">${p.no} · ${p.cust||'—'}</div></div><div class="liac">${isAdmin()?`<button class="btn btn-s btn-sm" onclick="editPartModal('${p.id}')">Edit</button>`+`${isTanmay()?`<button class="btn btn-d btn-sm" onclick="delPart('${p.id}')">Del</button>`:''}`:''}</div></div>`).join('');
 }
+function partF(p){
+  return`<div class="f"><label>Part Name *</label><input id="ptf-n" type="text" value="${p?p.name:''}" placeholder="e.g. Gear Shaft 32mm"></div>
+  <div class="row2">
+    <div class="f"><label>Part Number *</label><input id="ptf-no" type="text" value="${p?p.no:''}" placeholder="e.g. PT-001"></div>
+    <div class="f"><label>Customer</label><input id="ptf-c" type="text" value="${p?p.cust||'':''}" placeholder="e.g. Bajaj Auto" list="cust-dl"></div>
+  </div>
+  <div class="f"><label>Description</label><input id="ptf-d" type="text" value="${p?p.desc||'':''}" placeholder="Optional description">
+  </div>
+  <datalist id="cust-dl">${[...new Set(S.parts.map(p=>p.cust).filter(Boolean))].map(c=>`<option value="${c}">`).join('')}</datalist>`;
+}
+function addPartModal(){openModal(`<div class="mtit">Add Part</div>${partF(null)}<button class="btn btn-p mt12" onclick="savePart()">Add Part</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+function editPartModal(id){const p=S.parts.find(x=>x.id===id);if(!p)return;openModal(`<div class="mtit">Edit Part</div>${partF(p)}<button class="btn btn-p mt12" onclick="savePart('${id}')">Update</button>${isTanmay()?`<button class="btn btn-d mt8" onclick="delPart('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+async function savePart(id){
+  const n=document.getElementById('ptf-n').value.trim();
+  const no=document.getElementById('ptf-no').value.trim();
+  if(!n||!no){toast('Name and part number required');return}
+  const d={name:n,no,cust:document.getElementById('ptf-c').value.trim(),desc:document.getElementById('ptf-d').value.trim()};
+  try{
+    if(id){await db.collection('parts').doc(id).update(d);}
+    else{await db.collection('parts').add({...d,createdAt:nowTS()});}
+    closeModal();toast(id?'Part updated ✓':'Part added ✓');
+  }catch(e){toast('Error: '+e.message)}
+}
+async function delPart(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this part?'))return;
+  try{await db.collection('parts').doc(id).delete();closeModal();toast('Deleted');}
+  catch(e){toast('Error: '+e.message)}
+}
+
+// ══════════════════════════════════════════
+// OPERATIONS MASTER
+// ══════════════════════════════════════════
 function renderOps(){
-  document.getElementById('s-m-ops').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Operations</div><div class="hdr-sub">${S.operations.length} records</div></div><button class="hdr-act" onclick="addOpModal()">+ Add</button></div>
+  document.getElementById('s-m-ops').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Operations</div><div class="hdr-sub">${S.operations.length} ops</div></div>${isAdmin()?`<button class="hdr-act" onclick="addOpModal()">+ Add</button>`:''}</div>
   <div class="pad">
     <div class="mfilt">
       <input type="search" placeholder="Search operations..." oninput="_opSrch=this.value;applyOpsFilter()">
@@ -1439,445 +1461,593 @@ function renderOps(){
     </div>
     <div id="ops-list"></div>
   </div>`;
-  _opSrch='';_opStage='all';
-  applyOpsFilter();
+  _opSrch='';_opStage='all';applyOpsFilter();
 }
-function opF(o){return`<div class="f"><label>Operation Name</label><input id="op-n" type="text" value="${o?o.name:''}" placeholder="e.g. Hobbing, Grinding, Shaping..."></div><div class="f"><label>Stage</label><select id="op-s"><option value="soft" ${o&&o.stage==='soft'?'selected':''}>Soft</option><option value="ht" ${o&&o.stage==='ht'?'selected':''}>HT</option><option value="hard" ${o&&o.stage==='hard'?'selected':''}>Hard</option></select></div>`}
-function addOpModal(){openModal(`<div class="mtit">Add Operation</div>${opF(null)}<button class="btn btn-p mt12" onclick="saveOp()">Add</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-function editOpModal(id){const o=S.operations.find(o=>o.id===id);if(!o)return;openModal(`<div class="mtit">Edit Operation</div>${opF(o)}<button class="btn btn-p mt12" onclick="saveOp('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delOp('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-async function saveOp(id){const n=document.getElementById('op-n').value.trim();if(!n){toast('Name required');return}const d={name:n,stage:document.getElementById('op-s').value};try{if(id){await db.collection('operations').doc(id).update(d)}else{await db.collection('operations').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderOps();toast(id?'Updated ✓':'Operation added ✓')}catch(e){toast('Error: '+e.message)}}
-async function delOp(id){if(!confirm('Delete?'))return;await db.collection('operations').doc(id).delete();await reloadM();closeModal();renderOps();toast('Deleted')}
- 
-function applyPOFilter(){
-  const q=_poSrch.toLowerCase(),ff=_poFilt;
-  const list=S.partOps.filter(po=>{
-    const p=S.parts.find(x=>x.id===po.partId),o=S.operations.find(x=>x.id===po.opId);
-    const pn=(p?p.name:'').toLowerCase(),on=(o?o.name:'').toLowerCase();
-    const mq=!q||pn.includes(q)||on.includes(q);
-    const mf=ff==='all'||(ff==='part'&&pn.includes(q))||(ff==='op'&&on.includes(q));
-    return mq&&(ff==='all'||mf);
-  });
-  const w=document.getElementById('po-list');if(!w)return;
-  w.innerHTML=list.length===0?`<div class="empty"><div class="empty-ic">📐</div><h3>No results</h3></div>`:
-    list.map(po=>{const p=S.parts.find(x=>x.id===po.partId),o=S.operations.find(x=>x.id===po.opId);
-    return`<div class="li" style="flex-wrap:wrap;gap:6px"><div class="lic">📐</div>
-    <div class="lib" style="min-width:0"><div class="linm">${p?p.name:'Unknown Part'}</div>
-    <div class="lisb" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <span>${o?o.name:'?'}</span>
-      <span style="color:var(--mut)">CT:</span>
-      <input type="number" value="${po.cycleTime}" min="0.1" step="0.1" style="width:60px;padding:3px 6px;font-size:12px;border:1.5px solid var(--bdr);border-radius:6px;text-align:center" onchange="savePOInline('${po.id}','cycleTime',this.value)" title="Cycle time (min/pc)">
-      <span style="color:var(--mut)">min · Tgt:</span>
-      <input type="number" value="${po.targetQty}" min="0" style="width:60px;padding:3px 6px;font-size:12px;border:1.5px solid var(--bdr);border-radius:6px;text-align:center" onchange="savePOInline('${po.id}','targetQty',this.value)" title="Target qty per shift">
-      <span style="color:var(--mut)">pcs</span>
-    </div></div>
-    <div class="liac">${isAdmin()?`<button class="btn btn-d btn-sm" onclick="delPO('${po.id}')">Del</button>`:''}</div></div>`;}).join('');
+function applyOpsFilter(){
+  const q=_opSrch.toLowerCase();
+  const list=S.operations.filter(o=>(_opStage==='all'||o.stage===_opStage)&&(!q||o.name.toLowerCase().includes(q)));
+  const w=document.getElementById('ops-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">🔧</div><h3>No operations found</h3></div>`;return}
+  w.innerHTML=list.map(o=>`<div class="li"><div class="lic">🔧</div><div class="lib"><div class="linm">${o.name}</div><div class="lisb">${slbl(o.stage)}${o.desc?' · '+o.desc:''}</div></div><div class="liac">${isAdmin()?`<button class="btn btn-s btn-sm" onclick="editOpModal('${o.id}')">Edit</button>`+`${isTanmay()?`<button class="btn btn-d btn-sm" onclick="delOp('${o.id}')">Del</button>`:''}`:''}</div></div>`).join('');
 }
-function renderPartOps(){
-  document.getElementById('s-m-partops').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Part-Operations</div><div class="hdr-sub">Cycle times &amp; targets</div></div><button class="hdr-act" onclick="addPOModal()">+ Add</button></div>
-  <div class="pad">
-    <div class="ibox">When you select Part + Operation in Actual Output, the target qty auto-fills from here.</div>
-    <div class="mfilt">
-      <input type="search" placeholder="Search part or operation..." oninput="_poSrch=this.value;applyPOFilter()">
-      <select onchange="_poFilt=this.value;applyPOFilter()"><option value="all">Part + Operation</option><option value="part">Part only</option><option value="op">Operation only</option></select>
-    </div>
-    <div id="po-list"></div>
-  </div>`;
-  _poSrch='';_poFilt='all';
-  applyPOFilter();
+function opF(o){
+  return`<div class="f"><label>Operation Name *</label><input id="of-n" type="text" value="${o?o.name:''}" placeholder="e.g. Turning"></div>
+  <div class="f"><label>Stage</label><select id="of-st"><option value="soft" ${(!o||o.stage==='soft')?'selected':''}>Soft</option><option value="ht" ${o&&o.stage==='ht'?'selected':''}>HT</option><option value="hard" ${o&&o.stage==='hard'?'selected':''}>Hard</option></select></div>
+  <div class="f"><label>Description</label><input id="of-d" type="text" value="${o?o.desc||'':''}" placeholder="Optional"></div>`;
 }
-function poF(po){return`<div class="f"><label>Part</label><select id="po-p">${S.parts.map(p=>`<option value="${p.id}" ${po&&po.partId===p.id?'selected':''}>${p.name} (${p.no})</option>`).join('')}</select></div><div class="f"><label>Operation</label><select id="po-o">${S.operations.map(o=>`<option value="${o.id}" ${po&&po.opId===o.id?'selected':''}>${o.name} (${slbl(o.stage)})</option>`).join('')}</select></div><div class="f"><label>Machine (optional)</label><select id="po-m"><option value="">— Not machine-specific —</option>${S.machines.map(m=>`<option value="${m.id}" ${po&&po.machineId===m.id?'selected':''}>${m.name} (${slbl(m.stage)})</option>`).join('')}</select></div><div class="row2"><div class="f"><label>Cycle Time (min/pc)</label><input id="po-c" type="number" value="${po?po.cycleTime:''}" min="0" step="0.1" placeholder="e.g. 4.5" oninput="autoCalcTarget()"></div><div class="f"><label>Target Qty / Shift <span style="color:var(--mut);font-weight:400">(auto)</span></label><input id="po-t" type="number" value="${po?po.targetQty:''}" min="0" placeholder="Auto-calculated"></div></div>`}
-function autoCalcTarget(){const ct=parseFloat(document.getElementById('po-c').value);const tEl=document.getElementById('po-t');if(ct>0&&tEl){tEl.value=Math.round(450/ct)}}
-function addPOModal(){openModal(`<div class="mtit">Add Part-Operation</div>${poF(null)}<button class="btn btn-p mt12" onclick="savePO()">Add</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-function editPOModal(id){const po=S.partOps.find(po=>po.id===id);if(!po)return;openModal(`<div class="mtit">Edit Part-Operation</div>${poF(po)}<button class="btn btn-p mt12" onclick="savePO('${id}')">Update</button>${isAdmin()?`<button class="btn btn-d mt8" onclick="delPO('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
-async function savePO(id){const pi=document.getElementById('po-p').value,oi=document.getElementById('po-o').value;if(!pi||!oi){toast('Part and operation required');return}const mi=document.getElementById('po-m').value;const d={partId:pi,opId:oi,machineId:mi||'',cycleTime:parseFloat(document.getElementById('po-c').value)||0,targetQty:parseInt(document.getElementById('po-t').value)||0};try{if(id){await db.collection('partOps').doc(id).update(d)}else{await db.collection('partOps').add({...d,createdAt:nowTS()})}await reloadM();closeModal();renderPartOps();toast(id?'Updated ✓':'Added ✓')}catch(e){toast('Error: '+e.message)}}
-async function savePOInline(id,field,val){
+function addOpModal(){openModal(`<div class="mtit">Add Operation</div>${opF(null)}<button class="btn btn-p mt12" onclick="saveOp()">Add Operation</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+function editOpModal(id){const o=S.operations.find(x=>x.id===id);if(!o)return;openModal(`<div class="mtit">Edit Operation</div>${opF(o)}<button class="btn btn-p mt12" onclick="saveOp('${id}')">Update</button>${isTanmay()?`<button class="btn btn-d mt8" onclick="delOp('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+async function saveOp(id){
+  const n=document.getElementById('of-n').value.trim();
+  if(!n){toast('Name required');return}
+  const d={name:n,stage:document.getElementById('of-st').value,desc:document.getElementById('of-d').value.trim()};
   try{
-    const upd={[field]:+val};
-    if(field==='cycleTime'&&+val>0){upd.targetQty=Math.round(450/(+val));}
-    await db.collection('partOps').doc(id).update(upd);
-    const po=S.partOps.find(p=>p.id===id);
-    if(po){po[field]=+val;if(field==='cycleTime'&&+val>0)po.targetQty=Math.round(450/(+val));}
-    toast('Updated ✓',1500);
-  }catch(e){toast('Error: '+e.message);}
-}
-async function delPO(id){if(!confirm('Delete?'))return;await db.collection('partOps').doc(id).delete();await reloadM();closeModal();renderPartOps();toast('Deleted')}
- 
-function renderShifts(){document.getElementById('s-m-shifts').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Shift Timings</div></div></div><div class="pad"><div class="wbox">Changes here affect shift display across the entire app.</div>${Object.entries(S.shifts).map(([k,v])=>`<div class="card"><div class="card-hd">${v.label}</div><div class="row2"><div class="f"><label>Start Time</label><input type="time" id="sh-${k}-s" value="${v.start}"></div><div class="f"><label>End Time</label><input type="time" id="sh-${k}-e" value="${v.end}"></div></div><div class="f" style="margin:0"><label>Label</label><input type="text" id="sh-${k}-l" value="${v.label}"></div></div>`).join('')}<button class="btn btn-p" onclick="saveShifts()">Save Timings</button></div>`}
-async function saveShifts(){const sh={};Object.keys(S.shifts).forEach(k=>{sh[k]={start:document.getElementById('sh-'+k+'-s').value,end:document.getElementById('sh-'+k+'-e').value,label:document.getElementById('sh-'+k+'-l').value}});await db.collection('config').doc('shifts').set(sh);S.shifts=sh;toast('Shift timings saved ✓');go('masters');renderMasters()}
- 
-function logout(){S.listeners.forEach(u=>u());S.listeners=[];sSess(null);location.reload()}
- 
-function initBackBtn(){
-  window.history.pushState({imf:true},'');
-  window.addEventListener('popstate',()=>{
-    window.history.pushState({imf:true},'');
-    goBack();
-  });
-}
- 
-// ════════════════ STORE / WIP MODULE (V2) ════════════════
-// Stock balance is DERIVED, all-time (stock carries forever, no 90-day window):
-//   balance(part) = Σ inward.qty  −  Σ batches.totalQty
-function stockFor(partId){
-  let inQty=0,outQty=0;
-  S.inward.forEach(r=>{if(r.partId===partId)inQty+=(+r.qty||0)});
-  S.batches.forEach(b=>{if(b.partId===partId)outQty+=(+b.totalQty||0)});
-  return{inQty,outQty,balance:inQty-outQty};
-}
-function reloadStore(){
-  if(S.cur==='store-inward')applyInwFilter();
-  else if(S.cur==='store-stock')applyStockFilter();
-  else if(S.cur==='store-batches')renderBatchList();
-  else if(S.cur==='store-issue')updIssueBalance();
-  else if(S.cur==='store-hub')renderStoreHub();
-}
-function renderStoreHub(){
-  const totParts=new Set(S.inward.map(r=>r.partId)).size;
-  const totStock=S.inward.reduce((s,r)=>s+(+r.qty||0),0)-S.batches.reduce((s,b)=>s+(+b.totalQty||0),0);
-  const full=getPerm('store')==='full';
-  document.getElementById('s-store-hub').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Store &amp; WIP</div><div class="hdr-sub">CNC Blank / Inward Dept</div></div><div class="hdr-pill">${rlbl(S.sess.role)}</div></div><div class="pad">
-  ${viewOnlyBanner('store')}
-  <div class="s2" style="margin-bottom:4px">
-    <div class="sc"><div class="sl">Materials in store</div><div class="sv">${totParts}</div></div>
-    <div class="sc"><div class="sl">Total balance</div><div class="sv">${totStock}<span class="su"> pcs</span></div></div>
-  </div>
-  <div class="slbl">Store Actions</div>
-  <div class="mtiles">
-    ${full?`<div class="mtile" onclick="go('store-inward','store-hub');renderStoreInward()"><div class="mtic">📥</div><div class="mtnm">Inward</div><div class="mtct">Record blanks coming in</div></div>`:''}
-    <div class="mtile" onclick="go('store-stock','store-hub');renderStoreStock()"><div class="mtic">📦</div><div class="mtnm">Stock on Hand</div><div class="mtct">What store is holding</div></div>
-    ${full?`<div class="mtile" onclick="go('store-issue','store-hub');renderStoreIssue()"><div class="mtic">🏷️</div><div class="mtnm">Issue Material</div><div class="mtct">Batch &amp; route cards</div></div>`:''}
-    <div class="mtile" onclick="go('store-batches','store-hub');renderStoreBatches()"><div class="mtic">📑</div><div class="mtnm">Issued Batches</div><div class="mtct">View batches &amp; cards</div></div>
-  </div></div>`;
-}
-function storeIssueSoon(){toast('Use the Issue Material tile to issue a batch');}
- 
-// ── Inward ──
-let _inwSrch='',_inwPart=null;
-function renderStoreInward(){
-  if(getPerm('store')!=='full'){toast('No access');go('store-hub');renderStoreHub();return;}
-  document.getElementById('s-store-inward').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Inward</div><div class="hdr-sub">${S.inward.length} receipts</div></div><button class="hdr-act" onclick="inwModal()">+ Add</button></div>
-  <div class="pad">
-    <div class="mfilt"><input type="search" placeholder="Search part / supplier / ref..." oninput="_inwSrch=this.value;applyInwFilter()"></div>
-    <div id="inw-list"></div>
-  </div>`;
-  _inwSrch='';applyInwFilter();
-}
-function applyInwFilter(){
-  const q=_inwSrch.toLowerCase();
-  const list=S.inward.filter(r=>!q||(r.partName||'').toLowerCase().includes(q)||(r.partNo||'').toLowerCase().includes(q)||(r.supplier||'').toLowerCase().includes(q)||(r.ref||'').toLowerCase().includes(q))
-    .sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.createdAt||'').localeCompare(a.createdAt||''));
-  const w=document.getElementById('inw-list');if(!w)return;
-  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">📥</div><h3>No inward records</h3><p>Record incoming CNC blanks to build stock.</p></div>`;return}
-  w.innerHTML=list.map(r=>`<div class="li"><div class="lic" style="background:${r.type==='opening'?'#f1f5f9':'var(--okbg)'}">${r.type==='opening'?'📋':'📥'}</div><div class="lib"><div class="linm">${r.partName||'—'} <span class="bdg ${r.type==='opening'?'bdg-gr':'bdg-g'}" style="margin-left:4px">+${r.qty}</span></div><div class="lisb">${r.partNo||''}${r.cust?' · '+r.cust:''} · ${fmtD(r.date)}${r.supplier?' · '+r.supplier:''}${r.ref?' · '+r.ref:''}</div></div><div class="liac"><button class="btn btn-s btn-sm" onclick="inwModal('${r.id}')">Edit</button>${isTanmay()?`<button class="btn btn-d btn-sm" onclick="delInw('${r.id}')">Del</button>`:''}</div></div>`).join('');
-}
-function inwModal(id){
-  const r=id?S.inward.find(x=>x.id===id):null;
-  _inwPart=r?{id:r.partId,no:r.partNo,name:r.partName,cust:r.cust}:null;
-  openModal(`<div class="mtit">${id?'Edit':'Add'} Inward Receipt</div>
-  <div class="f"><label>Part (CNC blank)</label><input id="inw-part" type="text" placeholder="Search part..." value="${r?r.partName||'':''}" oninput="spInwPart(this)" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off"></div>
-  <div class="row2"><div class="f"><label>Quantity received</label><input id="inw-qty" type="number" min="1" value="${r?r.qty:''}" placeholder="e.g. 250"></div>
-  <div class="f"><label>Type</label><select id="inw-type"><option value="inward" ${!r||r.type==='inward'?'selected':''}>Inward (received)</option><option value="opening" ${r&&r.type==='opening'?'selected':''}>Opening balance</option></select></div></div>
-  <div class="row2"><div class="f"><label>Date</label><input id="inw-date" type="date" value="${r?r.date:dateStr()}" max="${dateStr()}"></div>
-  <div class="f"><label>Supplier <span style="color:var(--mut);font-weight:400">(opt)</span></label><input id="inw-sup" type="text" value="${r?r.supplier||'':''}" placeholder="Supplier"></div></div>
-  <div class="f"><label>Challan / GRN Ref <span style="color:var(--mut);font-weight:400">(optional)</span></label><input id="inw-ref" type="text" value="${r?r.ref||'':''}" placeholder="Reference no."></div>
-  <div class="f"><label>Notes <span style="color:var(--mut);font-weight:400">(optional)</span></label><textarea id="inw-notes" rows="2" placeholder="Any notes...">${r?r.notes||'':''}</textarea></div>
-  <button class="btn btn-p mt12" onclick="saveInw(${id?`'${id}'`:''})">${id?'Update':'Add Receipt'}</button>
-  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
-}
-function spInwPart(inp){const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}const m=S.parts.filter(p=>p.name.toLowerCase().includes(q)||(p.no||'').toLowerCase().includes(q)).slice(0,15);showGDrop(inp,m,p=>{_inwPart={id:p.id,no:p.no,name:p.name,cust:p.cust};inp.value=p.name;});}
-async function saveInw(id){
-  if(!_inwPart){toast('Select a part');return}
-  const qty=parseInt(document.getElementById('inw-qty').value)||0;
-  if(qty<=0){toast('Enter a valid quantity');return}
-  const d={partId:_inwPart.id,partNo:_inwPart.no,partName:_inwPart.name,cust:_inwPart.cust||'',qty,type:document.getElementById('inw-type').value,date:document.getElementById('inw-date').value||dateStr(),supplier:document.getElementById('inw-sup').value.trim(),ref:document.getElementById('inw-ref').value.trim(),notes:document.getElementById('inw-notes').value.trim()};
-  try{
-    if(id){await db.collection('inward').doc(id).update(d);}
-    else{await db.collection('inward').add({...d,receivedBy:S.sess.name,receivedById:S.sess.userId,createdAt:nowTS()});}
-    closeModal();toast(id?'Updated ✓':'Inward recorded ✓');
+    if(id){await db.collection('operations').doc(id).update(d);}
+    else{await db.collection('operations').add({...d,createdAt:nowTS()});}
+    closeModal();toast(id?'Updated ✓':'Operation added ✓');
   }catch(e){toast('Error: '+e.message)}
 }
-async function delInw(id){if(!isTanmay()){toast('Only Tanmay can delete');return}if(!confirm('Delete this inward record? This reduces stock.'))return;try{await db.collection('inward').doc(id).delete();toast('Deleted');}catch(e){toast('Error: '+e.message)}}
- 
-// ── Stock on hand ──
-function renderStoreStock(){
-  const custs=[...new Set(S.parts.map(p=>p.cust).filter(Boolean))].sort();
-  document.getElementById('s-store-stock').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Stock on Hand</div><div class="hdr-sub">In − Issued = Balance</div></div></div>
+async function delOp(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this operation?'))return;
+  try{await db.collection('operations').doc(id).delete();closeModal();toast('Deleted');}
+  catch(e){toast('Error: '+e.message)}
+}
+
+// ══════════════════════════════════════════
+// PART-OPERATIONS MASTER
+// ══════════════════════════════════════════
+function renderPartOps(){
+  document.getElementById('s-m-partops').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Part-Operations</div><div class="hdr-sub">${S.partOps.length} cycle times</div></div>${isAdmin()?`<button class="hdr-act" onclick="addPartOpModal()">+ Add</button>`:''}</div>
   <div class="pad">
-    <div class="mfilt"><input type="search" placeholder="Search part..." oninput="S.storeSrch=this.value;applyStockFilter()"><select onchange="S.storeCust=this.value;applyStockFilter()"><option value="all">All Customers</option>${custs.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
-    <div id="stock-list"></div>
+    <div class="mfilt"><input type="search" placeholder="Search by part or op..." oninput="_poSrch=this.value;applyPartOpsFilter()"></div>
+    <div id="partops-list"></div>
   </div>`;
-  S.storeSrch='';S.storeCust='all';applyStockFilter();
+  _poSrch='';applyPartOpsFilter();
 }
-function applyStockFilter(){
-  const q=(S.storeSrch||'').toLowerCase(),cf=S.storeCust||'all';
-  const movedIds=new Set([...S.inward.map(r=>r.partId),...S.batches.map(b=>b.partId)]);
-  let list=S.parts.filter(p=>movedIds.has(p.id))
-    .filter(p=>{const mq=!q||p.name.toLowerCase().includes(q)||(p.no||'').toLowerCase().includes(q);const mc=cf==='all'||(p.cust||'')===cf;return mq&&mc;})
-    .map(p=>({p,...stockFor(p.id)}))
-    .sort((a,b)=>b.balance-a.balance);
-  const w=document.getElementById('stock-list');if(!w)return;
-  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">📦</div><h3>No stock yet</h3><p>Record inward receipts to see stock here.</p></div>`;return}
-  const grand=list.reduce((s,x)=>s+x.balance,0);
-  w.innerHTML=`<div class="card" style="background:var(--acc3);border-color:var(--bdr2)"><div class="fbw"><span class="tsm" style="font-weight:700">Total balance · ${list.length} part${list.length>1?'s':''}</span><span class="sv" style="font-size:20px">${grand}<span class="su"> pcs</span></span></div></div>`+
-    list.map(({p,inQty,outQty,balance})=>`<div class="li"><div class="lic" style="background:${balance>0?'var(--okbg)':balance<0?'var(--erbg)':'var(--bg)'}">${balance<0?'⚠️':'📦'}</div><div class="lib"><div class="linm">${p.name}</div><div class="lisb">${p.no||''}${p.cust?' · '+p.cust:''} · In ${inQty} · Issued ${outQty}</div></div><div class="liac"><div style="text-align:right"><div class="sv" style="font-size:18px;color:var(--${balance>0?'ok':balance<0?'er':'mut'})">${balance}</div><div class="tsm tmut" style="font-size:10px">balance</div></div></div></div>`).join('');
-}
- 
-// ════════════════ ISSUE FLOW (V2 · chunk 2) ════════════════
-let _issuePart=null,_issueStage='soft',_issueBins=[];
- 
-function plannedTodayFor(partId){let q=0;const td=dateStr();S.plans.filter(p=>p.date===td).forEach(p=>(p.machineReports||p.entries||[]).forEach(r=>{if(r.used)(r.runs||[]).forEach(run=>{if(run.partId===partId)q+=(+run.plannedQty||0)})}));return q;}
-function barcodeUsed(code){const c=(code||'').trim();return c&&S.cards.some(x=>(x.barcode||'').trim()===c);}
- 
-function renderStoreIssue(){
-  if(getPerm('store')!=='full'){toast('No access');go('store-hub');renderStoreHub();return;}
-  _issuePart=null;_issueStage='soft';_issueBins=[{qty:'',barcode:''}];
-  document.getElementById('s-store-issue').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Issue Material</div><div class="hdr-sub">Generate batch &amp; route cards</div></div></div>
-  <div class="pad">
-    <div class="card"><div class="card-hd">Material to Issue</div>
-      <div class="f" style="margin-bottom:0"><label>Part</label><input id="iss-part" type="text" placeholder="Search part..." oninput="spIssuePart(this)" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off"></div>
-      <div id="iss-partinfo" style="margin-top:12px"></div>
-    </div>
-    <div id="iss-rest"></div>
-  </div>`;
-}
-function spIssuePart(inp){const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}const m=S.parts.filter(p=>p.name.toLowerCase().includes(q)||(p.no||'').toLowerCase().includes(q)).slice(0,15);showGDrop(inp,m,p=>{_issuePart={id:p.id,no:p.no,name:p.name,cust:p.cust};inp.value=p.name;_issueBins=[{qty:'',barcode:''}];renderIssueRest();});}
-function renderIssueRest(){
-  const info=document.getElementById('iss-partinfo'),rest=document.getElementById('iss-rest');
-  if(!_issuePart){if(info)info.innerHTML='';if(rest)rest.innerHTML='';return;}
-  const st=stockFor(_issuePart.id),planned=plannedTodayFor(_issuePart.id),cap=Math.min(100,st.balance);
-  if(info)info.innerHTML=`<div class="s2" style="margin-bottom:0"><div class="sc"><div class="sl">In stock</div><div class="sv" style="color:var(--${st.balance>0?'ok':'er'})">${st.balance}<span class="su"> pcs</span></div></div><div class="sc"><div class="sl">Planned today</div><div class="sv">${planned}<span class="su"> pcs</span></div></div></div>`;
-  if(!rest)return;
-  if(st.balance<=0){rest.innerHTML=`<div class="card" style="background:var(--erbg);border-color:var(--er)"><div class="tsm" style="color:var(--er);font-weight:600">No stock available for this part. Record an inward receipt first.</div></div>`;return;}
-  rest.innerHTML=`
-    <div class="card"><div class="card-hd">Stage</div>
-      <div class="stage-sel" style="margin-bottom:0">${['soft','ht','hard'].map(s=>`<button class="stbtn ${s===_issueStage?'on-'+s:''}" id="is-${s}" onclick="selIssueStage('${s}')"><span class="si">${s==='soft'?'🔹':s==='ht'?'🔥':'⚙️'}</span><span class="sn">${slbl(s)}</span></button>`).join('')}</div>
-    </div>
-    <div class="card"><div class="fbw" style="margin-bottom:11px"><div class="card-hd" style="margin:0">Bins &amp; Route Cards</div><span class="tsm tmut">Max ${cap} pcs / batch</span></div>
-      <div id="iss-bins"></div>
-      <button class="btn-add" onclick="addIssueBin()">+ Add another bin</button>
-    </div>
-    <div class="card" id="iss-summary"></div>
-    <button class="btn btn-p" id="iss-btn" onclick="doIssue()">Generate Batch &amp; Issue</button>
-    <div class="tsm tmut" style="text-align:center;margin-top:8px">A batch code is generated for you to write on each card.</div>`;
-  renderIssueBins();
-}
-function selIssueStage(s){_issueStage=s;['soft','ht','hard'].forEach(x=>{const b=document.getElementById('is-'+x);if(b){b.className='stbtn';if(x===s)b.classList.add('on-'+s);}});}
-function renderIssueBins(){
-  const w=document.getElementById('iss-bins');if(!w)return;
-  w.innerHTML=_issueBins.map((b,i)=>`<div class="bin-row"><div class="bin-no">${i+1}</div>
-    <input type="number" min="1" value="${b.qty}" placeholder="Qty" style="width:72px;text-align:center;font-weight:700" onchange="setBin(${i},'qty',this.value)">
-    <div class="bin-bc"><input type="text" value="${b.barcode}" placeholder="Scan / type barcode" autocomplete="off" onchange="setBin(${i},'barcode',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></div>
-    <button class="scan-btn" type="button" onclick="scanForBin(${i})" title="Scan with camera">📷</button>
-    ${_issueBins.length>1?`<button class="scan-btn" type="button" style="background:var(--erbg);border-color:var(--er);color:var(--er)" onclick="removeIssueBin(${i})" title="Remove bin">✕</button>`:''}
-  </div>`).join('');
-  updIssueSummary();
-}
-function setBin(i,f,v){if(_issueBins[i]){_issueBins[i][f]=v;updIssueSummary();}}
-function addIssueBin(){_issueBins.push({qty:'',barcode:''});renderIssueBins();}
-function removeIssueBin(i){_issueBins.splice(i,1);renderIssueBins();}
-function issueValidation(){
-  if(!_issuePart)return{ok:false,msg:'Select a part'};
-  const st=stockFor(_issuePart.id);
-  const total=_issueBins.reduce((s,b)=>s+(+b.qty||0),0);
-  const codes=_issueBins.map(b=>(b.barcode||'').trim());
-  if(_issueBins.some(b=>!(+b.qty>0)))return{ok:false,msg:'Every bin needs a quantity',total,st};
-  if(codes.some(c=>!c))return{ok:false,msg:'Every bin needs a barcode',total,st};
-  const dup=codes.find((c,i)=>codes.indexOf(c)!==i);
-  if(dup)return{ok:false,msg:'Duplicate barcode in this batch: '+dup,total,st};
-  const used=codes.find(c=>barcodeUsed(c));
-  if(used)return{ok:false,msg:'Barcode already used: '+used,total,st};
-  if(total<1)return{ok:false,msg:'Total must be at least 1',total,st};
-  if(total>100)return{ok:false,msg:'A batch cannot exceed 100 pcs — issue a second batch',total,st};
-  if(total>st.balance)return{ok:false,msg:'Only '+st.balance+' pcs in stock',total,st};
-  return{ok:true,total,st};
-}
-function updIssueSummary(){
-  const sm=document.getElementById('iss-summary'),btn=document.getElementById('iss-btn');if(!sm||!_issuePart)return;
-  const v=issueValidation(),total=v.total||0,st=v.st||stockFor(_issuePart.id);
-  sm.innerHTML=`<div class="fbw"><span class="tsm tmut">Total to issue</span><span class="sv" style="font-size:20px">${total}<span class="su"> pcs</span></span></div>
-  <div class="fbw" style="margin-top:6px"><span class="tsm tmut">Bins / route cards</span><span class="tsm" style="font-weight:700">${_issueBins.length}</span></div>
-  <div class="fbw" style="margin-top:6px"><span class="tsm tmut">Stock after issue</span><span class="tsm" style="font-weight:700;color:var(--${(st.balance-total)>=0?'ok':'er'})">${st.balance-total} pcs</span></div>
-  <div class="tsm" style="margin-top:8px;font-weight:600;color:var(--${v.ok?'ok':'er'})">${v.ok?'✓ Ready to issue':'⚠️ '+v.msg}</div>`;
-  if(btn){btn.disabled=!v.ok;btn.style.opacity=v.ok?'1':'.5';}
-}
-function updIssueBalance(){if(S.cur==='store-issue'&&_issuePart)renderIssueRest();}
- 
-// Daily-resetting batch counter via Firestore transaction (requires connectivity)
-async function nextBatchCode(){
-  const today=dateStr(),ymd=today.slice(2).replace(/-/g,'');
-  const ref=db.collection('config').doc('counters');
-  const seq=await db.runTransaction(async t=>{
-    const snap=await t.get(ref),d=snap.exists?snap.data():{};
-    const s=(d.batchDate===today)?(d.batchSeq||0):0;
-    t.set(ref,{batchDate:today,batchSeq:s+1},{merge:true});
-    return s;
+function applyPartOpsFilter(){
+  const q=_poSrch.toLowerCase();
+  const list=S.partOps.filter(po=>{
+    const p=S.parts.find(x=>x.id===po.partId);
+    const o=S.operations.find(x=>x.id===po.opId);
+    return !q||(p&&p.name.toLowerCase().includes(q))||(o&&o.name.toLowerCase().includes(q));
   });
-  return{code:`B-${ymd}-${String(seq).padStart(2,'0')}`,seq,date:today};
+  const w=document.getElementById('partops-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">📐</div><h3>No cycle times set</h3><p>Link parts to operations with cycle times to enable target calculation.</p></div>`;return}
+  w.innerHTML=list.map(po=>{
+    const p=S.parts.find(x=>x.id===po.partId);
+    const o=S.operations.find(x=>x.id===po.opId);
+    return`<div class="li"><div class="lic">📐</div><div class="lib"><div class="linm">${p?p.name:'?'} → ${o?o.name:'?'}</div><div class="lisb">Cycle: ${po.cycleTime} min · ${po.partNo||p?.no||''}</div></div><div class="liac">${isAdmin()?`<button class="btn btn-s btn-sm" onclick="editPartOpModal('${po.id}')">Edit</button>`+`${isTanmay()?`<button class="btn btn-d btn-sm" onclick="delPartOp('${po.id}')">Del</button>`:''}`:''}</div></div>`;
+  }).join('');
 }
-async function doIssue(){
-  const v=issueValidation();if(!v.ok){toast(v.msg);return;}
-  if(!navigator.onLine){toast('You are offline — issuing needs a connection to generate a unique batch code');return;}
-  const btn=document.getElementById('iss-btn');if(btn){btn.disabled=true;btn.textContent='Issuing...';}
+function partOpF(po){
+  const pOpts=S.parts.map(p=>`<option value="${p.id}" ${po&&po.partId===p.id?'selected':''}>${p.name} (${p.no})</option>`).join('');
+  const oOpts=S.operations.map(o=>`<option value="${o.id}" ${po&&po.opId===o.id?'selected':''}>${o.name} (${slbl(o.stage)})</option>`).join('');
+  return`<div class="f"><label>Part *</label><select id="pof-p"><option value="">— Select —</option>${pOpts}</select></div>
+  <div class="f"><label>Operation *</label><select id="pof-o"><option value="">— Select —</option>${oOpts}</select></div>
+  <div class="f"><label>Cycle Time (minutes) *</label><input id="pof-ct" type="number" min="0.1" step="0.1" value="${po?po.cycleTime:''}" placeholder="e.g. 4.5"></div>`;
+}
+function addPartOpModal(){openModal(`<div class="mtit">Add Part-Operation</div>${partOpF(null)}<button class="btn btn-p mt12" onclick="savePartOp()">Add</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+function editPartOpModal(id){const po=S.partOps.find(x=>x.id===id);if(!po)return;openModal(`<div class="mtit">Edit Part-Operation</div>${partOpF(po)}<button class="btn btn-p mt12" onclick="savePartOp('${id}')">Update</button>${isTanmay()?`<button class="btn btn-d mt8" onclick="delPartOp('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`)}
+async function savePartOp(id){
+  const partId=document.getElementById('pof-p').value;
+  const opId=document.getElementById('pof-o').value;
+  const ct=parseFloat(document.getElementById('pof-ct').value);
+  if(!partId||!opId){toast('Part and operation required');return}
+  if(!ct||ct<=0){toast('Valid cycle time required');return}
+  const p=S.parts.find(x=>x.id===partId);
+  const d={partId,opId,cycleTime:ct,partNo:p?p.no:'',partName:p?p.name:''};
   try{
-    const codes=_issueBins.map(b=>b.barcode.trim());
-    const clash=codes.find(c=>barcodeUsed(c));
-    if(clash){toast('Barcode already used: '+clash);if(btn){btn.disabled=false;btn.textContent='Generate Batch & Issue';}return;}
-    const {code,seq,date}=await nextBatchCode();
-    const total=_issueBins.reduce((s,b)=>s+(+b.qty||0),0);
-    const batchRef=db.collection('batches').doc();
-    const wb=db.batch();
-    wb.set(batchRef,{batchCode:code,seq,date,partId:_issuePart.id,partNo:_issuePart.no,partName:_issuePart.name,cust:_issuePart.cust||'',stage:_issueStage,totalQty:total,binCount:_issueBins.length,status:'issued',issuedBy:S.sess.name,issuedById:S.sess.userId,createdAt:nowTS()});
-    const cardsInfo=[];
-    _issueBins.forEach((b,i)=>{const cardRef=db.collection('cards').doc();const card={barcode:b.barcode.trim(),batchId:batchRef.id,batchCode:code,partId:_issuePart.id,partNo:_issuePart.no,partName:_issuePart.name,qty:+b.qty,binNo:i+1,stage:_issueStage,status:'issued',createdAt:nowTS()};wb.set(cardRef,card);cardsInfo.push(card);});
-    await wb.commit();
-    showIssueResult(code,_issuePart,total,cardsInfo);
-  }catch(e){toast('Issue failed: '+e.message);const b2=document.getElementById('iss-btn');if(b2){b2.disabled=false;b2.textContent='Generate Batch & Issue';}}
+    if(id){await db.collection('partOps').doc(id).update(d);}
+    else{await db.collection('partOps').add({...d,createdAt:nowTS()});}
+    closeModal();toast(id?'Updated ✓':'Added ✓');
+  }catch(e){toast('Error: '+e.message)}
 }
-function showIssueResult(code,part,total,cards){
-  openModal(`<div class="mtit" style="text-align:center">✅ Batch Issued</div>
-  <div style="text-align:center;margin:6px 0 16px"><div class="tsm tmut">Write this batch code on every card</div><div style="font-size:30px;font-weight:800;letter-spacing:.04em;color:var(--acc);font-family:monospace;margin-top:6px">${code}</div></div>
-  <div class="card" style="margin:0 0 12px"><div class="fbw"><span class="tsm" style="font-weight:600">${part.name}</span><span class="tsm tmut">${part.no||''}</span></div><div class="fbw" style="margin-top:6px"><span class="tsm tmut">Total issued</span><span class="tsm" style="font-weight:700">${total} pcs · ${cards.length} card${cards.length>1?'s':''}</span></div></div>
-  <div class="slbl">Route Cards</div>
-  ${cards.map(c=>`<div class="li"><div class="lic">🏷️</div><div class="lib"><div class="linm">Bin ${c.binNo} · ${c.qty} pcs</div><div class="lisb" style="font-family:monospace">${c.barcode}</div></div></div>`).join('')}
-  <button class="btn btn-p mt12" onclick="closeModal();renderStoreIssue()">Issue Another</button>
-  <button class="btn btn-s mt8" onclick="closeModal();go('store-hub');renderStoreHub()">Done</button>`);
+async function delPartOp(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this record?'))return;
+  try{await db.collection('partOps').doc(id).delete();closeModal();toast('Deleted');}
+  catch(e){toast('Error: '+e.message)}
 }
- 
-// ── Camera barcode scanner (html5-qrcode) + keyboard-wedge friendly inputs ──
-let _scanCb=null,_scanner=null,_torchOn=false;
-function scanForBin(i){openScanner(code=>{if(_issueBins[i]){_issueBins[i].barcode=code;renderIssueBins();toast('Scanned: '+code);}});}
-function openScanner(cb){
-  _scanCb=cb;_torchOn=false;
-  openModal(`<div class="mtit">Scan Barcode</div>
-  <div id="scan-box" style="width:100%;border-radius:12px;overflow:hidden;background:#000;min-height:240px"></div>
-  <div class="tsm tmut" style="text-align:center;margin-top:10px">Point the camera at the barcode on the route card.</div>
-  <div class="row2" style="margin-top:12px"><button class="btn btn-s" id="scan-torch" onclick="toggleTorch()">🔦 Flash</button><button class="btn btn-s" onclick="closeScanner()">Cancel</button></div>`);
-  setTimeout(startScanner,220);
-}
-function startScanner(){
-  const box=document.getElementById('scan-box');
-  if(typeof Html5Qrcode==='undefined'){if(box)box.innerHTML='<div style="color:#fff;text-align:center;padding:46px 16px;font-size:13px">Camera scanner unavailable.<br>Type the barcode manually instead.</div>';return;}
-  try{
-    _scanner=new Html5Qrcode('scan-box');
-    const F=window.Html5QrcodeSupportedFormats;
-    const fmts=F?[F.CODE_128,F.CODE_39,F.CODE_93,F.EAN_13,F.ITF,F.QR_CODE]:undefined;
-    _scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:140},formatsToSupport:fmts},decoded=>{const cb=_scanCb;closeScanner();if(cb)cb(decoded);},()=>{}).catch(e=>{if(box)box.innerHTML='<div style="color:#fff;text-align:center;padding:46px 16px;font-size:13px">Cannot access camera.<br>'+((e&&e.message)||'')+'<br>Type the barcode manually.</div>';});
-  }catch(e){if(box)box.innerHTML='<div style="color:#fff;text-align:center;padding:46px">Scanner error — type manually.</div>';}
-}
-function toggleTorch(){if(!_scanner)return;_torchOn=!_torchOn;_scanner.applyVideoConstraints({advanced:[{torch:_torchOn}]}).then(()=>{const b=document.getElementById('scan-torch');if(b)b.style.background=_torchOn?'var(--acc2)':'';}).catch(()=>{_torchOn=false;toast('Flash not supported on this device');});}
-function closeScanner(){if(_scanner){const sc=_scanner;_scanner=null;sc.stop().then(()=>{try{sc.clear()}catch(e){}}).catch(()=>{});}_scanCb=null;closeModal();}
- 
-// ── Issued Batches viewer ──
-let _batFrom='',_batTo='',_batExpand={};
-function renderStoreBatches(){
-  const td=dateStr();if(!_batFrom)_batFrom=td;if(!_batTo)_batTo=td;
-  document.getElementById('s-store-batches').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Issued Batches</div></div></div>
+
+// ══════════════════════════════════════════
+// SHIFTS MASTER
+// ══════════════════════════════════════════
+function renderShifts(){
+  const slist=Object.entries(S.shifts);
+  document.getElementById('s-m-shifts').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Shift Timings</div></div></div>
   <div class="pad">
-    <div class="row2"><div class="f"><label>From</label><input type="date" id="bat-from" value="${_batFrom}" max="${td}" onchange="_batFrom=this.value;renderBatchList()"></div><div class="f"><label>To</label><input type="date" id="bat-to" value="${_batTo}" max="${td}" onchange="_batTo=this.value;renderBatchList()"></div></div>
-    <div style="display:flex;gap:8px;margin-bottom:14px"><button class="btn-sm btn-s" onclick="setBatRange('today')">Today</button><button class="btn-sm btn-s" onclick="setBatRange('7')">Last 7 Days</button><button class="btn-sm btn-s" onclick="setBatRange('month')">This Month</button></div>
-    <div id="bat-list"></div>
+    ${slist.map(([k,v])=>`<div class="card" style="margin-bottom:12px"><div style="font-size:14px;font-weight:700;margin-bottom:12px">${v.label}</div>
+    <div class="row2">
+      <div class="f"><label>Start Time</label><input type="time" id="sh-s-${k}" value="${v.start}"></div>
+      <div class="f"><label>End Time</label><input type="time" id="sh-e-${k}" value="${v.end}"></div>
+    </div>
+    <div class="f"><label>Label</label><input type="text" id="sh-l-${k}" value="${v.label}" placeholder="e.g. Morning"></div>
+    <button class="btn btn-p btn-sm" onclick="saveShift('${k}')">Save ${v.label}</button>
+    </div>`).join('')}
+  </div>`;
+}
+async function saveShift(k){
+  const s=document.getElementById('sh-s-'+k).value;
+  const e=document.getElementById('sh-e-'+k).value;
+  const l=document.getElementById('sh-l-'+k).value.trim();
+  if(!s||!e||!l){toast('All fields required');return}
+  try{
+    await db.collection('settings').doc('shifts').set({[k]:{start:s,end:e,label:l}},{merge:true});
+    S.shifts[k]={start:s,end:e,label:l};
+    toast('Shift updated ✓');
+  }catch(e2){toast('Error: '+e2.message)}
+}
+
+function logout(){
+  if(!confirm('Log out?'))return;
+  firebase.auth().signOut().then(()=>{S.sess=null;localStorage.removeItem('imf_sess');document.cookie='imf_sess=;max-age=0';showLogin();}).catch(e=>toast('Error: '+e.message));
+}
+function initBackBtn(){
+  window.addEventListener('popstate',e=>{
+    const prev=S.navStack[S.navStack.length-2];
+    if(prev){S.navStack.pop();showScreen(prev);}
+    else{history.pushState(null,'',location.href);}
+  });
+  history.pushState(null,'',location.href);
+}
+
+// ══════════════════════════════════════════
+// STORE MODULE
+// ══════════════════════════════════════════
+function reloadStore(){
+  if(S.cur==='store-hub')renderStoreHub();
+  else if(S.cur==='store-inward')renderInwardList();
+  else if(S.cur==='store-stock')renderStockBody();
+  else if(S.cur==='store-batches')renderBatchList();
+}
+function renderStoreHub(){
+  document.getElementById('s-store-hub').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Store</div><div class="hdr-sub">WIP & Inventory</div></div></div>
+  <div class="pad">
+    <div class="mtiles">
+      <div class="mtile" onclick="go('store-inward','store');renderStoreInward()"><div class="mtic">📥</div><div class="mtnm">Inward</div><div class="mtct">Raw material receipts</div></div>
+      <div class="mtile" onclick="go('store-issue','store');renderStoreIssue()"><div class="mtic">📤</div><div class="mtnm">Issue to WIP</div><div class="mtct">Issue to production</div></div>
+      <div class="mtile" onclick="go('store-stock','store');renderStoreStock()"><div class="mtic">📦</div><div class="mtnm">Stock Balance</div><div class="mtct">Current stock levels</div></div>
+      <div class="mtile" onclick="go('store-batches','store');renderStoreBatches()"><div class="mtic">🏷️</div><div class="mtnm">Batch Tracker</div><div class="mtct">Track all batches</div></div>
+    </div>
+  </div>`;
+}
+
+// ── STORE INWARD (Change 2: Master Lot Code + Supplier dropdown + FAB) ──
+let _inwFilt='all';
+function renderStoreInward(){
+  const inw=[...S.inward].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('s-store-inward').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Inward Receipts</div><div class="hdr-sub">${inw.length} records</div></div></div>
+  <div class="pad">
+    <div class="mfilt">
+      <select onchange="_inwFilt=this.value;renderInwardList()"><option value="all">All Suppliers</option>${S.suppliers.filter(s=>s.active!==false).map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
+    </div>
+    <div id="inw-list"></div>
+  </div>
+  <button class="inw-fab" onclick="inwModal()">📥 Add Inward Receipt</button>`;
+  renderInwardList();
+}
+function renderInwardList(){
+  const list=[...S.inward].filter(r=>_inwFilt==='all'||r.supplierId===_inwFilt).sort((a,b)=>b.date.localeCompare(a.date));
+  const w=document.getElementById('inw-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">📥</div><h3>No inward records</h3><p>Tap the button below to add a receipt.</p></div>`;return}
+  w.innerHTML=list.map(r=>`<div class="card" style="margin-bottom:10px">
+    <div class="fbw" style="margin-bottom:6px">
+      <div><div style="font-size:13px;font-weight:700">${r.supplierName||r.supplier||'—'}</div>
+      <div class="tsm tmut">${r.date} · ${r.materialType||r.material||'—'}</div></div>
+      <div style="text-align:right"><div style="font-weight:700;font-size:15px">${r.qty} ${r.unit||'kg'}</div>
+      <div class="tsm tmut">₹${r.rate||'—'}/unit</div></div>
+    </div>
+    ${r.masterLotCode?`<div class="lot-badge" style="margin-bottom:6px">🏷 ${r.masterLotCode}</div>`:''}
+    ${r.notes?`<div class="tsm tmut">${r.notes}</div>`:''}
+    <div style="display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:.5px solid var(--bdr)">
+      ${isAdmin()?`<button class="btn btn-s btn-sm" style="flex:1" onclick="inwEditModal('${r.id}')">✏️ Edit</button>`:''}
+      ${isTanmay()?`<button class="btn btn-d btn-sm" onclick="delInw('${r.id}')">🗑</button>`:''}
+    </div>
+  </div>`).join('');
+}
+
+function inwModal(editId){
+  const r=editId?S.inward.find(x=>x.id===editId):null;
+  const activeSups=S.suppliers.filter(s=>s.active!==false);
+  openModal(`<div class="mtit">${r?'Edit Inward Receipt':'New Inward Receipt'}</div>
+  <div class="f"><label>Date *</label><input id="iw-d" type="date" value="${r?r.date:dateStr()}"></div>
+  <div class="f"><label>Supplier *</label><select id="iw-sup" onchange="previewLotCode()">
+    <option value="">— Select Supplier —</option>
+    ${activeSups.map(s=>`<option value="${s.id}" data-code="${s.code}" ${r&&r.supplierId===s.id?'selected':''}>${s.name} [${s.code}]</option>`).join('')}
+  </select></div>
+  <div id="iw-lot-preview" style="display:none;margin-bottom:12px">
+    <div class="tsm tmut" style="margin-bottom:4px">Auto-generated Master Lot Code:</div>
+    <div class="lot-badge" id="iw-lot-val">—</div>
+  </div>
+  <div class="f"><label>Material Type *</label><input id="iw-mat" type="text" value="${r?r.materialType||r.material||'':''}" placeholder="e.g. EN8 Round Bar 32mm" list="mat-dl">
+    <datalist id="mat-dl">${[...new Set(S.inward.map(x=>x.materialType||x.material).filter(Boolean))].map(m=>`<option value="${m}">`).join('')}</datalist>
+  </div>
+  <div class="row2">
+    <div class="f"><label>Quantity *</label><input id="iw-qty" type="number" min="0" step="0.01" value="${r?r.qty:''}"></div>
+    <div class="f"><label>Unit</label><select id="iw-unit"><option value="kg" ${!r||r.unit==='kg'?'selected':''}>kg</option><option value="nos" ${r&&r.unit==='nos'?'selected':''}>nos</option><option value="mtr" ${r&&r.unit==='mtr'?'selected':''}>mtr</option><option value="pcs" ${r&&r.unit==='pcs'?'selected':''}>pcs</option></select></div>
+  </div>
+  <div class="f"><label>Rate (₹/unit)</label><input id="iw-rate" type="number" min="0" step="0.01" value="${r?r.rate||'':''}"></div>
+  <div class="f"><label>Notes</label><input id="iw-notes" type="text" value="${r?r.notes||'':''}" placeholder="Optional"></div>
+  <button class="btn btn-p mt12" onclick="saveInw(${editId?`'${editId}'`:''})">
+    ${r?'Update Receipt':'Save Receipt'}
+  </button>
+  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
+  if(r&&r.supplierId)setTimeout(()=>previewLotCode(r),100);
+}
+function inwEditModal(id){inwModal(id);}
+
+function previewLotCode(existingRec){
+  const sel=document.getElementById('iw-sup');
+  if(!sel)return;
+  const supplierId=sel.value;
+  if(!supplierId){document.getElementById('iw-lot-preview').style.display='none';return}
+  const sup=S.suppliers.find(s=>s.id===supplierId);
+  if(!sup){return}
+  // Count existing inward for this supplier (exclude current record if editing)
+  const existing=S.inward.filter(r=>r.supplierId===supplierId&&(!existingRec||r.id!==existingRec.id)).length;
+  const dlvNum=String(existingRec?existingRec.deliveryNum||(existing+1):existing+1).padStart(3,'0');
+  const dateVal=document.getElementById('iw-d')?.value||dateStr();
+  const ymd=dateVal.replace(/-/g,'');
+  const lotCode=existingRec&&existingRec.masterLotCode?existingRec.masterLotCode:`${ymd}-${sup.code}-DLV${dlvNum}`;
+  const preview=document.getElementById('iw-lot-preview');
+  const val=document.getElementById('iw-lot-val');
+  if(preview)preview.style.display='block';
+  if(val)val.textContent=lotCode;
+}
+
+async function saveInw(editId){
+  const supplierId=document.getElementById('iw-sup').value;
+  const mat=document.getElementById('iw-mat').value.trim();
+  const qty=parseFloat(document.getElementById('iw-qty').value);
+  const date=document.getElementById('iw-d').value;
+  if(!supplierId){toast('Supplier required');return}
+  if(!mat){toast('Material type required');return}
+  if(!qty||qty<=0){toast('Valid quantity required');return}
+  const sup=S.suppliers.find(s=>s.id===supplierId);
+  if(!sup){toast('Invalid supplier');return}
+  let masterLotCode,deliveryNum;
+  if(editId){
+    const existing=S.inward.find(r=>r.id===editId);
+    masterLotCode=existing?.masterLotCode||document.getElementById('iw-lot-val')?.textContent||'';
+    deliveryNum=existing?.deliveryNum||0;
+  }else{
+    const prevCount=S.inward.filter(r=>r.supplierId===supplierId).length;
+    deliveryNum=prevCount+1;
+    const ymd=date.replace(/-/g,'');
+    masterLotCode=`${ymd}-${sup.code}-DLV${String(deliveryNum).padStart(3,'0')}`;
+  }
+  const d={date,supplierId,supplierCode:sup.code,supplierName:sup.name,materialType:mat,qty,unit:document.getElementById('iw-unit').value,rate:parseFloat(document.getElementById('iw-rate').value)||0,notes:document.getElementById('iw-notes').value.trim(),masterLotCode,deliveryNum};
+  try{
+    if(editId){await db.collection('inward').doc(editId).update(d);}
+    else{await db.collection('inward').add({...d,createdBy:S.sess.userId,createdAt:nowTS()});}
+    closeModal();toast(editId?'Receipt updated ✓':'Inward receipt saved ✓');
+    renderInwardList();
+  }catch(e){toast('Error: '+e.message)}
+}
+async function delInw(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this receipt?'))return;
+  try{await db.collection('inward').doc(id).delete();toast('Deleted');renderInwardList();}
+  catch(e){toast('Error: '+e.message)}
+}
+
+// ── STORE ISSUE (Change 3: stage locked to soft, child batch, large scan btn) ──
+let _issueStage='soft';
+let _scanStream=null;
+
+function renderStoreIssue(){
+  _issueStage='soft'; // Change 3: always soft, hardcoded
+  document.getElementById('s-store-issue').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Issue to WIP</div><div class="hdr-sub">Soft Stage</div></div></div>
+  <div class="pad">
+    <div class="ibox" style="margin-bottom:12px;display:flex;align-items:center;gap:8px">
+      <span>⚙️</span><span>Stage locked to <strong>Soft</strong> — issues always go to soft stage WIP</span>
+    </div>
+    <div class="card">
+      <div class="card-hd">Scan or Enter Master Lot Barcode</div>
+      <div style="text-align:center;margin-bottom:12px">
+        <button class="scan-btn-lg" onclick="startScan('issue-scan-result')" title="Scan Barcode">📷</button>
+        <div class="tsm tmut" style="margin-top:6px">Tap to scan lot barcode</div>
+      </div>
+      <div class="bin-bc">
+        <input id="issue-scan-result" type="text" placeholder="Or type lot code manually..." oninput="onIssueScan(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+    </div>
+    <div id="issue-lot-info"></div>
+    <div id="issue-form" style="display:none">
+      <div class="card">
+        <div class="card-hd">Issue Details</div>
+        <div class="f"><label>Issue Date</label><input id="iss-date" type="date" value="${dateStr()}"></div>
+        <div class="row2">
+          <div class="f"><label>Quantity to Issue *</label><input id="iss-qty" type="number" min="0.01" step="0.01" placeholder="e.g. 50"></div>
+          <div class="f"><label>Unit</label><select id="iss-unit"><option value="kg">kg</option><option value="nos">nos</option><option value="mtr">mtr</option><option value="pcs">pcs</option></select></div>
+        </div>
+        <div class="f"><label>Issued To (Person / Machine)</label><input id="iss-to" type="text" placeholder="e.g. CNC VMC-1 / Ramesh Kumar"></div>
+        <div class="f"><label>Notes</label><input id="iss-notes" type="text" placeholder="Optional"></div>
+        <div id="iss-child-preview" style="display:none;margin-bottom:12px">
+          <div class="tsm tmut" style="margin-bottom:4px">Child Batch Code (auto-generated):</div>
+          <div class="lot-badge" id="iss-child-code">—</div>
+        </div>
+        <button class="btn btn-p mt12" onclick="submitIssue()">📤 Issue & Generate Child Batch</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+let _issueMasterLot=null;
+function onIssueScan(val){
+  const v=val.trim();
+  if(!v){document.getElementById('issue-lot-info').innerHTML='';document.getElementById('issue-form').style.display='none';_issueMasterLot=null;return}
+  // Lookup in inward records
+  const rec=S.inward.find(r=>r.masterLotCode===v);
+  if(!rec){
+    document.getElementById('issue-lot-info').innerHTML=`<div class="card" style="border:1.5px solid var(--er)"><div class="tsm" style="color:var(--er)">⚠️ No inward record found for lot code: <strong>${v}</strong></div></div>`;
+    document.getElementById('issue-form').style.display='none';
+    _issueMasterLot=null;
+    return;
+  }
+  _issueMasterLot=rec;
+  // Count previous issues from this lot to preview child code
+  const issueCount=S.batches.filter(b=>b.masterLotCode===v).length+1;
+  const childCode=`${v}-${dateStr().replace(/-/g,'')}-${issueCount}`;
+  const stockBal=calcLotBalance(v);
+  document.getElementById('issue-lot-info').innerHTML=`<div class="card" style="border:1.5px solid var(--ok);margin-bottom:8px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:6px">✅ Lot Found</div>
+    <div class="rrow" style="padding:4px 0"><span class="tsm tmut">Supplier</span><span class="tsm" style="font-weight:600">${rec.supplierName||'—'}</span></div>
+    <div class="rrow" style="padding:4px 0"><span class="tsm tmut">Material</span><span class="tsm">${rec.materialType||rec.material||'—'}</span></div>
+    <div class="rrow" style="padding:4px 0"><span class="tsm tmut">Received</span><span class="tsm">${rec.qty} ${rec.unit||'kg'} on ${rec.date}</span></div>
+    <div class="rrow" style="padding:4px 0"><span class="tsm tmut">Stock Balance</span><span class="tsm" style="font-weight:700;color:${stockBal>0?'var(--ok)':'var(--er)'}">${stockBal.toFixed(2)} ${rec.unit||'kg'}</span></div>
+    <div class="lot-badge" style="margin-top:8px">🏷 ${v}</div>
+  </div>`;
+  // Show child code preview in form
+  const cp=document.getElementById('iss-child-preview');
+  const cc=document.getElementById('iss-child-code');
+  if(cp)cp.style.display='block';
+  if(cc)cc.textContent=childCode;
+  // Set unit to match inward
+  const unitSel=document.getElementById('iss-unit');
+  if(unitSel&&rec.unit)unitSel.value=rec.unit;
+  document.getElementById('issue-form').style.display='block';
+}
+
+function calcLotBalance(masterLotCode){
+  const rec=S.inward.find(r=>r.masterLotCode===masterLotCode);
+  if(!rec)return 0;
+  const inQty=+rec.qty||0;
+  const issued=S.batches.filter(b=>b.masterLotCode===masterLotCode).reduce((s,b)=>s+(+b.issueQty||0),0);
+  return inQty-issued;
+}
+
+async function submitIssue(){
+  if(!_issueMasterLot){toast('Scan or enter a valid lot code first');return}
+  const qty=parseFloat(document.getElementById('iss-qty').value);
+  if(!qty||qty<=0){toast('Valid quantity required');return}
+  const bal=calcLotBalance(_issueMasterLot.masterLotCode);
+  if(qty>bal){toast(`Only ${bal.toFixed(2)} ${_issueMasterLot.unit||'kg'} available in this lot`);return}
+  const issueDate=document.getElementById('iss-date').value;
+  const issueCount=S.batches.filter(b=>b.masterLotCode===_issueMasterLot.masterLotCode).length+1;
+  const childBatchCode=`${_issueMasterLot.masterLotCode}-${issueDate.replace(/-/g,'')}-${issueCount}`;
+  const d={
+    masterLotCode:_issueMasterLot.masterLotCode,
+    inwardId:_issueMasterLot.id,
+    supplierId:_issueMasterLot.supplierId,
+    supplierCode:_issueMasterLot.supplierCode,
+    supplierName:_issueMasterLot.supplierName,
+    materialType:_issueMasterLot.materialType||_issueMasterLot.material||'',
+    childBatchCode,
+    issueDate,
+    issueQty:qty,
+    unit:document.getElementById('iss-unit').value,
+    issuedTo:document.getElementById('iss-to').value.trim(),
+    stage:_issueStage,
+    notes:document.getElementById('iss-notes').value.trim(),
+    issueCount,
+    createdBy:S.sess.userId,
+    createdAt:nowTS()
+  };
+  try{
+    const ref=await db.collection('batches').add(d);
+    // Also write to cards collection for pre-printed tag scanning
+    await db.collection('cards').doc(childBatchCode).set({batchId:ref.id,...d});
+    toast(`✅ Issued! Child batch: ${childBatchCode}`);
+    // Reset form
+    document.getElementById('issue-scan-result').value='';
+    document.getElementById('issue-lot-info').innerHTML='';
+    document.getElementById('issue-form').style.display='none';
+    _issueMasterLot=null;
+  }catch(e){toast('Error: '+e.message)}
+}
+
+// ── STORE STOCK ──
+function renderStoreStock(){
+  document.getElementById('s-store-stock').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Stock Balance</div></div></div>
+  <div class="pad" id="stock-body">
+    <div class="tsm tmut" style="padding:20px;text-align:center">Calculating stock...</div>
+  </div>`;
+  renderStockBody();
+}
+function renderStockBody(){
+  // Group inward by masterLotCode, calc balance
+  const lots={};
+  S.inward.forEach(r=>{
+    if(!r.masterLotCode)return;
+    if(!lots[r.masterLotCode])lots[r.masterLotCode]={rec:r,issued:0};
+  });
+  S.batches.forEach(b=>{
+    if(!b.masterLotCode)return;
+    if(lots[b.masterLotCode])lots[b.masterLotCode].issued+=(+b.issueQty||0);
+  });
+  const w=document.getElementById('stock-body');if(!w)return;
+  const entries=Object.values(lots);
+  if(!entries.length){w.innerHTML=`<div class="empty"><div class="empty-ic">📦</div><h3>No stock yet</h3><p>Add inward receipts to track stock.</p></div>`;return}
+  // Group by supplier
+  const bySup={};
+  entries.forEach(({rec,issued})=>{
+    const sn=rec.supplierName||rec.supplier||'Unknown';
+    if(!bySup[sn])bySup[sn]=[];
+    bySup[sn].push({rec,bal:+(rec.qty||0)-issued,issued});
+  });
+  let html='';
+  Object.entries(bySup).forEach(([sn,items])=>{
+    html+=`<div class="slbl">${sn}</div>`;
+    items.forEach(({rec,bal,issued})=>{
+      const pct=rec.qty>0?Math.round((rec.qty-issued)/rec.qty*100):0;
+      html+=`<div class="card" style="margin-bottom:8px;padding:12px 14px">
+        <div class="fbw" style="margin-bottom:4px"><div style="font-size:13px;font-weight:700">${rec.materialType||rec.material||'—'}</div><div style="font-weight:700;color:${bal>0?'var(--ok)':'var(--er)'}">${bal.toFixed(2)} ${rec.unit||'kg'}</div></div>
+        <div class="lot-badge" style="margin-bottom:8px;font-size:11px">🏷 ${rec.masterLotCode}</div>
+        <div class="prog"><div class="pf ${pct>50?'pf-g':pct>20?'pf-a':'pf-r'}" style="width:${pct}%"></div></div>
+        <div class="tsm tmut" style="margin-top:4px">Received: ${rec.qty} · Issued: ${issued.toFixed(2)} · ${pct}% remaining</div>
+      </div>`;
+    });
+  });
+  w.innerHTML=html;
+}
+
+// ── STORE BATCHES ──
+let _batchFilt='all';
+function renderStoreBatches(){
+  document.getElementById('s-store-batches').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Batch Tracker</div><div class="hdr-sub">${S.batches.length} batches</div></div></div>
+  <div class="pad">
+    <div class="mfilt">
+      <select onchange="_batchFilt=this.value;renderBatchList()">
+        <option value="all">All Suppliers</option>
+        ${S.suppliers.filter(s=>s.active!==false).map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
+      </select>
+    </div>
+    <div id="batch-list"></div>
   </div>`;
   renderBatchList();
 }
-function setBatRange(t){const to=dateStr();let from=to;if(t==='7'){const d=new Date();d.setDate(d.getDate()-6);from=d.toISOString().slice(0,10);}else if(t==='month'){from=to.slice(0,8)+'01';}_batFrom=from;_batTo=to;const f=document.getElementById('bat-from'),tt=document.getElementById('bat-to');if(f)f.value=from;if(tt)tt.value=to;renderBatchList();}
 function renderBatchList(){
-  const list=S.batches.filter(b=>b.date>=_batFrom&&b.date<=_batTo).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.seq||0)-(a.seq||0));
-  const w=document.getElementById('bat-list');if(!w)return;
-  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">🏷️</div><h3>No batches</h3><p>No material issued in this range.</p></div>`;return;}
-  const totPcs=list.reduce((s,b)=>s+(+b.totalQty||0),0);
-  w.innerHTML=`<div class="card" style="background:var(--acc3);border-color:var(--bdr2)"><div class="fbw"><span class="tsm" style="font-weight:700">${list.length} batch${list.length>1?'es':''}</span><span class="sv" style="font-size:18px">${totPcs}<span class="su"> pcs</span></span></div></div>`+
-  list.map(b=>{
-    const cards=S.cards.filter(c=>c.batchId===b.id).sort((x,y)=>(x.binNo||0)-(y.binNo||0));
-    const open=_batExpand[b.id];
-    return `<div class="mc"><div class="mc-hd" onclick="togBatch('${b.id}')"><div class="mc-ic">🏷️</div><div style="flex:1;min-width:0"><div class="mc-nm" style="font-family:monospace">${b.batchCode}</div><div class="mc-mt">${b.partName||'—'} · ${b.totalQty} pcs · ${b.binCount} card${b.binCount>1?'s':''}</div></div><span class="bdg ${sbdg(b.stage)}" style="margin-right:6px">${slbl(b.stage)}</span><span class="mc-cv ${open?'op':''}">⌄</span></div>
-      <div class="mc-body ${open?'op':''}">
-        <div class="tsm tmut" style="margin-bottom:8px">${fmtD(b.date)} · issued by ${b.issuedBy||'—'}</div>
-        ${cards.length?cards.map(c=>`<div class="li" style="margin-bottom:6px"><div class="lic">📦</div><div class="lib"><div class="linm">Bin ${c.binNo} · ${c.qty} pcs</div><div class="lisb" style="font-family:monospace">${c.barcode}</div></div></div>`).join(''):`<div class="tsm tmut">No card records found.</div>`}
-        ${isTanmay()?`<button class="btn btn-d btn-sm mt8" onclick="delBatch('${b.id}')">Delete batch (restores stock)</button>`:''}
-      </div></div>`;
-  }).join('');
+  const list=[...S.batches].filter(b=>_batchFilt==='all'||b.supplierId===_batchFilt).sort((a,b)=>(b.issueDate||'').localeCompare(a.issueDate||''));
+  const w=document.getElementById('batch-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">🏷️</div><h3>No batches yet</h3><p>Issue material to WIP to create child batches.</p></div>`;return}
+  w.innerHTML=list.map(b=>`<div class="card" style="margin-bottom:10px">
+    <div class="fbw" style="margin-bottom:6px">
+      <div><div style="font-size:13px;font-weight:700">${b.materialType||'—'}</div>
+      <div class="tsm tmut">${b.supplierName||'—'} · ${b.issueDate||'—'}</div></div>
+      <div style="font-weight:700">${b.issueQty} ${b.unit||'kg'}</div>
+    </div>
+    <div class="lot-badge" style="margin-bottom:4px;font-size:10px">🏷 Child: ${b.childBatchCode||'—'}</div>
+    <div class="tsm tmut" style="font-size:11px">Master: ${b.masterLotCode||'—'}</div>
+    ${b.issuedTo?`<div class="tsm tmut" style="margin-top:4px">→ ${b.issuedTo}</div>`:''}
+  </div>`).join('');
 }
-function togBatch(id){_batExpand[id]=!_batExpand[id];renderBatchList();}
-async function delBatch(id){
-  if(!isTanmay()){toast('Only Tanmay can delete');return;}
-  if(!confirm('Delete this batch and its route cards? Stock will be restored.'))return;
-  try{
-    const cards=S.cards.filter(c=>c.batchId===id);
-    const wb=db.batch();
-    wb.delete(db.collection('batches').doc(id));
-    cards.forEach(c=>wb.delete(db.collection('cards').doc(c.id)));
-    await wb.commit();
-    toast('Batch deleted · stock restored');
-  }catch(e){toast('Error: '+e.message);}
+
+// ── SCANNER (camera) ──
+function startScan(targetInputId){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('Camera not available on this device');return}
+  openModal(`<div class="mtit">📷 Scan Barcode</div>
+  <video id="scan-vid" style="width:100%;border-radius:8px;background:#000" autoplay playsinline muted></video>
+  <canvas id="scan-cnv" style="display:none"></canvas>
+  <div class="tsm tmut" style="margin:8px 0;text-align:center">Point camera at barcode</div>
+  <button class="btn btn-s mt8" onclick="stopScan()">Cancel</button>`);
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
+    _scanStream=stream;
+    const vid=document.getElementById('scan-vid');
+    if(vid){vid.srcObject=stream;vid.play();}
+    _scanInterval=setInterval(()=>tryScanFrame(targetInputId),400);
+  }).catch(e=>{toast('Camera error: '+e.message);closeModal();});
 }
- 
-async function init(){
-  try{
-    const us=await db.collection('users').limit(1).get();
-    if(us.empty){showSetup();return}
-    await loadMasters();
-    const sess=gSess();
-    if(!sess){showLogin();return}
-    const u=S.users.find(u=>u.id===sess.userId);
-    if(!u){sSess(null);showLogin();return}
-    S.sess=sess;setupListeners();renderApp();initBackBtn();
-    // Offline indicator
-    function updConn(){const b=document.getElementById('offline-bar');if(b)b.style.display=navigator.onLine?'none':'block';}
-    window.addEventListener('online',updConn);window.addEventListener('offline',updConn);updConn();
-  }catch(e){
-    document.getElementById('app').innerHTML=`<div class="loading"><div style="color:#fff;text-align:center"><div class="lspin" style="margin:0 auto 16px"></div><div style="font-size:14px">Connecting...</div><div style="font-size:12px;margin-top:8px;opacity:.6">${e.message}</div><div style="margin-top:16px"><button onclick="init()" style="background:var(--acc);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px">Retry</button></div></div></div>`;
+let _scanInterval=null;
+function tryScanFrame(targetInputId){
+  const vid=document.getElementById('scan-vid');
+  const cnv=document.getElementById('scan-cnv');
+  if(!vid||!cnv||vid.readyState<2)return;
+  cnv.width=vid.videoWidth;cnv.height=vid.videoHeight;
+  const ctx=cnv.getContext('2d');ctx.drawImage(vid,0,0);
+  // Use ZXing if available, else stop
+  if(window.ZXing){
+    try{
+      const imageData=ctx.getImageData(0,0,cnv.width,cnv.height);
+      const code=ZXing.decode(imageData.data,cnv.width,cnv.height,'CODE_128');
+      if(code&&code.text){
+        stopScan();
+        const inp=document.getElementById(targetInputId);
+        if(inp){inp.value=code.text;inp.dispatchEvent(new Event('input'));}
+        else if(targetInputId==='issue-scan-result')onIssueScan(code.text);
+        toast('✅ Scanned: '+code.text);
+      }
+    }catch(e){}
   }
 }
- 
-if('serviceWorker' in navigator){
-  let _swReg=null;
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{
-      _swReg=reg;
-      reg.update(); // check for new version on every load
- 
-      function showUpdateBanner(){
-        if(document.getElementById('sw-update-banner'))return;
-        const b=document.createElement('div');
-        b.id='sw-update-banner';
-        b.style='position:fixed;top:0;left:0;right:0;background:#1e3a8a;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;z-index:99999;font-size:13px;font-weight:500;gap:12px';
-        b.innerHTML='<span>🔄 New version available</span><button id="sw-update-btn" style="background:#fff;color:#1e3a8a;border:none;padding:7px 16px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;flex-shrink:0">Update Now</button>';
-        document.body.appendChild(b);
-        document.getElementById('sw-update-btn').onclick=()=>{
-          if(_swReg&&_swReg.waiting){
-            _swReg.waiting.postMessage('skipWaiting');
-          } else {
-            window.location.reload(true);
-          }
-        };
-      }
- 
-      // New SW found while page is open
-      reg.addEventListener('updatefound',()=>{
-        const nw=reg.installing;
-        nw.addEventListener('statechange',()=>{
-          // 'installed' means new SW is waiting — show banner
-          if(nw.state==='installed'&&navigator.serviceWorker.controller){
-            showUpdateBanner();
-          }
-        });
-      });
- 
-      // If there's already a waiting SW when page loads (e.g. user had tab open)
-      if(reg.waiting&&navigator.serviceWorker.controller){
-        showUpdateBanner();
-      }
- 
-      // After user taps Update, new SW activates — reload to use it
-      navigator.serviceWorker.addEventListener('controllerchange',()=>{
-        window.location.reload();
-      });
-    }).catch(()=>{});
+function stopScan(){
+  if(_scanInterval){clearInterval(_scanInterval);_scanInterval=null;}
+  if(_scanStream){_scanStream.getTracks().forEach(t=>t.stop());_scanStream=null;}
+  closeModal();
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+async function init(){
+  // Try restore session from localStorage / cookie
+  let sess=null;
+  try{const raw=localStorage.getItem('imf_sess');if(raw)sess=JSON.parse(raw);}catch(e){}
+  if(!sess){
+    const m=document.cookie.match(/imf_sess=([^;]+)/);
+    if(m){try{sess=JSON.parse(decodeURIComponent(m[1]));}catch(e){}}
+  }
+  if(sess&&sess.userId){
+    S.sess=sess;
+    await loadAll();
+    renderApp();
+    renderHome();
+  }else{
+    // Load users first so we know whether to show setup or login
+    try{
+      const sn=await db.collection('users').get();
+      S.users=sn.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(e){console.error('Failed to load users',e);}
+    showLogin();
+  }
+  initBackBtn();
+}
+
+async function loadAll(){
+  await Promise.all([
+    loadMasters(),
+    db.collection('plans').orderBy('date','desc').limit(200).get().then(sn=>{S.plans=sn.docs.map(d=>({id:d.id,...d.data()}));}),
+    db.collection('actuals').orderBy('date','desc').limit(200).get().then(sn=>{S.actuals=sn.docs.map(d=>({id:d.id,...d.data()}));}),
+    db.collection('inward').orderBy('date','desc').limit(500).get().then(sn=>{S.inward=sn.docs.map(d=>({id:d.id,...d.data()}));}),
+    db.collection('batches').orderBy('issueDate','desc').limit(500).get().then(sn=>{S.batches=sn.docs.map(d=>({id:d.id,...d.data()}));}),
+  ]);
+  setupListeners();
+}
+
+function doLogin(){
+  const e=document.getElementById('li-e').value.trim();
+  const p=document.getElementById('li-p').value;
+  const err=document.getElementById('li-err');
+  if(!e||!p){if(err){err.textContent='Email and password required';err.style.display='block';}return}
+  const btn=document.querySelector('#s-login .btn-p');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>Signing in...';}
+  firebase.auth().signInWithEmailAndPassword(e,p).then(async cred=>{
+    const uid=cred.user.uid;
+    const snap=await db.collection('users').where('email','==',e).limit(1).get();
+    let user=null;
+    if(!snap.empty){const d=snap.docs[0];user={id:d.id,...d.data()};}
+    else{user={id:uid,name:e.split('@')[0],role:'operator',email:e,permissions:{plan:'full',actual:'full',reports:'full'}};}
+    const sess={userId:user.id,name:user.name,role:user.role,email:user.email,permissions:user.permissions||{plan:'full',actual:'full',reports:'full'}};
+    S.sess=sess;
+    const sessStr=JSON.stringify(sess);
+    localStorage.setItem('imf_sess',sessStr);
+    document.cookie=`imf_sess=${encodeURIComponent(sessStr)};max-age=${60*60*24*30};path=/`;
+    go('home');await loadAll();renderHome();
+  }).catch(err2=>{
+    if(err){err.textContent=err2.code==='auth/invalid-credential'?'Invalid email or password':err2.message;err.style.display='block';}
+    if(btn){btn.disabled=false;btn.textContent='Sign In';}
   });
 }
-window.addEventListener('DOMContentLoaded',init);
-window.addEventListener('scroll',hideGlobalDrop,true);
+
+// ── Service Worker registration ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+
+init();
 </script>
 </body>
 </html>
- 
