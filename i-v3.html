@@ -221,7 +221,7 @@ const PSEED=[
   {no:'10_2101_008',name:'1ST SPEED GEAR',cust:'MLR',rate:243.87},{no:'10_2101_001',name:'MAIN SHAFT NEW',cust:'MLR',rate:400.55},{no:'10_2101_005',name:'4TH SPEED GEAR',cust:'MLR',rate:134.84},{no:'10_2100_021',name:'CLUSTER GEAR REG.',cust:'MLR',rate:603.08},{no:'12_2300_002',name:'RC GEAR COMM',cust:'MLR',rate:228.00},{no:'11_2300_002',name:'RC GEAR PASS',cust:'MLR',rate:256.34},{no:'11_2101_007',name:'2ND SPEED GEAR',cust:'MLR',rate:196.23},{no:'10_2101_006',name:'3RD SPEED GEAR',cust:'MLR',rate:155.23},{no:'11_2300_001',name:'IDLER GEAR PASS',cust:'MLR',rate:276.40},{no:'11_2300_001B',name:'IDLER GEAR COMM',cust:'MLR',rate:280.00},{no:'11_2301_001',name:'FD GEAR PASS',cust:'MLR',rate:382.20},{no:'12_2301_001',name:'FD GEAR COMM',cust:'MLR',rate:420.97}
 ];
 
-const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:'',inward:[],batches:[],cards:[],storeSrch:'',storeCust:'all',suppliers:[]};
+const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:'',inward:[],batches:[],cards:[],storeSrch:'',storeCust:'all',suppliers:[],htCharges:[],pos:[],dispatches:[]};
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const nowTS=()=>new Date().toISOString();
@@ -306,21 +306,45 @@ function setupListeners(){
     db.collection('inward').onSnapshot(sn=>{S.inward=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur&&S.cur.startsWith('store'))reloadStore();if(S.cur==='home')renderHome();}),
     db.collection('batches').onSnapshot(sn=>{S.batches=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur&&S.cur.startsWith('store'))reloadStore();}),
     db.collection('cards').onSnapshot(sn=>{S.cards=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='store-batches')renderBatchList();}),
-    db.collection('suppliers').onSnapshot(sn=>{S.suppliers=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='m-suppliers')renderSuppliers();})
+    db.collection('suppliers').onSnapshot(sn=>{S.suppliers=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='m-suppliers')renderSuppliers();}),
+    db.collection('htCharges').orderBy('date','desc').limit(300).onSnapshot(sn=>{S.htCharges=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur&&S.cur.startsWith('ht'))reloadHT();}),
+    db.collection('pos').onSnapshot(sn=>{S.pos=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur&&S.cur.startsWith('dsp'))reloadDsp();}),
+    db.collection('dispatches').orderBy('date','desc').limit(500).onSnapshot(sn=>{S.dispatches=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur&&S.cur.startsWith('dsp'))reloadDsp();})
   );
 }
 
 function go(scr,prev){
-  S.prev=prev!==undefined?prev:S.cur;S.cur=scr;
+  // Push onto nav stack
+  if(!S.navStack)S.navStack=[];
+  if(prev!==undefined){
+    // explicit back target: trim stack to that point or push prev+scr
+    const idx=S.navStack.indexOf(prev);
+    if(idx>=0)S.navStack=S.navStack.slice(0,idx+1);
+    else{if(S.navStack[S.navStack.length-1]!==prev)S.navStack.push(prev);}
+  }
+  S.navStack.push(scr);
+  S.prev=S.navStack[S.navStack.length-2]||'home';
+  S.cur=scr;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   const el=document.getElementById('s-'+scr);if(el){el.classList.add('on');window.scrollTo(0,0)}
-  ['home','plan','actual','store','reports','masters'].forEach(t=>{
-    const a=t===scr||(t==='plan'&&['plan','plan-today','plan-next','view-plan','plan-day'].includes(scr))||(t==='actual'&&['actual-hub','actual','view-actuals'].includes(scr))||(t==='store'&&scr.startsWith('store'))||(t==='masters'&&scr.startsWith('m-'));
+  ['home','plan','actual','store','ht','dsp','reports','masters'].forEach(t=>{
+    const a=t===scr||(t==='plan'&&['plan','plan-today','plan-next','view-plan','plan-day'].includes(scr))||(t==='actual'&&['actual-hub','actual','view-actuals'].includes(scr))||(t==='store'&&scr.startsWith('store'))||(t==='ht'&&scr.startsWith('ht'))||(t==='dsp'&&scr.startsWith('dsp'))||(t==='masters'&&scr.startsWith('m-'));
     const nb=document.getElementById('nb-'+t),sb=document.getElementById('sb-'+t);
     if(nb)nb.classList.toggle('on',a);if(sb)sb.classList.toggle('on',a);
   });
 }
-function goBack(){go(S.prev||'home')}
+function goBack(){
+  if(!S.navStack)S.navStack=[];
+  if(S.navStack.length>1){S.navStack.pop();const dest=S.navStack[S.navStack.length-1];S.cur=dest;S.prev=S.navStack[S.navStack.length-2]||'home';
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+    const el=document.getElementById('s-'+dest);if(el){el.classList.add('on');window.scrollTo(0,0);}
+    ['home','plan','actual','store','ht','dsp','reports','masters'].forEach(t=>{
+      const a=t===dest||(t==='plan'&&['plan','plan-today','plan-next','view-plan','plan-day'].includes(dest))||(t==='actual'&&['actual-hub','actual','view-actuals'].includes(dest))||(t==='store'&&dest.startsWith('store'))||(t==='ht'&&dest.startsWith('ht'))||(t==='dsp'&&dest.startsWith('dsp'))||(t==='masters'&&dest.startsWith('m-'));
+      const nb=document.getElementById('nb-'+t),sb=document.getElementById('sb-'+t);
+      if(nb)nb.classList.toggle('on',a);if(sb)sb.classList.toggle('on',a);
+    });
+  }else{go('home');}
+}
 
 let _gdCb=null,_gdInp=null;
 function showGDrop(inp,matches,cb){
@@ -398,7 +422,12 @@ function showLogin(){
   document.getElementById('app').innerHTML=`<div class="lwrap"><div class="lbox"><div class="lhero"><div class="llogo">IMF</div><div class="lco">Indo Metaforge Pvt Ltd</div><div class="ltag">Production Tracker</div></div><div class="lform"><h2>Sign In</h2><div class="f"><label>Select Your Name</label><select id="l-u" onchange="lpu(this.value)"><option value="">— Choose your name —</option>${S.users.filter(u=>u.appUser!==false).map(u=>`<option value="${u.id}">${u.name} (${rlbl(u.role)})</option>`).join('')}</select></div><div id="l-pw" style="display:none"><label style="display:block;font-size:12px;font-weight:600;color:var(--mut);margin-bottom:5px">Enter PIN</label><div class="pdots" id="l-dots"></div><div class="kpad" id="l-pad"></div></div><div id="l-err" style="min-height:18px;font-size:13px;color:var(--er);text-align:center;margin-top:6px"></div></div></div></div>`;
 }
 function lpu(id){_lu=id;if(!id){document.getElementById('l-pw').style.display='none';return}document.getElementById('l-err').textContent='';document.getElementById('l-pw').style.display='block';initPIN('l-pad','l-dots',lcp);}
-function lcp(pin){const u=S.users.find(u=>u.id===_lu);if(!u)return;if(pin===u.pin){sSess({userId:u.id,role:u.role,name:u.name,stage:u.stage,permissions:u.permissions||getDefaultPerms(u.role),loginAt:nowTS()});S.sess=gSess();renderApp();toast('Welcome, '+u.name+'!');}else{document.getElementById('l-err').textContent='Wrong PIN. Try again.';}}
+function lcp(pin){const u=S.users.find(x=>x.id===_lu);if(!u)return;if(pin===u.pin){
+  sSess({userId:u.id,role:u.role,name:u.name,stage:u.stage,permissions:u.permissions||getDefaultPerms(u.role),loginAt:nowTS()});
+  S.sess=gSess();
+  loadAll().then(()=>{renderApp();renderHome();toast('Welcome, '+u.name+'!');});
+}else{document.getElementById('l-err').textContent='Wrong PIN. Try again.';}
+}
 
 function renderApp(){
   const isA=S.sess.role==='admin';
@@ -407,13 +436,15 @@ function renderApp(){
     {id:'plan',svg:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',l:'Plan',s:getPerm('plan')!=='hidden'},
     {id:'actual',svg:'<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',l:'Actual',s:getPerm('actual')!=='hidden'},
     {id:'store',svg:'<path d="M3 3h18v4H3z"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/><line x1="9" y1="11" x2="15" y2="11"/>',l:'Store',s:getPerm('store')!=='hidden'},
+    {id:'ht',svg:'<path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/>',l:'HT',s:getPerm('store')!=='hidden'},
+    {id:'dsp',svg:'<rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 3-5 3V8z"/>',l:'Dispatch',s:true},
     {id:'reports',svg:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',l:'Reports',s:getPerm('reports')!=='hidden'},
     {id:'masters',svg:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',l:'Masters',s:isA}
   ].filter(n=>n.s);
-  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><div class="sb-mark">IMF</div><div class="sb-co">Indo Metaforge Pvt Ltd</div><div class="sb-tag">Production Tracker</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div><div class="screen" id="s-m-suppliers"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
+  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><div class="sb-mark">IMF</div><div class="sb-co">Indo Metaforge Pvt Ltd</div><div class="sb-tag">Production Tracker</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div><div class="screen" id="s-m-suppliers"></div><div class="screen" id="s-ht-hub"></div><div class="screen" id="s-ht-new"></div><div class="screen" id="s-ht-view"></div><div class="screen" id="s-ht-detail"></div><div class="screen" id="s-dsp-hub"></div><div class="screen" id="s-dsp-po-list"></div><div class="screen" id="s-dsp-po-new"></div><div class="screen" id="s-dsp-po-detail"></div><div class="screen" id="s-dsp-new"></div><div class="screen" id="s-dsp-track"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
   renderHome();
 }
-function snav(id){if(id==='home'){go('home');renderHome()}else if(id==='plan'){go('plan');renderPlanHub()}else if(id==='actual'){go('actual-hub');renderActualHub()}else if(id==='store'){go('store-hub');renderStoreHub()}else if(id==='reports'){go('reports');renderReports()}else if(id==='masters'){go('masters');renderMasters()}}
+function snav(id){if(id==='home'){go('home');renderHome()}else if(id==='plan'){go('plan');renderPlanHub()}else if(id==='actual'){go('actual-hub');renderActualHub()}else if(id==='store'){go('store-hub');renderStoreHub()}else if(id==='ht'){go('ht-hub');renderHTHub()}else if(id==='dsp'){go('dsp-hub');renderDspHub()}else if(id==='reports'){go('reports');renderReports()}else if(id==='masters'){go('masters');renderMasters()}}
 
 function getActiveSh(){const h=new Date().getHours()*60+new Date().getMinutes();const toM=t=>{const[hh,mm]=t.split(':').map(Number);return hh*60+mm};for(const[k,v]of Object.entries(S.shifts)){const s=toM(v.start),e=toM(v.end);if(s<e){if(h>=s&&h<e)return v}else{if(h>=s||h<e)return v}}return Object.values(S.shifts)[0]}
 
@@ -1581,15 +1612,16 @@ async function saveShift(k){
 
 function logout(){
   if(!confirm('Log out?'))return;
-  firebase.auth().signOut().then(()=>{S.sess=null;localStorage.removeItem('imf_sess');document.cookie='imf_sess=;max-age=0';showLogin();}).catch(e=>toast('Error: '+e.message));
+  firebase.auth().signOut().catch(()=>{});S.sess=null;sSess(null);S.navStack=[];showLogin();
 }
 function initBackBtn(){
-  window.addEventListener('popstate',e=>{
-    const prev=S.navStack[S.navStack.length-2];
-    if(prev){S.navStack.pop();showScreen(prev);}
-    else{history.pushState(null,'',location.href);}
-  });
+  // Back navigation is handled entirely by goBack() + S.navStack
+  // No popstate needed - prevents page reload on back gesture
   history.pushState(null,'',location.href);
+  window.addEventListener('popstate',e=>{
+    history.pushState(null,'',location.href);
+    goBack();
+  });
 }
 
 // ══════════════════════════════════════════
@@ -1762,7 +1794,15 @@ function renderStoreIssue(){
           <div class="f"><label>Quantity to Issue *</label><input id="iss-qty" type="number" min="0.01" step="0.01" placeholder="e.g. 50"></div>
           <div class="f"><label>Unit</label><select id="iss-unit"><option value="kg">kg</option><option value="nos">nos</option><option value="mtr">mtr</option><option value="pcs">pcs</option></select></div>
         </div>
-        <div class="f"><label>Issued To (Person / Machine)</label><input id="iss-to" type="text" placeholder="e.g. CNC VMC-1 / Ramesh Kumar"></div>
+        <div class="f"><label>Part Name / Number *</label>
+          <input id="iss-part" type="text" placeholder="Search part..." oninput="issPartSearch(this)" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off" list="">
+          <input type="hidden" id="iss-part-id">
+          <input type="hidden" id="iss-part-no">
+        </div>
+        <div class="f"><label>Issued To (Machine / Person)</label>
+          <input id="iss-to" type="text" placeholder="e.g. CNC VMC-1 / Ramesh Kumar" list="iss-mach-dl">
+          <datalist id="iss-mach-dl">${S.machines.filter(m=>m.active!==false).map(m=>`<option value="${m.name}">`).join('')}${S.users.filter(u=>u.role==='operator').map(u=>`<option value="${u.name}">`).join('')}</datalist>
+        </div>
         <div class="f"><label>Notes</label><input id="iss-notes" type="text" placeholder="Optional"></div>
         <div id="iss-child-preview" style="display:none;margin-bottom:12px">
           <div class="tsm tmut" style="margin-bottom:4px">Child Batch Code (auto-generated):</div>
@@ -1775,6 +1815,16 @@ function renderStoreIssue(){
 }
 
 let _issueMasterLot=null;
+function issPartSearch(inp){
+  const q=inp.value.toLowerCase();
+  if(!q){hideGlobalDrop();return}
+  const matches=S.parts.filter(p=>p.name.toLowerCase().includes(q)||p.no.toLowerCase().includes(q)).slice(0,12);
+  showGDrop(inp,matches,p=>{
+    inp.value=p.name;
+    const pid=document.getElementById('iss-part-id');if(pid)pid.value=p.id;
+    const pno=document.getElementById('iss-part-no');if(pno)pno.value=p.no;
+  });
+}
 function onIssueScan(val){
   const v=val.trim();
   if(!v){document.getElementById('issue-lot-info').innerHTML='';document.getElementById('issue-form').style.display='none';_issueMasterLot=null;return}
@@ -1820,6 +1870,10 @@ function calcLotBalance(masterLotCode){
 
 async function submitIssue(){
   if(!_issueMasterLot){toast('Scan or enter a valid lot code first');return}
+  const partName=document.getElementById('iss-part')?.value.trim()||'';
+  const partId=document.getElementById('iss-part-id')?.value||'';
+  const partNo=document.getElementById('iss-part-no')?.value||'';
+  if(!partName){toast('Part name required');return}
   const qty=parseFloat(document.getElementById('iss-qty').value);
   if(!qty||qty<=0){toast('Valid quantity required');return}
   const bal=calcLotBalance(_issueMasterLot.masterLotCode);
@@ -1840,6 +1894,7 @@ async function submitIssue(){
     unit:document.getElementById('iss-unit').value,
     issuedTo:document.getElementById('iss-to').value.trim(),
     stage:_issueStage,
+    partName,partId,partNo,
     notes:document.getElementById('iss-notes').value.trim(),
     issueCount,
     createdBy:S.sess.userId,
@@ -1924,13 +1979,14 @@ function renderBatchList(){
   if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">🏷️</div><h3>No batches yet</h3><p>Issue material to WIP to create child batches.</p></div>`;return}
   w.innerHTML=list.map(b=>`<div class="card" style="margin-bottom:10px">
     <div class="fbw" style="margin-bottom:6px">
-      <div><div style="font-size:13px;font-weight:700">${b.materialType||'—'}</div>
+      <div><div style="font-size:13px;font-weight:700">${b.partName||b.materialType||'—'}</div>
+      <div class="tsm tmut">${b.partNo?b.partNo+' · ':''}${b.materialType||'—'}</div>
       <div class="tsm tmut">${b.supplierName||'—'} · ${b.issueDate||'—'}</div></div>
       <div style="font-weight:700">${b.issueQty} ${b.unit||'kg'}</div>
     </div>
     <div class="lot-badge" style="margin-bottom:4px;font-size:10px">🏷 Child: ${b.childBatchCode||'—'}</div>
     <div class="tsm tmut" style="font-size:11px">Master: ${b.masterLotCode||'—'}</div>
-    ${b.issuedTo?`<div class="tsm tmut" style="margin-top:4px">→ ${b.issuedTo}</div>`:''}
+    ${b.issuedTo?`<div class="tsm tmut" style="margin-top:4px">→ Issued to: ${b.issuedTo}</div>`:''}
   </div>`).join('');
 }
 
@@ -1981,13 +2037,8 @@ function stopScan(){
 // INIT
 // ══════════════════════════════════════════
 async function init(){
-  // Try restore session from localStorage / cookie
-  let sess=null;
-  try{const raw=localStorage.getItem('imf_sess');if(raw)sess=JSON.parse(raw);}catch(e){}
-  if(!sess){
-    const m=document.cookie.match(/imf_sess=([^;]+)/);
-    if(m){try{sess=JSON.parse(decodeURIComponent(m[1]));}catch(e){}}
-  }
+  // Use same key as sSess/gSess ('imf_s')
+  let sess=gSess();
   if(sess&&sess.userId){
     S.sess=sess;
     await loadAll();
@@ -2001,7 +2052,6 @@ async function init(){
     }catch(e){console.error('Failed to load users',e);}
     showLogin();
   }
-  initBackBtn();
 }
 
 async function loadAll(){
@@ -2030,10 +2080,8 @@ function doLogin(){
     else{user={id:uid,name:e.split('@')[0],role:'operator',email:e,permissions:{plan:'full',actual:'full',reports:'full'}};}
     const sess={userId:user.id,name:user.name,role:user.role,email:user.email,permissions:user.permissions||{plan:'full',actual:'full',reports:'full'}};
     S.sess=sess;
-    const sessStr=JSON.stringify(sess);
-    localStorage.setItem('imf_sess',sessStr);
-    document.cookie=`imf_sess=${encodeURIComponent(sessStr)};max-age=${60*60*24*30};path=/`;
-    go('home');await loadAll();renderHome();
+    sSess(sess);
+    await loadAll();renderApp();renderHome();
   }).catch(err2=>{
     if(err){err.textContent=err2.code==='auth/invalid-credential'?'Invalid email or password':err2.message;err.style.display='block';}
     if(btn){btn.disabled=false;btn.textContent='Sign In';}
@@ -2051,3 +2099,1105 @@ init();
 </script>
 </body>
 </html>
+
+// ══════════════════════════════════════════════════════════════
+// HT MODULE — Heat Treatment (Gas Carburizing + Tempering)
+// FM/HT/01  Daily Production Cum Inspection Report
+// ══════════════════════════════════════════════════════════════
+
+const HT_FURNACES_CAR=['CF-1','CF-2']; // Carburizing Furnaces
+const HT_FURNACES_TMP=['TF-1','TF-2']; // Tempering Furnaces
+const MONTH_CODES='ABCDEFGHIJKL'; // A=Jan … L=Dec
+
+function htChargeNo(){
+  const now=new Date();
+  const yr=String(now.getFullYear()).slice(-2);
+  const mo=MONTH_CODES[now.getMonth()];
+  const prefix=`I-${yr}-${mo}-`;
+  const existing=S.htCharges.filter(c=>c.chargeNo&&c.chargeNo.startsWith(prefix));
+  const next=String(existing.length+1).padStart(3,'0');
+  return prefix+next;
+}
+
+function reloadHT(){
+  const c=S.cur;
+  if(c==='ht-hub')renderHTHub();
+  else if(c==='ht-view')renderHTView();
+  else if(c==='ht-detail'&&S._htDetailId)renderHTDetail(S._htDetailId);
+}
+
+// ── HT Hub ─────────────────────────────────────────────────
+function renderHTHub(){
+  const today=S.htCharges.filter(c=>c.date===dateStr());
+  const inProgress=S.htCharges.filter(c=>c.status==='in_progress');
+  document.getElementById('s-ht-hub').innerHTML=`
+  <div class="hdr"><div class="hdr-info"><div class="hdr-title">Heat Treatment</div><div class="hdr-sub">Gas Carburizing · FM/HT/01</div></div></div>
+  <div class="pad">
+    <div class="s2" style="margin-bottom:16px">
+      <div class="sc"><div class="sl">Today's Charges</div><div class="sv">${today.length}</div></div>
+      <div class="sc"><div class="sl">In Progress</div><div class="sv" style="color:var(--wa)">${inProgress.length}</div></div>
+    </div>
+    ${inProgress.length?`<div class="slbl">In Progress</div>`+inProgress.map(c=>`
+      <div class="card" style="margin-bottom:8px;border-left:3px solid var(--wa)">
+        <div class="fbw"><div><div style="font-weight:700">${c.chargeNo}</div>
+        <div class="tsm tmut">${c.furnaceNo} · ${c.components&&c.components.length?c.components.map(x=>x.name).join(', '):'—'}</div></div>
+        <span class="bdg bdg-a">In Progress</span></div>
+        <button class="btn btn-p btn-sm" style="margin-top:8px;width:100%" onclick="go('ht-detail','ht-hub');renderHTDetail('${c.id}')">Continue →</button>
+      </div>`).join(''):''}
+    <div class="slbl">Actions</div>
+    <div class="mtiles">
+      <div class="mtile" onclick="go('ht-new','ht-hub');renderHTNew()"><div class="mtic">🔥</div><div class="mtnm">New Charge</div><div class="mtct">Start new carburizing run</div></div>
+      <div class="mtile" onclick="go('ht-view','ht-hub');renderHTView()"><div class="mtic">📋</div><div class="mtnm">View Records</div><div class="mtct">Browse all HT records</div></div>
+    </div>
+  </div>`;
+}
+
+// ── New Charge — Step 1: Header + Components ────────────────
+function renderHTNew(){
+  const chargeNo=htChargeNo();
+  document.getElementById('s-ht-new').innerHTML=`
+  <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
+  <div class="hdr-info"><div class="hdr-title">New HT Charge</div><div class="hdr-sub">${chargeNo}</div></div></div>
+  <div class="pad">
+    <div class="card">
+      <div class="card-hd">📋 Charge Header</div>
+      <div class="row2">
+        <div class="f"><label>Date</label><input id="ht-date" type="date" value="${dateStr()}"></div>
+        <div class="f"><label>Shift</label><select id="ht-shift">${Object.entries(S.shifts).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}</select></div>
+      </div>
+      <div class="f"><label>Carburizing Furnace</label><select id="ht-cfno">
+        ${HT_FURNACES_CAR.map(f=>`<option value="${f}">${f}</option>`).join('')}
+      </select></div>
+      <div class="f"><label>Rev No.</label><input id="ht-rev" type="text" value="03/01.04.2026" placeholder="e.g. 03/01.04.2026"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd" style="display:flex;justify-content:space-between;align-items:center">
+        <span>🔩 Components in Charge</span>
+        <button class="btn btn-s btn-sm" onclick="htAddComp()">+ Add</button>
+      </div>
+      <div id="ht-comp-list"><div class="tsm tmut" style="padding:8px 0">No components added yet.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">🔴 Dot Punching</div>
+      <div class="ibox" style="margin-bottom:10px">Required for all customers <strong>except M&M</strong>. Mark as done before washing.</div>
+      <div class="f"><label>Done by (Person)</label><input id="ht-dp-who" type="text" placeholder="e.g. Suresh Kumar" list="ht-op-list"></div>
+      <div class="f"><label>Time of Dot Punching</label><input id="ht-dp-time" type="time" value="${new Date().toTimeString().slice(0,5)}"></div>
+      <div class="utog" style="margin-top:4px"><label>Dot punching confirmed ✓</label><label class="tsw"><input type="checkbox" id="ht-dp-done"><span class="tsl"></span></label></div>
+      <datalist id="ht-op-list">${S.users.filter(u=>u.role==='operator'||u.stage==='ht'||u.stage==='general').map(u=>`<option value="${u.name}">`).join('')}</datalist>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">🚿 Pre-Wash</div>
+      <div class="ibox" style="margin-bottom:8px">50–70°C · PH 09-12 · 3 to 5 min cycle time</div>
+      <div class="row2">
+        <div class="f"><label>Wash Start Time</label><input id="ht-wash-start" type="time"></div>
+        <div class="f"><label>Wash End Time</label><input id="ht-wash-end" type="time"></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Bath Temp (°C)</label><input id="ht-wash-temp" type="number" placeholder="50–70" min="50" max="70"></div>
+        <div class="f"><label>PH Reading</label><input id="ht-wash-ph" type="number" step="0.1" placeholder="9–12"></div>
+      </div>
+    </div>
+
+    <button class="btn btn-p" onclick="htSaveStep1()">Next: Furnace Loading →</button>
+    <div style="height:24px"></div>
+  </div>`;
+  S._htComps=[];
+  renderHTCompList();
+}
+
+let S_htComps=[];
+function htAddComp(){
+  openModal(`<div class="mtit">Add Component</div>
+  <div class="f"><label>Component Name *</label><input id="htc-n" type="text" placeholder="e.g. Gear Shaft 32mm" list="ht-part-dl">
+    <datalist id="ht-part-dl">${S.parts.map(p=>`<option value="${p.name}">`).join('')}</datalist>
+  </div>
+  <div class="row2">
+    <div class="f"><label>Qty *</label><input id="htc-qty" type="number" min="1" placeholder="e.g. 50"></div>
+    <div class="f"><label>Material</label><input id="htc-mat" type="text" placeholder="e.g. EN8"></div>
+  </div>
+  <div class="row2">
+    <div class="f"><label>Fixture No.</label><input id="htc-fix" type="text" placeholder="e.g. F-12"></div>
+    <div class="f"><label>Heat No.</label><input id="htc-heat" type="text" placeholder="e.g. H-2601"></div>
+  </div>
+  <div class="f"><label>Customer</label><input id="htc-cust" type="text" placeholder="e.g. Bajaj Auto" list="ht-cust-dl">
+    <datalist id="ht-cust-dl">${[...new Set(S.parts.map(p=>p.cust).filter(Boolean))].map(c=>`<option value="${c}">`).join('')}</datalist>
+  </div>
+  <div class="f"><label>Remarks</label><input id="htc-rem" type="text" placeholder="Optional"></div>
+  <button class="btn btn-p mt12" onclick="htConfirmComp()">Add Component</button>
+  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
+}
+function htConfirmComp(){
+  const n=document.getElementById('htc-n').value.trim();
+  const qty=document.getElementById('htc-qty').value;
+  if(!n||!qty){toast('Name and qty required');return}
+  if(!S._htComps)S._htComps=[];
+  S._htComps.push({name:n,qty:+qty,material:document.getElementById('htc-mat').value.trim(),fixtureNo:document.getElementById('htc-fix').value.trim(),heatNo:document.getElementById('htc-heat').value.trim(),customer:document.getElementById('htc-cust').value.trim(),remarks:document.getElementById('htc-rem').value.trim()});
+  closeModal();renderHTCompList();
+}
+function renderHTCompList(){
+  const w=document.getElementById('ht-comp-list');if(!w)return;
+  if(!S._htComps||!S._htComps.length){w.innerHTML=`<div class="tsm tmut" style="padding:8px 0">No components added yet.</div>`;return}
+  w.innerHTML=S._htComps.map((c,i)=>`<div class="rrow" style="padding:8px 0;border-bottom:.5px solid var(--bdr)">
+    <div><div style="font-weight:600">${c.name}</div><div class="tsm tmut">${c.qty} pcs · ${c.material||'—'} · ${c.customer||'—'}</div>
+    <div class="tsm tmut">${c.fixtureNo?'Fix: '+c.fixtureNo:''}${c.heatNo?' · Heat: '+c.heatNo:''}</div></div>
+    <button class="btn btn-d btn-sm" onclick="S._htComps.splice(${i},1);renderHTCompList()">✕</button>
+  </div>`).join('');
+}
+
+async function htSaveStep1(){
+  if(!S._htComps||!S._htComps.length){toast('Add at least one component');return}
+  const chargeNo=document.getElementById('s-ht-new').querySelector('.hdr-sub').textContent;
+  const d={
+    chargeNo,status:'in_progress',
+    date:document.getElementById('ht-date').value,
+    shift:document.getElementById('ht-shift').value,
+    furnaceNo:document.getElementById('ht-cfno').value,
+    revNo:document.getElementById('ht-rev').value,
+    components:S._htComps,
+    dotPunch:{done:document.getElementById('ht-dp-done').checked,who:document.getElementById('ht-dp-who').value.trim(),time:document.getElementById('ht-dp-time').value},
+    prewash:{startTime:document.getElementById('ht-wash-start').value,endTime:document.getElementById('ht-wash-end').value,temp:document.getElementById('ht-wash-temp').value,ph:document.getElementById('ht-wash-ph').value},
+    tempReadings:[],quenching:{},tempering:{},inspection:{},downtimes:{},
+    createdBy:S.sess.userId,createdAt:nowTS()
+  };
+  try{
+    const ref=await db.collection('htCharges').add(d);
+    S._htEditId=ref.id;
+    toast('Charge created ✓');
+    go('ht-detail','ht-new');
+    renderHTDetail(ref.id);
+  }catch(e){toast('Error: '+e.message)}
+}
+
+
+// ── HT Detail — full charge record (Step 2 onward) ─────────
+function renderHTDetail(id){
+  S._htDetailId=id;
+  const c=S.htCharges.find(x=>x.id===id);
+  if(!c){document.getElementById('s-ht-detail').innerHTML=`<div class="pad"><div class="empty"><h3>Record not found</h3></div></div>`;return}
+  const isClosed=c.status==='complete';
+  document.getElementById('s-ht-detail').innerHTML=`
+  <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
+  <div class="hdr-info"><div class="hdr-title">${c.chargeNo}</div>
+  <div class="hdr-sub">${c.furnaceNo} · ${c.date} · ${S.shifts[c.shift]?S.shifts[c.shift].label:c.shift}</div></div>
+  ${!isClosed?`<button class="hdr-act" style="background:var(--ok);color:#fff" onclick="htCompleteCharge('${id}')">✓ Complete</button>`:`<span class="bdg bdg-g" style="margin-right:12px">Complete</span>`}
+  </div>
+  <div class="pad">
+
+    <!-- Components summary -->
+    <div class="card" style="padding:12px 14px;margin-bottom:10px">
+      <div class="slbl" style="margin-bottom:6px">🔩 Components</div>
+      ${(c.components||[]).map(comp=>`<div class="rrow" style="padding:5px 0">
+        <div><div style="font-weight:600;font-size:13px">${comp.name}</div>
+        <div class="tsm tmut">${comp.qty} pcs · ${comp.material||'—'} · ${comp.customer||'—'}${comp.fixtureNo?' · Fix:'+comp.fixtureNo:''}${comp.heatNo?' · Heat:'+comp.heatNo:''}</div></div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Dot punch + prewash summary -->
+    <div class="card" style="padding:12px 14px;margin-bottom:10px">
+      <div class="fbw"><span class="tsm" style="font-weight:600">🔴 Dot Punch</span>
+        <span class="bdg ${c.dotPunch&&c.dotPunch.done?'bdg-g':'bdg-r'}">${c.dotPunch&&c.dotPunch.done?'Done':'Pending'}</span></div>
+      ${c.dotPunch&&c.dotPunch.done?`<div class="tsm tmut">${c.dotPunch.who||'—'} · ${c.dotPunch.time||'—'}</div>`:''}
+      <div class="fbw" style="margin-top:8px"><span class="tsm" style="font-weight:600">🚿 Pre-Wash</span>
+        <span class="tsm tmut">${c.prewash&&c.prewash.startTime?c.prewash.startTime+' → '+(c.prewash.endTime||'?'):'—'}</span></div>
+      ${c.prewash&&c.prewash.temp?`<div class="tsm tmut">${c.prewash.temp}°C · PH ${c.prewash.ph||'—'}</div>`:''}
+    </div>
+
+    <!-- Section A: Furnace Loading -->
+    <div class="card" id="ht-sec-load">
+      <div class="card-hd">🔥 Furnace Loading</div>
+      <div class="row2">
+        <div class="f"><label>Loading Date</label><input id="ht-load-date" type="date" value="${c.loading&&c.loading.date||c.date}" ${isClosed?'disabled':''}></div>
+        <div class="f"><label>Loading Time</label><input id="ht-load-time" type="time" value="${c.loading&&c.loading.time||''}" ${isClosed?'disabled':''}></div>
+      </div>
+      <div class="f"><label>Retort Target Temp (°C)</label><input id="ht-retort-target" type="number" value="${c.loading&&c.loading.retortTarget||760}" ${isClosed?'disabled':''}></div>
+      ${!isClosed?`<button class="btn btn-s btn-sm" onclick="htSaveLoading('${id}')">Save Loading Info</button>`:''}
+    </div>
+
+    <!-- Section B: 7 Temperature Readings -->
+    <div class="card">
+      <div class="card-hd" style="display:flex;justify-content:space-between;align-items:center">
+        <span>🌡 Temperature Readings <span class="tsm tmut">(${(c.tempReadings||[]).length}/7 recorded)</span></span>
+        ${!isClosed&&(c.tempReadings||[]).length<7?`<button class="btn btn-s btn-sm" onclick="htAddTempReading('${id}')">+ Add</button>`:''}
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:520px">
+          <thead><tr style="background:var(--bg)">
+            <th style="padding:6px 8px;text-align:left;color:var(--mut)">#</th>
+            <th style="padding:6px 8px;text-align:left;color:var(--mut)">Time</th>
+            <th style="padding:6px 8px;text-align:right;color:var(--mut)">Retort°C</th>
+            <th style="padding:6px 8px;text-align:right;color:var(--mut)">Z1°C</th>
+            <th style="padding:6px 8px;text-align:right;color:var(--mut)">Z2°C</th>
+            <th style="padding:6px 8px;text-align:right;color:var(--mut)">MV</th>
+            <th style="padding:6px 8px;text-align:right;color:var(--mut)">MeOH L/hr</th>
+            <th style="padding:6px 8px;text-align:right;color:var(--mut)">Acet L/hr</th>
+            <th style="padding:6px 8px;text-align:left;color:var(--mut)">Note</th>
+            ${!isClosed?`<th></th>`:''}
+          </tr></thead>
+          <tbody id="ht-temp-rows">
+            ${(c.tempReadings||[]).map((r,i)=>`<tr style="border-top:.5px solid var(--bdr)${htTempRowStyle(r)}">
+              <td style="padding:6px 8px;font-weight:700">${i+1}</td>
+              <td style="padding:6px 8px">${r.time||'—'}</td>
+              <td style="padding:6px 8px;text-align:right;font-weight:600">${r.retort||'—'}</td>
+              <td style="padding:6px 8px;text-align:right">${r.z1||'—'}</td>
+              <td style="padding:6px 8px;text-align:right">${r.z2||'—'}</td>
+              <td style="padding:6px 8px;text-align:right">${r.mv||'—'}</td>
+              <td style="padding:6px 8px;text-align:right">${r.methanol||'—'}</td>
+              <td style="padding:6px 8px;text-align:right">${r.acetone||'—'}</td>
+              <td style="padding:6px 8px;font-size:10px;color:var(--mut)">${r.remarks||''}</td>
+              ${!isClosed?`<td style="padding:4px"><button class="btn btn-d btn-sm" style="padding:2px 6px;font-size:10px" onclick="htDelTempRow('${id}',${i})">✕</button></td>`:''}
+            </tr>`).join('')}
+            ${!(c.tempReadings&&c.tempReadings.length)?`<tr><td colspan="9" style="padding:12px;text-align:center;color:var(--mut);font-size:12px">No readings yet</td></tr>`:''}
+          </tbody>
+        </table>
+      </div>
+      ${(c.tempReadings||[]).length<7&&!isClosed?`<div class="ibox" style="margin-top:8px;font-size:11px">⚠️ ${7-(c.tempReadings||[]).length} more reading(s) required</div>`:''}
+    </div>
+
+    <!-- Section C: Quenching -->
+    <div class="card">
+      <div class="card-hd">💧 Quenching</div>
+      <div class="row2">
+        <div class="f"><label>Unloading Time</label><input id="ht-unload-time" type="time" value="${c.quenching&&c.quenching.unloadTime||''}" ${isClosed?'disabled':''}></div>
+        <div class="f"><label>Quenching Start Time</label><input id="ht-qstart" type="time" value="${c.quenching&&c.quenching.startTime||''}" ${isClosed?'disabled':''}></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Oil Temp Before (°C)</label><input id="ht-q-oil-before" type="number" value="${c.quenching&&c.quenching.oilTempBefore||''}" ${isClosed?'disabled':''}></div>
+        <div class="f"><label>Oil Temp After (°C)</label><input id="ht-q-oil-after" type="number" value="${c.quenching&&c.quenching.oilTempAfter||''}" ${isClosed?'disabled':''}></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Wash Temp After Q (°C)</label><input id="ht-q-wash-temp" type="number" placeholder="50–70" value="${c.quenching&&c.quenching.washTemp||''}" ${isClosed?'disabled':''}></div>
+        <div class="f"><label>PH After Q</label><input id="ht-q-wash-ph" type="number" step="0.1" placeholder="9–12" value="${c.quenching&&c.quenching.washPh||''}" ${isClosed?'disabled':''}></div>
+      </div>
+      <div class="f"><label>Cooling Start Time <span class="tsm tmut">(15 min after quenching)</span></label>
+        <input id="ht-cool-start" type="time" value="${c.quenching&&c.quenching.coolingStart||''}" ${isClosed?'disabled':''}></div>
+      <div class="f"><label>Surface Hardness as Quenched</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${[1,2,3,4,5,6,7].map((_,i)=>`<input type="number" step="0.1" placeholder="HRC" style="width:60px;padding:6px;font-size:13px;border:1.5px solid var(--bdr);border-radius:6px;text-align:center" id="ht-sqhrc-${i}" value="${c.quenching&&c.quenching.surfHRCQuenched&&c.quenching.surfHRCQuenched[i]||''}" ${isClosed?'disabled':''}>`).join('')}
+          <span class="tsm tmut" style="align-self:center">HRC</span>
+        </div>
+      </div>
+      ${!isClosed?`<button class="btn btn-s btn-sm" onclick="htSaveQuenching('${id}')">Save Quenching</button>`:''}
+    </div>
+
+    <!-- Section D: Tempering -->
+    <div class="card">
+      <div class="card-hd">♨️ Tempering</div>
+      <div class="f"><label>Tempering Furnace</label><select id="ht-tfno" ${isClosed?'disabled':''}>
+        ${HT_FURNACES_TMP.map(f=>`<option value="${f}" ${c.tempering&&c.tempering.furnaceNo===f?'selected':''}>${f}</option>`).join('')}
+      </select></div>
+      <div class="row2">
+        <div class="f"><label>Tempering Temp (°C)</label><input id="ht-tmp-temp" type="number" value="${c.tempering&&c.tempering.temperature||''}" ${isClosed?'disabled':''}></div>
+        <div class="f"><label>Loading Time</label><input id="ht-tmp-load" type="time" value="${c.tempering&&c.tempering.loadingTime||''}" ${isClosed?'disabled':''}></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Temp Attended At</label><input id="ht-tmp-atnd" type="time" value="${c.tempering&&c.tempering.tempAttendedAt||''}" ${isClosed?'disabled':''}></div>
+        <div class="f"><label>Unloading Time</label><input id="ht-tmp-unload" type="time" value="${c.tempering&&c.tempering.unloadingTime||''}" ${isClosed?'disabled':''}></div>
+      </div>
+      ${!isClosed?`<button class="btn btn-s btn-sm" onclick="htSaveTempering('${id}')">Save Tempering</button>`:''}
+    </div>
+
+    <!-- Section E: Inspection -->
+    <div class="card">
+      <div class="card-hd">🔬 Inspection Results</div>
+      <div class="f"><label>Surface Hardness After Tempering</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${[1,2,3,4].map((_,i)=>`<input type="number" step="0.1" placeholder="HRC" style="width:60px;padding:6px;font-size:13px;border:1.5px solid var(--bdr);border-radius:6px;text-align:center" id="ht-insp-shrc-${i}" value="${c.inspection&&c.inspection.surfHRCTempered&&c.inspection.surfHRCTempered[i]||''}" ${isClosed?'disabled':''}>`).join('')}
+          <span class="tsm tmut" style="align-self:center">HRC</span>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Core Hardness HRC</label><input id="ht-insp-chrc" type="number" step="0.1" value="${c.inspection&&c.inspection.coreHRC||''}" ${isClosed?'disabled':''}></div>
+        <div class="f"><label>Core Hardness Pcd</label><input id="ht-insp-cpcd" type="number" step="0.1" value="${c.inspection&&c.inspection.corePcd||''}" ${isClosed?'disabled':''}></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Micro Case Depth (mm)</label><input id="ht-insp-mcd" type="text" placeholder="e.g. 0.8" value="${c.inspection&&c.inspection.microCaseDepth||''}" ${isClosed?'disabled':''}></div>
+        <div class="f"><label>Effective Case Depth (mm)</label><input id="ht-insp-ecd" type="text" placeholder="685 Hv1" value="${c.inspection&&c.inspection.effectiveCaseDepth||''}" ${isClosed?'disabled':''}></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Microstructure</label><input id="ht-insp-ms" type="text" value="${c.inspection&&c.inspection.microstructure||''}" ${isClosed?'disabled':''}></div>
+        <div class="f"><label>R/A % (550/514 HV)</label><input id="ht-insp-ra" type="text" value="${c.inspection&&c.inspection.ra||''}" ${isClosed?'disabled':''}></div>
+      </div>
+      <div class="f"><label>Inspected By</label><input id="ht-insp-by" type="text" value="${c.inspection&&c.inspection.inspectedBy||''}" list="ht-op-list2" ${isClosed?'disabled':''}>
+        <datalist id="ht-op-list2">${S.users.map(u=>`<option value="${u.name}">`).join('')}</datalist>
+      </div>
+      ${!isClosed?`<button class="btn btn-s btn-sm" onclick="htSaveInspection('${id}')">Save Inspection</button>`:''}
+    </div>
+
+    <!-- Section F: Downtimes -->
+    <div class="card">
+      <div class="card-hd">⏱ Downtimes</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:10px">Record hours for any downtime category during this shift</div>
+      ${['noMaterial','noPower','underMaintenance','fcConditioning'].map((k,i)=>{
+        const labels=['No Material','No Power','Under Maintenance','F/C Conditioning'];
+        const v=c.downtimes&&c.downtimes[k]||{from:'',to:''};
+        return`<div class="fbw" style="margin-bottom:10px;align-items:flex-end">
+          <div style="font-size:12px;font-weight:600;min-width:110px">${labels[i]}</div>
+          <div style="display:flex;gap:6px;flex:1">
+            <div class="f" style="margin:0"><label style="font-size:10px">From</label><input type="time" id="ht-dt-${k}-from" value="${v.from}" ${isClosed?'disabled':''}></div>
+            <div class="f" style="margin:0"><label style="font-size:10px">To</label><input type="time" id="ht-dt-${k}-to" value="${v.to}" ${isClosed?'disabled':''}></div>
+          </div>
+        </div>`;
+      }).join('')}
+      ${!isClosed?`<button class="btn btn-s btn-sm" onclick="htSaveDowntimes('${id}')">Save Downtimes</button>`:''}
+    </div>
+
+    <div style="height:32px"></div>
+  </div>`;
+}
+
+function htTempRowStyle(r){
+  if(+r.retort>=890)return';background:#fff7ed';
+  if(+r.retort>=760)return';background:#f0fdf4';
+  return'';
+}
+
+
+// ── HT Save functions ───────────────────────────────────────
+async function htSaveLoading(id){
+  const d={loading:{date:document.getElementById('ht-load-date').value,time:document.getElementById('ht-load-time').value,retortTarget:document.getElementById('ht-retort-target').value}};
+  try{await db.collection('htCharges').doc(id).update(d);toast('Loading saved ✓');}
+  catch(e){toast('Error: '+e.message)}
+}
+
+function htAddTempReading(id){
+  const c=S.htCharges.find(x=>x.id===id);
+  const n=(c&&c.tempReadings?c.tempReadings.length:0)+1;
+  const prevR=c&&c.tempReadings&&c.tempReadings.length?c.tempReadings[c.tempReadings.length-1]:null;
+  openModal(`<div class="mtit">Temperature Reading #${n}</div>
+  <div class="ibox" style="font-size:11px;margin-bottom:12px">
+    🟢 760°C → start Methanol @ 0.7 L/hr &nbsp;|&nbsp; 🟠 890°C → start Acetone
+  </div>
+  <div class="row2">
+    <div class="f"><label>Time *</label><input id="htr-time" type="time" value="${new Date().toTimeString().slice(0,5)}"></div>
+    <div class="f"><label>Retort Temp °C *</label><input id="htr-retort" type="number" placeholder="e.g. 760" oninput="htTempHint(this.value)"></div>
+  </div>
+  <div id="htr-hint" style="font-size:11px;padding:6px 8px;border-radius:6px;margin-bottom:8px;display:none"></div>
+  <div class="row2">
+    <div class="f"><label>Z1 Temp °C</label><input id="htr-z1" type="number" placeholder="—"></div>
+    <div class="f"><label>Z2 Temp °C</label><input id="htr-z2" type="number" placeholder="—"></div>
+  </div>
+  <div class="row2">
+    <div class="f"><label>MV Reading</label><input id="htr-mv" type="number" step="0.01" placeholder="—"></div>
+    <div class="f"><label>Methanol Flow (L/hr)</label><input id="htr-meoh" type="number" step="0.1" placeholder="${prevR?prevR.methanol:'0.7'}"></div>
+  </div>
+  <div class="row2">
+    <div class="f"><label>Acetone Flow (L/hr)</label><input id="htr-acet" type="number" step="0.1" placeholder="${prevR?prevR.acetone:'0'}"></div>
+    <div class="f"></div>
+  </div>
+  <div class="f"><label>Remarks</label><input id="htr-rem" type="text" placeholder="e.g. Diffusion M.V. Set-1130"></div>
+  <button class="btn btn-p mt12" onclick="htConfirmTempReading('${id}')">Save Reading</button>
+  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
+}
+function htTempHint(val){
+  const h=document.getElementById('htr-hint');if(!h)return;
+  const t=+val;
+  if(t>=890){h.style.display='block';h.style.background='#fff7ed';h.style.color='#c2410c';h.textContent='🟠 890°C reached — start Acetone flow';}
+  else if(t>=760){h.style.display='block';h.style.background='#f0fdf4';h.style.color='#15803d';h.textContent='🟢 760°C reached — start Methanol @ 0.7 L/hr';}
+  else{h.style.display='none';}
+}
+async function htConfirmTempReading(id){
+  const time=document.getElementById('htr-time').value;
+  const retort=document.getElementById('htr-retort').value;
+  if(!time||!retort){toast('Time and retort temp required');return}
+  const c=S.htCharges.find(x=>x.id===id);
+  const readings=[...(c&&c.tempReadings||[])];
+  if(readings.length>=7){toast('Maximum 7 readings already recorded');closeModal();return}
+  readings.push({time,retort:+retort,z1:document.getElementById('htr-z1').value||'',z2:document.getElementById('htr-z2').value||'',mv:document.getElementById('htr-mv').value||'',methanol:document.getElementById('htr-meoh').value||'',acetone:document.getElementById('htr-acet').value||'',remarks:document.getElementById('htr-rem').value.trim()});
+  try{
+    await db.collection('htCharges').doc(id).update({tempReadings:readings});
+    closeModal();toast(`Reading #${readings.length} saved ✓`);
+    renderHTDetail(id);
+  }catch(e){toast('Error: '+e.message)}
+}
+async function htDelTempRow(id,idx){
+  if(!confirm('Delete this reading?'))return;
+  const c=S.htCharges.find(x=>x.id===id);
+  const readings=[...(c&&c.tempReadings||[])];
+  readings.splice(idx,1);
+  try{await db.collection('htCharges').doc(id).update({tempReadings:readings});renderHTDetail(id);}
+  catch(e){toast('Error: '+e.message)}
+}
+
+async function htSaveQuenching(id){
+  const surfHRC=[0,1,2,3,4,5,6].map(i=>document.getElementById('ht-sqhrc-'+i)?.value||'').filter(v=>v);
+  const d={quenching:{unloadTime:document.getElementById('ht-unload-time').value,startTime:document.getElementById('ht-qstart').value,oilTempBefore:document.getElementById('ht-q-oil-before').value,oilTempAfter:document.getElementById('ht-q-oil-after').value,washTemp:document.getElementById('ht-q-wash-temp').value,washPh:document.getElementById('ht-q-wash-ph').value,coolingStart:document.getElementById('ht-cool-start').value,surfHRCQuenched:surfHRC}};
+  try{await db.collection('htCharges').doc(id).update(d);toast('Quenching saved ✓');}
+  catch(e){toast('Error: '+e.message)}
+}
+
+async function htSaveTempering(id){
+  const d={tempering:{furnaceNo:document.getElementById('ht-tfno').value,temperature:document.getElementById('ht-tmp-temp').value,loadingTime:document.getElementById('ht-tmp-load').value,tempAttendedAt:document.getElementById('ht-tmp-atnd').value,unloadingTime:document.getElementById('ht-tmp-unload').value}};
+  try{await db.collection('htCharges').doc(id).update(d);toast('Tempering saved ✓');}
+  catch(e){toast('Error: '+e.message)}
+}
+
+async function htSaveInspection(id){
+  const surfHRCTempered=[0,1,2,3].map(i=>document.getElementById('ht-insp-shrc-'+i)?.value||'').filter(v=>v);
+  const d={inspection:{surfHRCTempered,coreHRC:document.getElementById('ht-insp-chrc').value,corePcd:document.getElementById('ht-insp-cpcd').value,microCaseDepth:document.getElementById('ht-insp-mcd').value,effectiveCaseDepth:document.getElementById('ht-insp-ecd').value,microstructure:document.getElementById('ht-insp-ms').value,ra:document.getElementById('ht-insp-ra').value,inspectedBy:document.getElementById('ht-insp-by').value.trim()}};
+  try{await db.collection('htCharges').doc(id).update(d);toast('Inspection saved ✓');}
+  catch(e){toast('Error: '+e.message)}
+}
+
+async function htSaveDowntimes(id){
+  const keys=['noMaterial','noPower','underMaintenance','fcConditioning'];
+  const downtimes={};
+  keys.forEach(k=>{const f=document.getElementById('ht-dt-'+k+'-from')?.value||'';const t=document.getElementById('ht-dt-'+k+'-to')?.value||'';if(f||t)downtimes[k]={from:f,to:t};});
+  try{await db.collection('htCharges').doc(id).update({downtimes});toast('Downtimes saved ✓');}
+  catch(e){toast('Error: '+e.message)}
+}
+
+async function htCompleteCharge(id){
+  const c=S.htCharges.find(x=>x.id===id);
+  if(!c)return;
+  const warn=[];
+  if(!c.loading||!c.loading.time)warn.push('Loading time not set');
+  if(!c.tempReadings||c.tempReadings.length<7)warn.push(`Only ${c.tempReadings?c.tempReadings.length:0}/7 temperature readings recorded`);
+  if(!c.quenching||!c.quenching.startTime)warn.push('Quenching time not recorded');
+  if(!c.tempering||!c.tempering.unloadingTime)warn.push('Tempering not completed');
+  if(warn.length){
+    openModal(`<div class="mtit">⚠️ Incomplete Data</div>
+    <div class="ibox" style="margin-bottom:12px">${warn.map(w=>`<div>• ${w}</div>`).join('')}</div>
+    <div class="tsm tmut" style="margin-bottom:14px">You can still mark as complete and fill missing data later, or go back and complete now.</div>
+    <button class="btn btn-p" onclick="closeModal();htForceComplete('${id}')">Mark Complete Anyway</button>
+    <button class="btn btn-s mt8" onclick="closeModal()">Go Back & Complete</button>`);
+    return;
+  }
+  htForceComplete(id);
+}
+async function htForceComplete(id){
+  try{
+    await db.collection('htCharges').doc(id).update({status:'complete',completedAt:nowTS(),completedBy:S.sess.userId});
+    toast('Charge completed ✓');
+    renderHTDetail(id);
+  }catch(e){toast('Error: '+e.message)}
+}
+
+// ── HT View ─────────────────────────────────────────────────
+let _htVFrom='',_htVTo='',_htVFur='all',_htVStatus='all';
+function renderHTView(){
+  const today=dateStr();
+  _htVFrom=today;_htVTo=today;
+  document.getElementById('s-ht-view').innerHTML=`
+  <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
+  <div class="hdr-info"><div class="hdr-title">HT Records</div></div></div>
+  <div class="pad">
+    <div class="card">
+      <div class="row2">
+        <div class="f" style="margin:0"><label>From</label><input type="date" id="htv-from" value="${today}" onchange="_htVFrom=this.value;htRefreshView()"></div>
+        <div class="f" style="margin:0"><label>To</label><input type="date" id="htv-to" value="${today}" onchange="_htVTo=this.value;htRefreshView()"></div>
+      </div>
+      <div class="row2" style="margin-top:10px">
+        <div class="f" style="margin:0"><label>Furnace</label><select onchange="_htVFur=this.value;htRefreshView()">
+          <option value="all">All Furnaces</option>
+          ${HT_FURNACES_CAR.map(f=>`<option value="${f}">${f}</option>`).join('')}
+        </select></div>
+        <div class="f" style="margin:0"><label>Status</label><select onchange="_htVStatus=this.value;htRefreshView()">
+          <option value="all">All</option><option value="in_progress">In Progress</option><option value="complete">Complete</option>
+        </select></div>
+      </div>
+    </div>
+    <div id="htv-list"></div>
+  </div>`;
+  htRefreshView();
+}
+function htRefreshView(){
+  const list=S.htCharges.filter(c=>c.date>=_htVFrom&&c.date<=_htVTo&&(_htVFur==='all'||c.furnaceNo===_htVFur)&&(_htVStatus==='all'||c.status===_htVStatus)).sort((a,b)=>b.date.localeCompare(a.date)||b.chargeNo.localeCompare(a.chargeNo));
+  const w=document.getElementById('htv-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">🔥</div><h3>No records found</h3><p>No HT charges for selected filters.</p></div>`;return}
+  w.innerHTML=list.map(c=>{
+    const nReadings=(c.tempReadings||[]).length;
+    const tempered=c.tempering&&c.tempering.unloadingTime;
+    return`<div class="card" style="margin-bottom:10px">
+      <div class="fbw" style="margin-bottom:6px">
+        <div><div style="font-weight:700;font-size:14px">${c.chargeNo}</div>
+        <div class="tsm tmut">${c.furnaceNo} · ${c.date} · ${S.shifts[c.shift]?S.shifts[c.shift].label:c.shift}</div></div>
+        <span class="bdg ${c.status==='complete'?'bdg-g':'bdg-a'}">${c.status==='complete'?'Complete':'In Progress'}</span>
+      </div>
+      <div class="tsm tmut" style="margin-bottom:8px">${(c.components||[]).map(x=>x.name).join(' · ')||'—'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        <span class="bdg ${nReadings>=7?'bdg-g':'bdg-r'}">🌡 ${nReadings}/7 readings</span>
+        <span class="bdg ${tempered?'bdg-g':'bdg-gr'}">♨️ ${tempered?'Tempered':'Not tempered'}</span>
+        ${c.inspection&&c.inspection.inspectedBy?`<span class="bdg bdg-g">🔬 Inspected</span>`:`<span class="bdg bdg-gr">🔬 Pending inspection</span>`}
+      </div>
+      <button class="btn btn-s btn-sm" style="width:100%" onclick="go('ht-detail','ht-view');renderHTDetail('${c.id}')">View / Edit →</button>
+    </div>`;
+  }).join('');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// DISPATCH MODULE
+// Collections: pos (PO + monthly schedule), dispatches (invoice records)
+// ══════════════════════════════════════════════════════════════
+
+function reloadDsp(){
+  const c=S.cur;
+  if(c==='dsp-hub')renderDspHub();
+  else if(c==='dsp-po-list')renderDspPoList();
+  else if(c==='dsp-po-detail'&&S._dspPoId)renderDspPoDetail(S._dspPoId);
+  else if(c==='dsp-track')renderDspTrack();
+}
+
+// ── Hub ────────────────────────────────────────────────────────
+function renderDspHub(){
+  // Compute pending dispatches across all POs
+  const today=dateStr();
+  const overdueLines=[];
+  S.pos.forEach(po=>{
+    (po.lines||[]).forEach(ln=>{
+      const dispatched=S.dispatches.filter(d=>d.poId===po.id).reduce((s,d)=>{
+        const li=(d.items||[]).find(i=>i.lineId===ln.id);
+        return s+(li?+li.qty:0);
+      },0);
+      const pending=(+ln.qty||0)-dispatched;
+      if(pending>0&&ln.dueDate&&ln.dueDate<today)overdueLines.push({po,ln,pending});
+    });
+  });
+
+  const pendingToday=[];
+  S.pos.forEach(po=>{
+    (po.lines||[]).forEach(ln=>{
+      const dispatched=S.dispatches.filter(d=>d.poId===po.id).reduce((s,d)=>{
+        const li=(d.items||[]).find(i=>i.lineId===ln.id);
+        return s+(li?+li.qty:0);
+      },0);
+      const pending=(+ln.qty||0)-dispatched;
+      if(pending>0&&ln.dueDate===today)pendingToday.push({po,ln,pending});
+    });
+  });
+
+  document.getElementById('s-dsp-hub').innerHTML=`
+  <div class="hdr"><div class="hdr-info"><div class="hdr-title">Dispatch</div><div class="hdr-sub">Schedule & Tracksheet</div></div></div>
+  <div class="pad">
+    <div class="s2" style="margin-bottom:16px">
+      <div class="sc"><div class="sl">Active POs</div><div class="sv">${S.pos.filter(p=>p.status!=='closed').length}</div></div>
+      <div class="sc"><div class="sl" style="color:var(--er)">Overdue Lines</div><div class="sv" style="color:var(--er)">${overdueLines.length}</div></div>
+    </div>
+    ${overdueLines.length?`<div class="slbl" style="color:var(--er)">⚠️ Overdue</div>`+overdueLines.slice(0,3).map(({po,ln,pending})=>`
+    <div class="card" style="border-left:3px solid var(--er);margin-bottom:8px;padding:10px 12px">
+      <div class="fbw"><div><div style="font-weight:700;font-size:13px">${ln.partName||'—'}</div>
+      <div class="tsm tmut">${po.customer} · PO: ${po.poNo}</div></div>
+      <div style="text-align:right"><div style="font-weight:700;color:var(--er)">${pending} pending</div>
+      <div class="tsm tmut">Due: ${ln.dueDate}</div></div></div>
+    </div>`).join(''):''}
+    ${pendingToday.length?`<div class="slbl">📅 Due Today</div>`+pendingToday.map(({po,ln,pending})=>`
+    <div class="card" style="border-left:3px solid var(--wa);margin-bottom:8px;padding:10px 12px">
+      <div class="fbw"><div><div style="font-weight:700;font-size:13px">${ln.partName||'—'}</div>
+      <div class="tsm tmut">${po.customer} · PO: ${po.poNo}</div></div>
+      <div style="text-align:right"><div style="font-weight:700">${pending} pending</div></div></div>
+    </div>`).join(''):''}
+    <div class="slbl">Actions</div>
+    <div class="mtiles">
+      <div class="mtile" onclick="go('dsp-new','dsp-hub');renderDspNew()"><div class="mtic">🚚</div><div class="mtnm">New Dispatch</div><div class="mtct">Record an invoice dispatch</div></div>
+      <div class="mtile" onclick="go('dsp-po-list','dsp-hub');renderDspPoList()"><div class="mtic">📄</div><div class="mtnm">PO / Schedule</div><div class="mtct">${S.pos.length} POs loaded</div></div>
+      <div class="mtile" onclick="go('dsp-track','dsp-hub');renderDspTrack()"><div class="mtic">📊</div><div class="mtnm">Tracksheet</div><div class="mtct">Schedule vs dispatched</div></div>
+    </div>
+  </div>`;
+}
+
+// ── PO List ────────────────────────────────────────────────────
+let _dspPoSrch='',_dspPoCust='all',_dspPoStatus='open';
+function renderDspPoList(){
+  const custs=[...new Set(S.pos.map(p=>p.customer).filter(Boolean))].sort();
+  document.getElementById('s-dsp-po-list').innerHTML=`
+  <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
+  <div class="hdr-info"><div class="hdr-title">Purchase Orders</div><div class="hdr-sub">${S.pos.length} POs</div></div>
+  <button class="hdr-act" onclick="go('dsp-po-new','dsp-po-list');renderDspPoNew()">+ Add PO</button></div>
+  <div class="pad">
+    <div class="mfilt">
+      <input type="search" placeholder="Search PO / customer..." oninput="_dspPoSrch=this.value;renderDspPoItems()">
+      <select onchange="_dspPoCust=this.value;renderDspPoItems()">
+        <option value="all">All Customers</option>
+        ${custs.map(c=>`<option value="${c}">${c}</option>`).join('')}
+      </select>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      ${['open','closed','all'].map(s=>`<button class="btn btn-sm ${_dspPoStatus===s?'btn-p':'btn-s'}" onclick="_dspPoStatus='${s}';renderDspPoItems()">${s==='open'?'Open':s==='closed'?'Closed':'All'}</button>`).join('')}
+    </div>
+    <div id="dsp-po-items"></div>
+  </div>`;
+  renderDspPoItems();
+}
+function renderDspPoItems(){
+  const q=_dspPoSrch.toLowerCase();
+  const list=S.pos.filter(p=>
+    (_dspPoStatus==='all'||(_dspPoStatus==='open'&&p.status!=='closed')||(_dspPoStatus==='closed'&&p.status==='closed'))&&
+    (_dspPoCust==='all'||p.customer===_dspPoCust)&&
+    (!q||p.poNo.toLowerCase().includes(q)||p.customer.toLowerCase().includes(q))
+  ).sort((a,b)=>b.poDate.localeCompare(a.poDate));
+  const w=document.getElementById('dsp-po-items');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">📄</div><h3>No POs found</h3><p>Add a PO to start tracking dispatches.</p></div>`;return}
+  w.innerHTML=list.map(po=>{
+    const totalLines=(po.lines||[]).length;
+    const completedLines=(po.lines||[]).filter(ln=>{
+      const dispatched=S.dispatches.filter(d=>d.poId===po.id).reduce((s,d)=>{
+        const li=(d.items||[]).find(i=>i.lineId===ln.id);return s+(li?+li.qty:0);
+      },0);
+      return dispatched>=(+ln.qty||0);
+    }).length;
+    return`<div class="card" style="margin-bottom:10px">
+      <div class="fbw" style="margin-bottom:6px">
+        <div><div style="font-weight:700">${po.poNo}</div>
+        <div class="tsm tmut">${po.customer} · ${po.poDate}</div></div>
+        <span class="bdg ${po.status==='closed'?'bdg-r':'bdg-g'}">${po.status==='closed'?'Closed':'Open'}</span>
+      </div>
+      <div class="tsm tmut" style="margin-bottom:8px">${totalLines} part${totalLines!==1?'s':''} · ${completedLines}/${totalLines} lines complete</div>
+      <div class="prog" style="margin-bottom:8px"><div class="pf pf-g" style="width:${totalLines?Math.round(completedLines/totalLines*100):0}%"></div></div>
+      <button class="btn btn-s btn-sm" style="width:100%" onclick="go('dsp-po-detail','dsp-po-list');renderDspPoDetail('${po.id}')">View Details →</button>
+    </div>`;
+  }).join('');
+}
+
+// ── New PO ─────────────────────────────────────────────────────
+function renderDspPoNew(){
+  S._dspPoLines=[];
+  document.getElementById('s-dsp-po-new').innerHTML=`
+  <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
+  <div class="hdr-info"><div class="hdr-title">New PO / Schedule</div></div></div>
+  <div class="pad">
+    <div class="card">
+      <div class="card-hd">PO Header</div>
+      <div class="f"><label>Customer *</label>
+        <input id="po-cust" type="text" placeholder="e.g. Bajaj Auto" list="po-cust-dl">
+        <datalist id="po-cust-dl">${[...new Set(S.parts.map(p=>p.cust).filter(Boolean))].map(c=>`<option value="${c}">`).join('')}${[...new Set(S.pos.map(p=>p.customer).filter(Boolean))].map(c=>`<option value="${c}">`).join('')}</datalist>
+      </div>
+      <div class="row2">
+        <div class="f"><label>PO Number *</label><input id="po-no" type="text" placeholder="e.g. PO-2026-001"></div>
+        <div class="f"><label>PO Date *</label><input id="po-date" type="date" value="${dateStr()}"></div>
+      </div>
+      <div class="f"><label>Month (for monthly schedule)</label>
+        <input id="po-month" type="month" value="${dateStr().slice(0,7)}">
+      </div>
+      <div class="f"><label>Remarks</label><input id="po-remarks" type="text" placeholder="Optional"></div>
+    </div>
+    <div class="card">
+      <div class="card-hd" style="display:flex;justify-content:space-between;align-items:center">
+        <span>🔩 Part Lines</span>
+        <button class="btn btn-s btn-sm" onclick="dspAddPoLine()">+ Add Part</button>
+      </div>
+      <div id="po-lines-list"><div class="tsm tmut" style="padding:8px 0">No parts added yet.</div></div>
+    </div>
+    <button class="btn btn-p" onclick="saveDspPo()">Save PO</button>
+    <div style="height:24px"></div>
+  </div>`;
+}
+
+function dspAddPoLine(editIdx){
+  const ln=editIdx!==undefined?S._dspPoLines[editIdx]:null;
+  openModal(`<div class="mtit">${ln?'Edit':'Add'} Part Line</div>
+  <div class="f"><label>Part *</label>
+    <input id="pol-part" type="text" placeholder="Search part..." value="${ln?ln.partName:''}" oninput="dspPartSearch(this)" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off">
+    <input type="hidden" id="pol-part-id" value="${ln?ln.partId:''}">
+    <input type="hidden" id="pol-part-no" value="${ln?ln.partNo:''}">
+  </div>
+  <div class="row2">
+    <div class="f"><label>Scheduled Qty *</label><input id="pol-qty" type="number" min="1" value="${ln?ln.qty:''}"></div>
+    <div class="f"><label>Unit</label><select id="pol-unit"><option value="pcs" ${!ln||ln.unit==='pcs'?'selected':''}>pcs</option><option value="nos" ${ln&&ln.unit==='nos'?'selected':''}>nos</option><option value="kg" ${ln&&ln.unit==='kg'?'selected':''}>kg</option></select></div>
+  </div>
+  <div class="row2">
+    <div class="f"><label>Due Date *</label><input id="pol-due" type="date" value="${ln?ln.dueDate:dateStr()}"></div>
+    <div class="f"><label>Rate (₹/pc)</label><input id="pol-rate" type="number" step="0.01" value="${ln?ln.rate||'':''}"></div>
+  </div>
+  <div class="f"><label>Remarks</label><input id="pol-rem" type="text" value="${ln?ln.remarks||'':''}"></div>
+  <button class="btn btn-p mt12" onclick="dspConfirmPoLine(${editIdx!==undefined?editIdx:'undefined'})">${ln?'Update':'Add'} Part</button>
+  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
+}
+function dspPartSearch(inp){
+  const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}
+  const matches=S.parts.filter(p=>p.name.toLowerCase().includes(q)||p.no.toLowerCase().includes(q)).slice(0,12);
+  showGDrop(inp,matches,p=>{
+    inp.value=p.name;
+    document.getElementById('pol-part-id').value=p.id;
+    document.getElementById('pol-part-no').value=p.no;
+  });
+}
+function dspConfirmPoLine(editIdx){
+  const partName=document.getElementById('pol-part').value.trim();
+  const qty=document.getElementById('pol-qty').value;
+  const due=document.getElementById('pol-due').value;
+  if(!partName||!qty||!due){toast('Part, qty and due date required');return}
+  const ln={
+    id:editIdx!==undefined?S._dspPoLines[editIdx].id:uid(),
+    partId:document.getElementById('pol-part-id').value,
+    partNo:document.getElementById('pol-part-no').value,
+    partName,qty:+qty,
+    unit:document.getElementById('pol-unit').value,
+    dueDate:due,
+    rate:parseFloat(document.getElementById('pol-rate').value)||0,
+    remarks:document.getElementById('pol-rem').value.trim()
+  };
+  if(editIdx!==undefined)S._dspPoLines[editIdx]=ln;
+  else S._dspPoLines.push(ln);
+  closeModal();renderDspPoLinesList();
+}
+function renderDspPoLinesList(){
+  const w=document.getElementById('po-lines-list');if(!w)return;
+  if(!S._dspPoLines.length){w.innerHTML=`<div class="tsm tmut" style="padding:8px 0">No parts added yet.</div>`;return}
+  w.innerHTML=S._dspPoLines.map((ln,i)=>`
+  <div class="rrow" style="padding:8px 0;border-bottom:.5px solid var(--bdr)">
+    <div><div style="font-weight:600">${ln.partName}</div>
+    <div class="tsm tmut">${ln.partNo||'—'} · ${ln.qty} ${ln.unit} · Due: ${ln.dueDate}${ln.rate?' · ₹'+ln.rate+'/pc':''}</div></div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-s btn-sm" onclick="dspAddPoLine(${i})">✏️</button>
+      <button class="btn btn-d btn-sm" onclick="S._dspPoLines.splice(${i},1);renderDspPoLinesList()">✕</button>
+    </div>
+  </div>`).join('');
+}
+async function saveDspPo(){
+  const cust=document.getElementById('po-cust').value.trim();
+  const poNo=document.getElementById('po-no').value.trim();
+  const poDate=document.getElementById('po-date').value;
+  if(!cust||!poNo){toast('Customer and PO number required');return}
+  if(!S._dspPoLines.length){toast('Add at least one part line');return}
+  const d={customer:cust,poNo,poDate,month:document.getElementById('po-month').value,remarks:document.getElementById('po-remarks').value.trim(),lines:S._dspPoLines,status:'open',createdBy:S.sess.userId,createdAt:nowTS()};
+  try{
+    const ref=await db.collection('pos').add(d);
+    toast('PO saved ✓');
+    go('dsp-po-detail','dsp-po-list');
+    renderDspPoDetail(ref.id);
+  }catch(e){toast('Error: '+e.message)}
+}
+
+
+// ── PO Detail ─────────────────────────────────────────────────
+function renderDspPoDetail(id){
+  S._dspPoId=id;
+  const po=S.pos.find(x=>x.id===id);
+  if(!po){document.getElementById('s-dsp-po-detail').innerHTML=`<div class="pad"><div class="empty"><h3>PO not found</h3></div></div>`;return}
+
+  // For each line, compute dispatched qty from all dispatches against this PO
+  const lineStats=(po.lines||[]).map(ln=>{
+    const lineDispatches=[];
+    S.dispatches.filter(d=>d.poId===id).forEach(d=>{
+      const item=(d.items||[]).find(i=>i.lineId===ln.id);
+      if(item)lineDispatches.push({...d,dispQty:+item.qty});
+    });
+    const dispatched=lineDispatches.reduce((s,d)=>s+d.dispQty,0);
+    const pending=Math.max(0,(+ln.qty||0)-dispatched);
+    const pct=ln.qty>0?Math.min(100,Math.round(dispatched/ln.qty*100)):0;
+    const overdue=pending>0&&ln.dueDate<dateStr();
+    return{ln,dispatched,pending,pct,overdue,lineDispatches};
+  });
+
+  const allDispatches=S.dispatches.filter(d=>d.poId===id).sort((a,b)=>b.date.localeCompare(a.date));
+
+  document.getElementById('s-dsp-po-detail').innerHTML=`
+  <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
+  <div class="hdr-info"><div class="hdr-title">${po.poNo}</div>
+  <div class="hdr-sub">${po.customer} · ${po.poDate}</div></div>
+  <button class="hdr-act" onclick="dspNewDispatchForPo('${id}')">🚚 Dispatch</button>
+  </div>
+  <div class="pad">
+
+    <!-- PO summary bar -->
+    <div class="card" style="padding:10px 14px;margin-bottom:10px">
+      <div class="fbw"><span class="tsm tmut">Month: ${po.month||'—'}</span>
+      <span class="bdg ${po.status==='closed'?'bdg-r':'bdg-g'}">${po.status==='closed'?'Closed':'Open'}</span></div>
+      ${po.remarks?`<div class="tsm tmut" style="margin-top:4px">${po.remarks}</div>`:''}
+      ${po.status!=='closed'?`<button class="btn btn-d btn-sm" style="margin-top:8px" onclick="dspClosePo('${id}')">Close PO</button>`:`<button class="btn btn-s btn-sm" style="margin-top:8px" onclick="dspReopenPo('${id}')">Re-open PO</button>`}
+    </div>
+
+    <!-- Line-by-line schedule vs dispatched -->
+    <div class="slbl">📋 Schedule vs Dispatched</div>
+    ${lineStats.map(({ln,dispatched,pending,pct,overdue,lineDispatches})=>`
+    <div class="card" style="margin-bottom:10px${overdue?';border-left:3px solid var(--er)':''}">
+      <div class="fbw" style="margin-bottom:4px">
+        <div><div style="font-weight:700">${ln.partName}</div>
+        <div class="tsm tmut">${ln.partNo||'—'}${ln.rate?' · ₹'+ln.rate+'/pc':''}</div></div>
+        <div style="text-align:right">
+          <span class="bdg ${pct>=100?'bdg-g':overdue?'bdg-r':'bdg-a'}">${pct}%</span>
+        </div>
+      </div>
+      <div class="prog" style="margin-bottom:6px"><div class="pf ${pct>=100?'pf-g':overdue?'pf-r':'pf-a'}" style="width:${pct}%"></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:11px;margin-bottom:8px">
+        <div style="text-align:center"><div style="color:var(--mut)">Scheduled</div><div style="font-weight:700">${ln.qty} ${ln.unit}</div></div>
+        <div style="text-align:center"><div style="color:var(--mut)">Dispatched</div><div style="font-weight:700;color:var(--ok)">${dispatched} ${ln.unit}</div></div>
+        <div style="text-align:center"><div style="color:var(--mut)">Pending</div><div style="font-weight:700;color:${overdue?'var(--er)':'var(--wa)'}">${pending} ${ln.unit}</div></div>
+      </div>
+      <div class="tsm tmut">Due: ${ln.dueDate}${overdue?' ⚠️ OVERDUE':''}</div>
+      ${lineDispatches.length?`<div style="margin-top:8px;padding-top:8px;border-top:.5px solid var(--bdr)">
+        <div class="tsm tmut" style="margin-bottom:4px">Dispatch history:</div>
+        ${lineDispatches.map(d=>`<div class="rrow" style="padding:4px 0;font-size:12px">
+          <div><span style="font-weight:600">${d.invoiceNo}</span> <span class="tsm tmut">· ${d.date}</span></div>
+          <div style="font-weight:600">${d.dispQty} ${ln.unit}</div>
+        </div>`).join('')}
+      </div>`:''}
+    </div>`).join('')}
+
+    <!-- Invoice history for this PO -->
+    <div class="slbl">🧾 Invoice History</div>
+    ${allDispatches.length?allDispatches.map(d=>`
+    <div class="card" style="margin-bottom:8px;padding:10px 14px">
+      <div class="fbw" style="margin-bottom:4px">
+        <div><div style="font-weight:700">${d.invoiceNo}</div>
+        <div class="tsm tmut">${d.date} · ${d.transportMode||'—'}</div></div>
+        <div style="text-align:right">
+          <div style="font-size:12px;font-weight:600">${(d.items||[]).reduce((s,i)=>s+(+i.qty||0),0)} pcs total</div>
+          ${d.vehicleNo?`<div class="tsm tmut">${d.vehicleNo}</div>`:''}
+        </div>
+      </div>
+      ${(d.items||[]).map(item=>{const ln=(po.lines||[]).find(l=>l.id===item.lineId);return ln?`<div class="tsm tmut" style="padding:2px 0">• ${ln.partName}: ${item.qty} ${ln.unit}</div>`:''}).join('')}
+      ${d.remarks?`<div class="tsm tmut" style="margin-top:4px;font-style:italic">${d.remarks}</div>`:''}
+      ${isTanmay()?`<button class="btn btn-d btn-sm" style="margin-top:6px" onclick="delDispatch('${d.id}')">🗑 Delete</button>`:''}
+    </div>`).join(''):`<div class="empty" style="padding:20px 0"><div class="empty-ic">🚚</div><h3>No dispatches yet</h3></div>`}
+    <div style="height:24px"></div>
+  </div>`;
+}
+
+async function dspClosePo(id){
+  if(!confirm('Mark this PO as closed?'))return;
+  try{await db.collection('pos').doc(id).update({status:'closed'});toast('PO closed');}
+  catch(e){toast('Error: '+e.message)}
+}
+async function dspReopenPo(id){
+  try{await db.collection('pos').doc(id).update({status:'open'});toast('PO re-opened');}
+  catch(e){toast('Error: '+e.message)}
+}
+async function delDispatch(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this dispatch record?'))return;
+  try{await db.collection('dispatches').doc(id).delete();toast('Deleted');renderDspPoDetail(S._dspPoId);}
+  catch(e){toast('Error: '+e.message)}
+}
+
+// ── New Dispatch (Invoice) ─────────────────────────────────────
+let _dspItems=[];
+function dspNewDispatchForPo(poId){
+  S._dspNewPoId=poId;
+  go('dsp-new','dsp-po-detail');
+  renderDspNew(poId);
+}
+function renderDspNew(prePoId){
+  const openPos=S.pos.filter(p=>p.status!=='closed');
+  document.getElementById('s-dsp-new').innerHTML=`
+  <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
+  <div class="hdr-info"><div class="hdr-title">New Dispatch</div><div class="hdr-sub">Record Invoice</div></div></div>
+  <div class="pad">
+    <div class="card">
+      <div class="card-hd">🧾 Invoice Details</div>
+      <div class="row2">
+        <div class="f"><label>Invoice No. *</label><input id="dsp-inv" type="text" placeholder="e.g. INV/2026/001"></div>
+        <div class="f"><label>Dispatch Date *</label><input id="dsp-date" type="date" value="${dateStr()}"></div>
+      </div>
+      <div class="f"><label>Customer PO *</label>
+        <select id="dsp-po-sel" onchange="dspPoChanged(this.value)">
+          <option value="">— Select PO —</option>
+          ${openPos.map(p=>`<option value="${p.id}" ${prePoId&&prePoId===p.id?'selected':''}>${p.poNo} — ${p.customer}</option>`).join('')}
+        </select>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Transport Mode</label>
+          <select id="dsp-transport">
+            <option value="Road">Road</option><option value="Rail">Rail</option><option value="Air">Air</option><option value="Hand Delivery">Hand Delivery</option>
+          </select>
+        </div>
+        <div class="f"><label>Vehicle / LR No.</label><input id="dsp-vehicle" type="text" placeholder="e.g. MH04AB1234"></div>
+      </div>
+      <div class="f"><label>Remarks</label><input id="dsp-remarks" type="text" placeholder="Optional"></div>
+    </div>
+
+    <div class="card" id="dsp-items-card" style="${prePoId?'':'display:none'}">
+      <div class="card-hd" style="display:flex;justify-content:space-between;align-items:center">
+        <span>🔩 Parts Being Dispatched</span>
+        <button class="btn btn-s btn-sm" onclick="dspAddItem()">+ Add Part</button>
+      </div>
+      <div id="dsp-items-list"><div class="tsm tmut" style="padding:8px 0">No parts added yet.</div></div>
+    </div>
+
+    <button class="btn btn-p" onclick="saveDispatch()">💾 Save Dispatch</button>
+    <div style="height:24px"></div>
+  </div>`;
+
+  _dspItems=[];
+  if(prePoId)dspPoChanged(prePoId);
+}
+
+function dspPoChanged(poId){
+  S._dspNewPoId=poId;
+  _dspItems=[];
+  const card=document.getElementById('dsp-items-card');
+  if(card)card.style.display=poId?'block':'none';
+  renderDspItemsList();
+}
+
+function dspAddItem(){
+  const poId=document.getElementById('dsp-po-sel')?.value||S._dspNewPoId;
+  const po=S.pos.find(p=>p.id===poId);
+  if(!po){toast('Select a PO first');return}
+
+  // Show pending lines for this PO
+  const pendingLines=(po.lines||[]).map(ln=>{
+    const dispatched=S.dispatches.filter(d=>d.poId===poId).reduce((s,d)=>{
+      const li=(d.items||[]).find(i=>i.lineId===ln.id);return s+(li?+li.qty:0);
+    },0);
+    const alreadyInThisInv=(_dspItems.find(i=>i.lineId===ln.id)||{qty:0}).qty;
+    const pending=Math.max(0,(+ln.qty||0)-dispatched-alreadyInThisInv);
+    return{...ln,dispatched,pending};
+  }).filter(ln=>ln.pending>0);
+
+  if(!pendingLines.length){toast('All lines in this PO are fully dispatched');return}
+
+  openModal(`<div class="mtit">Add Part to Dispatch</div>
+  <div class="f"><label>Select Part *</label>
+    <select id="dsp-item-line">
+      <option value="">— Select part —</option>
+      ${pendingLines.map(ln=>`<option value="${ln.id}">${ln.partName} (${ln.partNo||'—'}) — ${ln.pending} ${ln.unit} pending</option>`).join('')}
+    </select>
+  </div>
+  <div class="f"><label>Qty to Dispatch *</label><input id="dsp-item-qty" type="number" min="1" placeholder="e.g. 50"></div>
+  <button class="btn btn-p mt12" onclick="dspConfirmItem()">Add</button>
+  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
+}
+
+function dspConfirmItem(){
+  const lineId=document.getElementById('dsp-item-line').value;
+  const qty=+document.getElementById('dsp-item-qty').value;
+  if(!lineId||!qty){toast('Select part and qty');return}
+  const poId=document.getElementById('dsp-po-sel')?.value||S._dspNewPoId;
+  const po=S.pos.find(p=>p.id===poId);
+  const ln=(po&&po.lines||[]).find(l=>l.id===lineId);
+  if(!ln){toast('Part not found');return}
+  // Check pending
+  const dispatched=S.dispatches.filter(d=>d.poId===poId).reduce((s,d)=>{
+    const li=(d.items||[]).find(i=>i.lineId===lineId);return s+(li?+li.qty:0);
+  },0);
+  const alreadyInThisInv=(_dspItems.find(i=>i.lineId===lineId)||{qty:0}).qty;
+  const maxQty=(+ln.qty||0)-dispatched-alreadyInThisInv;
+  if(qty>maxQty){toast(`Max ${maxQty} ${ln.unit} can be dispatched`);return}
+  const existing=_dspItems.findIndex(i=>i.lineId===lineId);
+  if(existing>=0)_dspItems[existing].qty+=qty;
+  else _dspItems.push({lineId,partId:ln.partId,partNo:ln.partNo,partName:ln.partName,qty,unit:ln.unit,rate:ln.rate||0});
+  closeModal();renderDspItemsList();
+}
+
+function renderDspItemsList(){
+  const w=document.getElementById('dsp-items-list');if(!w)return;
+  if(!_dspItems.length){w.innerHTML=`<div class="tsm tmut" style="padding:8px 0">No parts added yet.</div>`;return}
+  const totalValue=_dspItems.reduce((s,i)=>s+(i.qty*(i.rate||0)),0);
+  w.innerHTML=_dspItems.map((item,i)=>`
+  <div class="rrow" style="padding:8px 0;border-bottom:.5px solid var(--bdr)">
+    <div><div style="font-weight:600">${item.partName}</div>
+    <div class="tsm tmut">${item.partNo||'—'} · ${item.qty} ${item.unit}${item.rate?' · ₹'+item.rate+'/pc':''}</div></div>
+    <button class="btn btn-d btn-sm" onclick="_dspItems.splice(${i},1);renderDspItemsList()">✕</button>
+  </div>`).join('')+
+  (totalValue>0?`<div class="fbw" style="padding:8px 0;font-size:13px;font-weight:700"><span>Invoice Value</span><span>₹${totalValue.toLocaleString('en-IN')}</span></div>`:'');
+}
+
+async function saveDispatch(){
+  const invoiceNo=document.getElementById('dsp-inv').value.trim();
+  const date=document.getElementById('dsp-date').value;
+  const poId=document.getElementById('dsp-po-sel')?.value||S._dspNewPoId;
+  if(!invoiceNo){toast('Invoice number required');return}
+  if(!poId){toast('Select a PO');return}
+  if(!_dspItems.length){toast('Add at least one part');return}
+  const po=S.pos.find(p=>p.id===poId);
+  const d={
+    invoiceNo,date,poId,
+    customer:po?po.customer:'',
+    items:_dspItems,
+    transportMode:document.getElementById('dsp-transport').value,
+    vehicleNo:document.getElementById('dsp-vehicle').value.trim(),
+    remarks:document.getElementById('dsp-remarks').value.trim(),
+    totalValue:_dspItems.reduce((s,i)=>s+(i.qty*(i.rate||0)),0),
+    createdBy:S.sess.userId,createdAt:nowTS()
+  };
+  try{
+    await db.collection('dispatches').add(d);
+    toast('Dispatch saved ✓');
+    _dspItems=[];
+    go('dsp-po-detail','dsp-new');
+    renderDspPoDetail(poId);
+  }catch(e){toast('Error: '+e.message)}
+}
+
+// ── Tracksheet ────────────────────────────────────────────────
+let _trkCust='all',_trkMonth='';
+function renderDspTrack(){
+  const custs=[...new Set(S.pos.map(p=>p.customer).filter(Boolean))].sort();
+  _trkMonth=dateStr().slice(0,7);
+  document.getElementById('s-dsp-track').innerHTML=`
+  <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
+  <div class="hdr-info"><div class="hdr-title">Dispatch Tracksheet</div></div></div>
+  <div class="pad">
+    <div class="card">
+      <div class="row2">
+        <div class="f" style="margin:0"><label>Month</label><input type="month" id="trk-month" value="${_trkMonth}" onchange="_trkMonth=this.value;renderTrackBody()"></div>
+        <div class="f" style="margin:0"><label>Customer</label>
+          <select onchange="_trkCust=this.value;renderTrackBody()">
+            <option value="all">All Customers</option>
+            ${custs.map(c=>`<option value="${c}">${c}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div id="trk-body"></div>
+  </div>`;
+  renderTrackBody();
+}
+
+function renderTrackBody(){
+  const w=document.getElementById('trk-body');if(!w)return;
+  // Filter POs by month and customer
+  const filtPos=S.pos.filter(p=>
+    (_trkCust==='all'||p.customer===_trkCust)&&
+    (!_trkMonth||(p.month&&p.month===_trkMonth)||(p.poDate&&p.poDate.startsWith(_trkMonth)))
+  );
+  if(!filtPos.length){w.innerHTML=`<div class="empty"><div class="empty-ic">📊</div><h3>No POs for this period</h3></div>`;return}
+
+  // Build grouped by customer
+  const byCustomer={};
+  filtPos.forEach(po=>{
+    if(!byCustomer[po.customer])byCustomer[po.customer]=[];
+    byCustomer[po.customer].push(po);
+  });
+
+  let html='';
+  Object.entries(byCustomer).forEach(([cust,poList])=>{
+    html+=`<div class="slbl">${cust}</div>`;
+    // Flatten all lines across POs for this customer
+    poList.forEach(po=>{
+      html+=`<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+        <div style="background:var(--bg);padding:8px 12px;font-size:12px;font-weight:700;border-bottom:.5px solid var(--bdr)">
+          ${po.poNo} <span style="font-weight:400;color:var(--mut)">· ${po.poDate}</span>
+          <span class="bdg ${po.status==='closed'?'bdg-r':'bdg-g'}" style="margin-left:6px">${po.status==='closed'?'Closed':'Open'}</span>
+        </div>
+        <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px">
+          <thead><tr style="background:var(--bg)">
+            <th style="padding:7px 10px;text-align:left;color:var(--mut)">Part</th>
+            <th style="padding:7px 6px;text-align:right;color:var(--mut)">Scheduled</th>
+            <th style="padding:7px 6px;text-align:right;color:var(--mut)">Dispatched</th>
+            <th style="padding:7px 6px;text-align:right;color:var(--mut)">Pending</th>
+            <th style="padding:7px 6px;text-align:right;color:var(--mut)">Due</th>
+            <th style="padding:7px 6px;text-align:left;color:var(--mut)">Invoices</th>
+          </tr></thead>
+          <tbody>
+          ${(po.lines||[]).map(ln=>{
+            const lineDisps=[];
+            S.dispatches.filter(d=>d.poId===po.id).forEach(d=>{
+              const item=(d.items||[]).find(i=>i.lineId===ln.id);
+              if(item)lineDisps.push({inv:d.invoiceNo,date:d.date,qty:+item.qty});
+            });
+            const dispatched=lineDisps.reduce((s,d)=>s+d.qty,0);
+            const pending=Math.max(0,(+ln.qty||0)-dispatched);
+            const overdue=pending>0&&ln.dueDate<dateStr();
+            const pct=ln.qty>0?Math.min(100,Math.round(dispatched/ln.qty*100)):0;
+            return`<tr style="border-top:.5px solid var(--bdr)${overdue?';background:#fef2f2':''}">
+              <td style="padding:7px 10px"><div style="font-weight:600">${ln.partName}</div><div style="font-size:10px;color:var(--mut)">${ln.partNo||'—'}</div></td>
+              <td style="padding:7px 6px;text-align:right;font-weight:600">${ln.qty}</td>
+              <td style="padding:7px 6px;text-align:right;font-weight:700;color:var(--ok)">${dispatched}</td>
+              <td style="padding:7px 6px;text-align:right;font-weight:700;color:${overdue?'var(--er)':pending>0?'var(--wa)':'var(--ok)'}">${pending}</td>
+              <td style="padding:7px 6px;text-align:right;font-size:11px;color:${overdue?'var(--er)':'var(--mut)'}">${ln.dueDate}${overdue?' ⚠️':''}</td>
+              <td style="padding:7px 6px;font-size:10px;color:var(--mut)">${lineDisps.map(d=>`${d.inv} (${d.qty})`).join(', ')||'—'}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table></div>
+      </div>`;
+    });
+  });
+  w.innerHTML=html;
+}
