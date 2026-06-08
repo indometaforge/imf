@@ -348,6 +348,10 @@ function goBack(){
     else if(dest==='ht-hub')renderHTHub();
     else if(dest==='plan')renderPlanHub();
     else if(dest==='store-hub')renderStoreHub();
+    else if(dest==='store-inward'){renderStoreInward();}
+    else if(dest==='store-issue'){renderStoreIssue();}
+    else if(dest==='store-stock'){renderStoreStock();}
+    else if(dest==='store-batches'){renderStoreBatches();}
     else if(dest==='dsp-hub')renderDspHub();
     else if(dest==='home')renderHome();
     else if(dest==='masters')renderMasters();
@@ -455,6 +459,7 @@ function renderApp(){
   ].filter(n=>n.s);
   document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><div class="sb-mark">IMF</div><div class="sb-co">Indo Metaforge Pvt Ltd</div><div class="sb-tag">Production Tracker</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div><div class="screen" id="s-m-suppliers"></div><div class="screen" id="s-ht-hub"></div><div class="screen" id="s-ht-new"></div><div class="screen" id="s-ht-view"></div><div class="screen" id="s-ht-detail"></div><div class="screen" id="s-dsp-hub"></div><div class="screen" id="s-dsp-po-list"></div><div class="screen" id="s-dsp-po-new"></div><div class="screen" id="s-dsp-po-detail"></div><div class="screen" id="s-dsp-new"></div><div class="screen" id="s-dsp-track"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
   renderHome();
+  initBackBtn();
 }
 function snav(id){if(id==='home'){go('home');renderHome()}else if(id==='plan'){go('plan');renderPlanHub()}else if(id==='actual'){go('actual-hub');renderActualHub()}else if(id==='store'){go('store-hub');renderStoreHub()}else if(id==='dsp'){go('dsp-hub');renderDspHub()}else if(id==='reports'){go('reports');renderReports()}else if(id==='masters'){go('masters');renderMasters()}}
 
@@ -1627,11 +1632,14 @@ function logout(){
   if(!confirm('Log out?'))return;
   firebase.auth().signOut().catch(()=>{});S.sess=null;sSess(null);S.navStack=[];showLogin();
 }
+let _backBtnInited=false;
 function initBackBtn(){
-  // Back navigation is handled entirely by goBack() + S.navStack
-  // No popstate needed - prevents page reload on back gesture
+  if(_backBtnInited)return;
+  _backBtnInited=true;
+  // Keep a real browser history entry so phone back is intercepted
   history.pushState(null,'',location.href);
   window.addEventListener('popstate',e=>{
+    // Push again immediately so the next back press is also caught
     history.pushState(null,'',location.href);
     goBack();
   });
@@ -1650,10 +1658,10 @@ function renderStoreHub(){
   document.getElementById('s-store-hub').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Store</div><div class="hdr-sub">WIP & Inventory</div></div></div>
   <div class="pad">
     <div class="mtiles">
-      <div class="mtile" onclick="go('store-inward','store');renderStoreInward()"><div class="mtic">📥</div><div class="mtnm">Inward</div><div class="mtct">Raw material receipts</div></div>
-      <div class="mtile" onclick="go('store-issue','store');renderStoreIssue()"><div class="mtic">📤</div><div class="mtnm">Issue to WIP</div><div class="mtct">Issue to production</div></div>
-      <div class="mtile" onclick="go('store-stock','store');renderStoreStock()"><div class="mtic">📦</div><div class="mtnm">Stock Balance</div><div class="mtct">Current stock levels</div></div>
-      <div class="mtile" onclick="go('store-batches','store');renderStoreBatches()"><div class="mtic">🏷️</div><div class="mtnm">Batch Tracker</div><div class="mtct">Track all batches</div></div>
+      <div class="mtile" onclick="go('store-inward','store-hub');renderStoreInward()"><div class="mtic">📥</div><div class="mtnm">Inward</div><div class="mtct">Raw material receipts</div></div>
+      <div class="mtile" onclick="go('store-issue','store-hub');renderStoreIssue()"><div class="mtic">📤</div><div class="mtnm">Issue to WIP</div><div class="mtct">Issue to production</div></div>
+      <div class="mtile" onclick="go('store-stock','store-hub');renderStoreStock()"><div class="mtic">📦</div><div class="mtnm">Stock Balance</div><div class="mtct">Current stock levels</div></div>
+      <div class="mtile" onclick="go('store-batches','store-hub');renderStoreBatches()"><div class="mtic">🏷️</div><div class="mtnm">Batch Tracker</div><div class="mtct">Track all batches</div></div>
     </div>
   </div>`;
 }
@@ -3138,27 +3146,130 @@ async function delDispatch(id){
 }
 
 // ── PO Edit / Delete (Tanmay only) ──────────────────────────────
+let _poeLines=[];   // working copy of lines being edited
 function dspEditPoModal(id){
   if(!isTanmay())return;
   const po=S.pos.find(x=>x.id===id);if(!po)return;
-  openModal(`<div class="mtit">Edit PO Header</div>
+  _poeLines=(po.lines||[]).map(l=>({...l}));
+  openModal(`<div class="mtit">Edit PO</div>
   <div class="f"><label>Customer *</label><input id="poe-cust" type="text" value="${po.customer}"></div>
   <div class="row2">
     <div class="f"><label>PO Number *</label><input id="poe-no" type="text" value="${po.poNo}"></div>
     <div class="f"><label>PO Date *</label><input id="poe-date" type="date" value="${po.poDate}"></div>
   </div>
-  <div class="f"><label>Month</label><input id="poe-month" type="month" value="${po.month||''}"></div>
-  <div class="f"><label>Remarks</label><input id="poe-rem" type="text" value="${po.remarks||''}"></div>
-  <button class="btn btn-p mt12" onclick="dspSavePoEdit('${id}')">Update PO</button>
+  <div class="row2">
+    <div class="f"><label>Month</label><input id="poe-month" type="month" value="${po.month||''}"></div>
+    <div class="f"><label>Remarks</label><input id="poe-rem" type="text" value="${po.remarks||''}"></div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;margin-top:4px">
+    <label style="font-size:12px;font-weight:700;color:var(--acc)">PART LINES</label>
+    <button class="btn btn-s btn-sm" onclick="poeAddLine()">+ Add Part</button>
+  </div>
+  <div id="poe-add-row" style="display:none;background:var(--acc3);border:.5px solid var(--acc2);border-radius:var(--rs);padding:10px 12px;margin-bottom:10px">
+    <div class="f" style="margin-bottom:8px"><label style="font-size:11px;font-weight:600;color:var(--mut)">Part *</label>
+      <input id="poe-new-pname" type="text" placeholder="Search part..." oninput="poePartSearch(this)" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off">
+      <input type="hidden" id="poe-new-pid"><input type="hidden" id="poe-new-pno">
+    </div>
+    <div class="row2" style="margin-bottom:8px">
+      <div class="f" style="margin:0"><label style="font-size:11px;color:var(--mut);font-weight:600">Scheduled Qty *</label><input id="poe-new-qty" type="number" min="1" placeholder="e.g. 500"></div>
+      <div class="f" style="margin:0"><label style="font-size:11px;color:var(--mut);font-weight:600">Due Date *</label><input id="poe-new-due" type="date" value="${dateStr()}"></div>
+    </div>
+    <div class="row2" style="margin-bottom:8px">
+      <div class="f" style="margin:0"><label style="font-size:11px;color:var(--mut);font-weight:600">Rate (₹/pc)</label><input id="poe-new-rate" type="number" step="0.01" placeholder="Optional"></div>
+      <div class="f" style="margin:0"><label style="font-size:11px;color:var(--mut);font-weight:600">Remarks</label><input id="poe-new-rem" type="text" placeholder="Optional"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p btn-sm" style="flex:1" onclick="poeConfirmLine()">Add ✓</button>
+      <button class="btn btn-s btn-sm" onclick="poeHideAddRow()">Cancel</button>
+    </div>
+  </div>
+  <div id="poe-lines-list"></div>
+  <button class="btn btn-p mt12" onclick="dspSavePoEdit('${id}')">💾 Save All Changes</button>
   <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
+  setTimeout(()=>poeRenderLines(),50);
+}
+
+function poeAddLine(){
+  const row=document.getElementById('poe-add-row');if(row)row.style.display='block';
+  setTimeout(()=>{const inp=document.getElementById('poe-new-pname');if(inp)inp.focus();},80);
+}
+function poeHideAddRow(){
+  const row=document.getElementById('poe-add-row');if(row)row.style.display='none';
+  ['poe-new-pname','poe-new-pid','poe-new-pno','poe-new-qty','poe-new-due','poe-new-rate','poe-new-rem'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+function poePartSearch(inp){
+  const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}
+  const matches=S.parts.filter(p=>p.name.toLowerCase().includes(q)||p.no.toLowerCase().includes(q)).slice(0,12);
+  showGDrop(inp,matches,p=>{
+    inp.value=p.name;
+    document.getElementById('poe-new-pid').value=p.id;
+    document.getElementById('poe-new-pno').value=p.no;
+  });
+}
+function poeConfirmLine(){
+  const name=document.getElementById('poe-new-pname')?.value.trim();
+  const pid=document.getElementById('poe-new-pid')?.value||'';
+  const pno=document.getElementById('poe-new-pno')?.value||'';
+  const qty=parseInt(document.getElementById('poe-new-qty')?.value)||0;
+  const due=document.getElementById('poe-new-due')?.value;
+  if(!name){toast('Search and select a part');return}
+  if(!qty||qty<1){toast('Enter a valid quantity');return}
+  if(!due){toast('Due date required');return}
+  _poeLines.push({id:uid(),partId:pid,partNo:pno,partName:name,qty,unit:'pcs',dueDate:due,rate:parseFloat(document.getElementById('poe-new-rate')?.value)||0,remarks:document.getElementById('poe-new-rem')?.value.trim()||''});
+  poeHideAddRow();
+  poeRenderLines();
+  toast(name+' added');
+}
+function poeRenderLines(){
+  const w=document.getElementById('poe-lines-list');if(!w)return;
+  if(!_poeLines.length){w.innerHTML=`<div class="tsm tmut" style="padding:8px 0;text-align:center">No part lines</div>`;return}
+  w.innerHTML=_poeLines.map((ln,i)=>{
+    // How much has already been dispatched for this line (read-only info)
+    const dispatched=S.dispatches.filter(d=>d.poId===S._dspPoId).reduce((s,d)=>{
+      const it=(d.items||[]).find(x=>x.lineId===ln.id);return s+(it?+it.qty:0);
+    },0);
+    return`<div style="background:#fff;border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:.5px solid var(--bdr)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:13px">${ln.partName||'—'}</div>
+          <div style="font-family:monospace;font-size:11px;color:var(--mut)">${ln.partNo||'—'}</div>
+          ${dispatched>0?`<div style="font-size:11px;color:var(--ok);margin-top:2px">✓ ${dispatched} already dispatched</div>`:''}
+        </div>
+        <button onclick="_poeLines.splice(${i},1);poeRenderLines()" style="width:26px;height:26px;border-radius:6px;border:none;background:var(--erbg);color:var(--er);font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center"
+          ${dispatched>0?'title="Has dispatches — delete carefully"':''}>✕</button>
+      </div>
+      <div class="row2">
+        <div><div style="font-size:10px;color:var(--mut);font-weight:600;margin-bottom:3px">SCHED QTY</div>
+          <input type="number" min="${dispatched||1}" value="${ln.qty}" style="width:100%;padding:7px 10px;font-size:15px;font-weight:700;border:1.5px solid var(--bdr);border-radius:6px;text-align:center;color:var(--acc)"
+            onchange="_poeLines[${i}].qty=Math.max(${dispatched||1},+this.value||${dispatched||1});this.value=_poeLines[${i}].qty"></div>
+        <div><div style="font-size:10px;color:var(--mut);font-weight:600;margin-bottom:3px">DUE DATE</div>
+          <input type="date" value="${ln.dueDate||''}" style="width:100%;padding:7px 8px;font-size:13px;border:1.5px solid var(--bdr);border-radius:6px"
+            onchange="_poeLines[${i}].dueDate=this.value"></div>
+      </div>
+      <div class="row2" style="margin-top:6px">
+        <div><div style="font-size:10px;color:var(--mut);font-weight:600;margin-bottom:3px">RATE (₹/pc)</div>
+          <input type="number" step="0.01" min="0" value="${ln.rate||''}" placeholder="—" style="width:100%;padding:7px 10px;font-size:14px;border:1.5px solid var(--bdr);border-radius:6px;text-align:center"
+            onchange="_poeLines[${i}].rate=parseFloat(this.value)||0"></div>
+        <div><div style="font-size:10px;color:var(--mut);font-weight:600;margin-bottom:3px">REMARKS</div>
+          <input type="text" value="${ln.remarks||''}" placeholder="—" style="width:100%;padding:7px 10px;font-size:13px;border:1.5px solid var(--bdr);border-radius:6px"
+            onchange="_poeLines[${i}].remarks=this.value"></div>
+      </div>
+    </div>`;
+  }).join('');
 }
 async function dspSavePoEdit(id){
   const cust=document.getElementById('poe-cust').value.trim();
   const poNo=document.getElementById('poe-no').value.trim();
   const poDate=document.getElementById('poe-date').value;
   if(!cust||!poNo){toast('Customer and PO number required');return}
+  if(!_poeLines.length){toast('PO must have at least one part line');return}
   try{
-    await db.collection('pos').doc(id).update({customer:cust,poNo,poDate,month:document.getElementById('poe-month').value,remarks:document.getElementById('poe-rem').value.trim()});
+    await db.collection('pos').doc(id).update({
+      customer:cust,poNo,poDate,
+      month:document.getElementById('poe-month').value,
+      remarks:document.getElementById('poe-rem').value.trim(),
+      lines:_poeLines
+    });
     closeModal();toast('PO updated ✓');renderDspPoDetail(id);
   }catch(e){toast('Error: '+e.message)}
 }
