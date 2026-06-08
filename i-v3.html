@@ -328,7 +328,8 @@ function go(scr,prev){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   const el=document.getElementById('s-'+scr);if(el){el.classList.add('on');window.scrollTo(0,0)}
   ['home','plan','actual','store','ht','dsp','reports','masters'].forEach(t=>{
-    const a=t===scr||(t==='plan'&&['plan','plan-today','plan-next','view-plan','plan-day'].includes(scr))||(t==='actual'&&['actual-hub','actual','view-actuals'].includes(scr))||(t==='store'&&scr.startsWith('store'))||(t==='ht'&&scr.startsWith('ht'))||(t==='dsp'&&scr.startsWith('dsp'))||(t==='masters'&&scr.startsWith('m-'));
+    const fromActualPath=S.navStack&&S.navStack.some(s=>s==='actual-hub');
+    const a=t===scr||(t==='plan'&&['plan','plan-today','plan-next','view-plan','plan-day'].includes(scr))||(t==='actual'&&(['actual-hub','actual','view-actuals'].includes(scr)||(scr.startsWith('ht')&&fromActualPath)))||(t==='store'&&scr.startsWith('store'))||(t==='ht'&&scr.startsWith('ht')&&!fromActualPath)||(t==='dsp'&&scr.startsWith('dsp'))||(t==='masters'&&scr.startsWith('m-'));
     const nb=document.getElementById('nb-'+t),sb=document.getElementById('sb-'+t);
     if(nb)nb.classList.toggle('on',a);if(sb)sb.classList.toggle('on',a);
   });
@@ -436,7 +437,7 @@ function renderApp(){
     {id:'plan',svg:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',l:'Plan',s:getPerm('plan')!=='hidden'},
     {id:'actual',svg:'<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',l:'Actual',s:getPerm('actual')!=='hidden'},
     {id:'store',svg:'<path d="M3 3h18v4H3z"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/><line x1="9" y1="11" x2="15" y2="11"/>',l:'Store',s:getPerm('store')!=='hidden'},
-    {id:'ht',svg:'<path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/>',l:'HT',s:getPerm('store')!=='hidden'},
+    // HT removed from bottom nav - accessible via Actual Hub
     {id:'dsp',svg:'<rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 3-5 3V8z"/>',l:'Dispatch',s: isAdmin() || S.sess.role === 'dispatch'},
     {id:'reports',svg:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',l:'Reports',s:getPerm('reports')!=='hidden'},
     {id:'masters',svg:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',l:'Masters',s:isA}
@@ -466,9 +467,9 @@ function renderHome(){
 
 function renderActualHub(){
   document.getElementById('s-actual-hub').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Actual Output</div></div></div><div class="pad">
-  <div class="hcard" onclick="go('actual','actual-hub');renderActual()"><div class="hcard-ic" style="background:#dcfce7">✅</div><div><div class="hcard-nm">Submit Shift Report</div><div class="hcard-sub">Fill actual output for end of shift</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
-  <div class="hcard" onclick="go('view-actuals','actual-hub');renderViewActuals()"><div class="hcard-ic" style="background:var(--acc2)">📋</div><div><div class="hcard-nm">View All Reports</div><div class="hcard-sub">Browse, filter and edit submitted reports</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
-  <div class="hcard" onclick="snav('ht')"><div class="hcard-ic" style="background:#fff7ed">🔥</div><div><div class="hcard-nm">HT Stage Records</div><div class="hcard-sub">Gas Carburizing charges &amp; inspection</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
+  <div class="hcard" onclick="go('actual','actual-hub');renderActual()"><div class="hcard-ic" style="background:#dcfce7">&#x2705;</div><div><div class="hcard-nm">Submit Shift Report</div><div class="hcard-sub">Fill actual output for end of shift (Soft &amp; Hard)</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">&#x203A;</div></div>
+  <div class="hcard" onclick="go('view-actuals','actual-hub');renderViewActuals()"><div class="hcard-ic" style="background:var(--acc2)">&#x1F4CB;</div><div><div class="hcard-nm">View All Reports</div><div class="hcard-sub">Browse, filter and edit submitted reports</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">&#x203A;</div></div>
+  <div class="hcard" onclick="go('ht-hub','actual-hub');renderHTHub()"><div class="hcard-ic" style="background:#fff7ed">&#x1F525;</div><div><div class="hcard-nm">HT Stage Records</div><div class="hcard-sub">Gas Carburizing charges &amp; inspection</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">&#x203A;</div></div>
   </div>`;
 }
 
@@ -484,7 +485,7 @@ function renderPlanDay(){
   <div class="pad">
     <div class="card">
       <div class="card-hd">Step 1 — Select Stage</div>
-      <div class="stage-sel"><button class="stbtn" onclick="selPlanDayStage('soft')" id="pds-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selPlanDayStage('ht')" id="pds-ht"><span class="si">🔥</span><span class="sn">HT</span></button><button class="stbtn" onclick="selPlanDayStage('hard')" id="pds-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div>
+      <div class="stage-sel"><button class="stbtn" onclick="selPlanDayStage('soft')" id="pds-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selPlanDayStage('hard')" id="pds-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div>
       <div class="f" style="margin-top:12px;margin-bottom:0"><label>Step 2 — Select Date</label><input type="date" id="pday-date" value="${tomStr()}" onchange="S.planDayDate=this.value;renderPlanDayShifts()"></div>
     </div>
     <div id="pday-shifts" style="display:none"></div>
@@ -566,7 +567,7 @@ function renderPlanForm(type){
   <button class="btn btn-s" style="font-size:12px;margin-bottom:4px" onclick="fillSamplePlan()">⚡ Fill Sample (Top 5 Machines)</button>
   `:`
   <div class="card"><div class="card-hd">Step 1 — Select Stage</div>
-  <div class="stage-sel"><button class="stbtn" onclick="selPlanStage('soft')" id="ps-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selPlanStage('ht')" id="ps-ht"><span class="si">🔥</span><span class="sn">HT</span></button><button class="stbtn" onclick="selPlanStage('hard')" id="ps-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div></div>
+  <div class="stage-sel"><button class="stbtn" onclick="selPlanStage('soft')" id="ps-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selPlanStage('hard')" id="ps-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div></div>
   <div id="plan-rest" style="display:none">
   <div class="card"><div class="card-hd">Step 2 — Shift Details</div>
   <div class="row2"><div class="f"><label>Date</label><input type="date" id="pf-date" value="${date}"></div><div class="f"><label>Shift</label><select id="pf-shift">${Object.entries(S.shifts).map(([k,v])=>`<option value="${k}">${v.label} (${v.start}–${v.end})</option>`).join('')}</select></div></div>
@@ -798,7 +799,7 @@ function renderActual(){
   S.actStage='';S.actReports={};
   document.getElementById('s-actual').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Actual Output</div><div class="hdr-sub">End of Shift Report</div></div></div>
   <div class="pad">${viewOnlyBanner("actual")}<div class="card"><div class="card-hd">Step 1 — Select Stage &amp; Shift</div>
-  <div class="stage-sel"><button class="stbtn" onclick="selActStage('soft')" id="as-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selActStage('ht')" id="as-ht"><span class="si">🔥</span><span class="sn">HT</span></button><button class="stbtn" onclick="selActStage('hard')" id="as-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div>
+  <div class="stage-sel"><button class="stbtn" onclick="selActStage('soft')" id="as-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selActStage('hard')" id="as-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div>
   <div class="f" style="margin-bottom:0"><label>Shift</label><select id="act-sh" onchange="saveDraft('actual')">${Object.entries(S.shifts).map(([k,v])=>`<option value="${k}">${v.label} (${v.start}–${v.end})</option>`).join('')}</select></div><div class="f" style="margin-top:10px;margin-bottom:0;display:${canBackdate()?'block':'none'}"><label>📅 Report Date <span style="font-size:11px;color:var(--acc);font-weight:500">(Backdated entry)</span></label><input type="date" id="act-date-inp" value="${dateStr()}"></div></div>
   <div id="act-mach"></div>
   <div id="act-sub" class="sub-bar-desktop" style="display:none">${getPerm("actual")==="full"?`<button class="btn btn-p" onclick="${S.editingActualId?'submitActual':'showActualConfirmation'}()">${S.editingActualId?"Update Report":"Submit Shift Report"}</button>`:`<div class="ibox">View only — you cannot submit reports</div>`}</div><div id="act-sub-bar" class="sub-bar">${getPerm("actual")==="full"?`<button class="btn btn-p" onclick="${S.editingActualId?'submitActual':'showActualConfirmation'}()">${S.editingActualId?"Update Report":"Submit Shift Report"}</button>`:""}</div></div>`;
@@ -2132,8 +2133,10 @@ function reloadHT(){
 function renderHTHub(){
   const today=S.htCharges.filter(c=>c.date===dateStr());
   const inProgress=S.htCharges.filter(c=>c.status==='in_progress');
+  const prevScreen=S.navStack&&S.navStack.length>=2?S.navStack[S.navStack.length-2]:'';
+  const showBack=prevScreen==='actual-hub';
   document.getElementById('s-ht-hub').innerHTML=`
-  <div class="hdr"><div class="hdr-info"><div class="hdr-title">Heat Treatment</div><div class="hdr-sub">Gas Carburizing · FM/HT/01</div></div></div>
+  <div class="hdr">${showBack?'<button class="hdr-back" onclick="goBack()">&#x2190;</button>':''}<div class="hdr-info"><div class="hdr-title">Heat Treatment</div><div class="hdr-sub">Gas Carburizing · FM/HT/01</div></div></div>
   <div class="pad">
     <div class="s2" style="margin-bottom:16px">
       <div class="sc"><div class="sl">Today's Charges</div><div class="sv">${today.length}</div></div>
@@ -2156,7 +2159,7 @@ function renderHTHub(){
 
 // ── New Charge — Step 1: Header + Components ────────────────
 function renderHTNew(){
-  document.getElementById('s-ht-new').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">New HT Charge</div><div class="hdr-sub">Generating charge no...</div></div></div><div class="pad" style="padding-top:40px;text-align:center"><div class="lspin"></div></div>`;
+  document.getElementById('s-ht-new').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">New HT Charge</div><div class="hdr-sub">Generating...</div></div></div><div class="pad" style="padding-top:60px;text-align:center"><div class="lspin"></div></div>`;
   htChargeNo().then(chargeNo=>{
   document.getElementById('s-ht-new').innerHTML=`
   <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
@@ -2173,6 +2176,7 @@ function renderHTNew(){
       </select></div>
       <div class="f"><label>Rev No.</label><input id="ht-rev" type="text" value="03/01.04.2026" placeholder="e.g. 03/01.04.2026"></div>
     </div>
+
     <div class="card">
       <div class="card-hd" style="display:flex;justify-content:space-between;align-items:center">
         <span>🔩 Components in Charge</span>
@@ -2180,6 +2184,7 @@ function renderHTNew(){
       </div>
       <div id="ht-comp-list"><div class="tsm tmut" style="padding:8px 0">No components added yet.</div></div>
     </div>
+
     <div class="card">
       <div class="card-hd">🔴 Dot Punching</div>
       <div class="ibox" style="margin-bottom:10px">Required for all customers <strong>except M&M</strong>. Mark as done before washing.</div>
@@ -2188,6 +2193,7 @@ function renderHTNew(){
       <div class="utog" style="margin-top:4px"><label>Dot punching confirmed ✓</label><label class="tsw"><input type="checkbox" id="ht-dp-done"><span class="tsl"></span></label></div>
       <datalist id="ht-op-list">${S.users.filter(u=>u.role==='operator'||u.stage==='ht'||u.stage==='general').map(u=>`<option value="${u.name}">`).join('')}</datalist>
     </div>
+
     <div class="card">
       <div class="card-hd">🚿 Pre-Wash</div>
       <div class="ibox" style="margin-bottom:8px">50–70°C · PH 09-12 · 3 to 5 min cycle time</div>
@@ -2200,12 +2206,13 @@ function renderHTNew(){
         <div class="f"><label>PH Reading</label><input id="ht-wash-ph" type="number" step="0.1" placeholder="9–12"></div>
       </div>
     </div>
+
     <button class="btn btn-p" onclick="htSaveStep1()">Next: Furnace Loading →</button>
     <div style="height:24px"></div>
   </div>`;
   S._htComps=[];
   renderHTCompList();
-  });
+  }); // end htChargeNo.then
 }
 
 let S_htComps=[];
@@ -2577,7 +2584,7 @@ async function htForceComplete(id){
 }
 async function htDeleteCharge(id){
   if(!isTanmay())return;
-  if(!confirm('Permanently delete this HT charge? This cannot be undone.'))return;
+  if(!confirm('Permanently delete this HT charge? Cannot be undone.'))return;
   try{await db.collection('htCharges').doc(id).delete();toast('HT charge deleted');goBack();}
   catch(e){toast('Error: '+e.message)}
 }
@@ -2639,6 +2646,15 @@ function htRefreshView(){
 // DISPATCH MODULE
 // Collections: pos (PO + monthly schedule), dispatches (invoice records)
 // ══════════════════════════════════════════════════════════════
+
+function getFYPrefix(){
+  const now=new Date();
+  const yr=now.getFullYear();
+  const mo=now.getMonth()+1; // 1-12
+  const fyStart=mo>=4?yr:yr-1;
+  const fyEnd=String(fyStart+1).slice(-2);
+  return`FG/${String(fyStart).slice(-2)}-${fyEnd}/`;
+}
 
 function reloadDsp(){
   const c=S.cur;
@@ -2747,7 +2763,7 @@ function renderDspPoItems(){
     }).length;
     return`<div class="card" style="margin-bottom:10px">
       <div class="fbw" style="margin-bottom:6px">
-        <div><div style="font-weight:700">${po.poNo} <span class="bdg ${po.poType==='open'?'bdg-b':'bdg-soft'}" style="font-size:10px">${po.poType==='open'?'Open PO':'Monthly'}</span></div>
+        <div><div style="font-weight:700">${po.poNo}</div>
         <div class="tsm tmut">${po.customer} · ${po.poDate}</div></div>
         <span class="bdg ${po.status==='closed'?'bdg-r':'bdg-g'}">${po.status==='closed'?'Closed':'Open'}</span>
       </div>
@@ -2771,12 +2787,7 @@ function renderDspPoNew(){
         <input id="po-cust" type="text" placeholder="e.g. Bajaj Auto" list="po-cust-dl">
         <datalist id="po-cust-dl">${[...new Set(S.parts.map(p=>p.cust).filter(Boolean))].map(c=>`<option value="${c}">`).join('')}${[...new Set(S.pos.map(p=>p.customer).filter(Boolean))].map(c=>`<option value="${c}">`).join('')}</datalist>
       </div>
-      <div class="f"><label>PO Type</label>
-        <select id="po-type">
-          <option value="open">Open PO (Blanket / 3-month)</option>
-          <option value="monthly">Monthly Specific PO</option>
-        </select>
-      </div>
+      <div class="f"><label>PO Type</label><select id="po-type"><option value="open">Open PO (Blanket / 3-month)</option><option value="monthly">Monthly Specific PO</option></select></div>
       <div class="row2">
         <div class="f"><label>PO Number *</label><input id="po-no" type="text" placeholder="e.g. PO-2026-001"></div>
         <div class="f"><label>PO Date *</label><input id="po-date" type="date" value="${dateStr()}"></div>
@@ -2866,7 +2877,7 @@ async function saveDspPo(){
   const poDate=document.getElementById('po-date').value;
   if(!cust||!poNo){toast('Customer and PO number required');return}
   if(!S._dspPoLines.length){toast('Add at least one part line');return}
-  const d={customer:cust,poNo,poDate,poType:document.getElementById('po-type')?.value||'open',month:document.getElementById('po-month').value,remarks:document.getElementById('po-remarks').value.trim(),lines:S._dspPoLines,status:'open',createdBy:S.sess.userId,createdAt:nowTS()};
+  const d={customer:cust,poNo,poDate,month:document.getElementById('po-month').value,remarks:document.getElementById('po-remarks').value.trim(),lines:S._dspPoLines,status:'open',createdBy:S.sess.userId,createdAt:nowTS()};
   try{
     const ref=await db.collection('pos').add(d);
     toast('PO saved ✓');
@@ -2903,6 +2914,7 @@ function renderDspPoDetail(id){
   <div class="hdr-info"><div class="hdr-title">${po.poNo}</div>
   <div class="hdr-sub">${po.customer} · ${po.poDate}</div></div>
   <button class="hdr-act" onclick="dspNewDispatchForPo('${id}')">🚚 Dispatch</button>
+  ${isTanmay()?`<button class="hdr-act" style="background:rgba(255,255,255,.15)" onclick="dspEditPoModal('${id}')">✏️</button><button class="hdr-act" style="background:var(--er);color:#fff" onclick="dspDeletePo('${id}')">🗑</button>`:''}
   </div>
   <div class="pad">
 
@@ -2993,7 +3005,13 @@ function renderDspNew(prePoId){
     <div class="card">
       <div class="card-hd">🧾 Invoice Details</div>
       <div class="row2">
-        <div class="f"><label>Invoice No. *</label><input id="dsp-inv" type="text" placeholder="e.g. INV/2026/001"></div>
+        <div class="f"><label>Invoice No. *</label>
+          <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--bdr);border-radius:var(--rs);overflow:hidden;background:#fff">
+            <span id="dsp-inv-prefix" style="padding:10px 10px;background:var(--bg);font-size:13px;font-weight:700;color:var(--acc);white-space:nowrap;border-right:1.5px solid var(--bdr);flex-shrink:0"></span>
+            <input id="dsp-inv" type="text" placeholder="0001" style="border:none;border-radius:0;flex:1;min-width:0" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          </div>
+          <div class="tsm tmut" style="margin-top:4px;font-size:11px">Enter 4-digit number only (e.g. 0001)</div>
+        </div>
         <div class="f"><label>Dispatch Date *</label><input id="dsp-date" type="date" value="${dateStr()}"></div>
       </div>
       <div class="f"><label>Customer PO *</label>
@@ -3026,6 +3044,9 @@ function renderDspNew(prePoId){
   </div>`;
 
   _dspItems=[];
+  // Set invoice prefix
+  const pfx=document.getElementById('dsp-inv-prefix');
+  if(pfx)pfx.textContent=getFYPrefix();
   if(prePoId)dspPoChanged(prePoId);
 }
 
@@ -3042,7 +3063,6 @@ function dspAddItem(){
   const po=S.pos.find(p=>p.id===poId);
   if(!po){toast('Select a PO first');return}
 
-  // Show pending lines for this PO
   const pendingLines=(po.lines||[]).map(ln=>{
     const dispatched=S.dispatches.filter(d=>d.poId===poId).reduce((s,d)=>{
       const li=(d.items||[]).find(i=>i.lineId===ln.id);return s+(li?+li.qty:0);
@@ -3052,18 +3072,52 @@ function dspAddItem(){
     return{...ln,dispatched,pending};
   }).filter(ln=>ln.pending>0);
 
-  if(!pendingLines.length){toast('All lines in this PO are fully dispatched');return}
+  if(!pendingLines.length){toast('All lines fully dispatched');return}
 
-  openModal(`<div class="mtit">Add Part to Dispatch</div>
-  <div class="f"><label>Select Part *</label>
-    <select id="dsp-item-line">
-      <option value="">— Select part —</option>
-      ${pendingLines.map(ln=>`<option value="${ln.id}">${ln.partName} (${ln.partNo||'—'}) — ${ln.pending} ${ln.unit} pending</option>`).join('')}
-    </select>
+  openModal(`<div class="mtit">Add Part</div>
+  <div style="margin-bottom:12px">
+    ${pendingLines.map(ln=>`
+    <div style="background:var(--bg);border-radius:var(--rs);padding:10px 13px;margin-bottom:8px;border:.5px solid var(--bdr)">
+      <div style="font-weight:700;font-size:13px;margin-bottom:6px">${ln.partName} <span style="font-size:11px;color:var(--mut);font-weight:400">${ln.partNo||''}</span></div>
+      <div style="font-size:11px;color:var(--mut);margin-bottom:8px">${ln.pending} ${ln.unit} pending · Due ${ln.dueDate}</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" min="1" max="${ln.pending}" placeholder="Qty" id="dqi-${ln.id}" style="width:90px;padding:8px 10px;font-size:15px;font-weight:700;border:1.5px solid var(--bdr);border-radius:6px;text-align:center" onkeydown="if(event.key==='Enter')dspQuickAdd('${ln.id}')">
+        <button class="btn btn-p btn-sm" style="flex:1" onclick="dspQuickAdd('${ln.id}')">+ Add</button>
+        <button class="btn btn-s btn-sm" onclick="dspQuickAddFull('${ln.id}',${ln.pending})">All ${ln.pending}</button>
+      </div>
+    </div>`).join('')}
   </div>
-  <div class="f"><label>Qty to Dispatch *</label><input id="dsp-item-qty" type="number" min="1" placeholder="e.g. 50"></div>
-  <button class="btn btn-p mt12" onclick="dspConfirmItem()">Add</button>
-  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
+  <button class="btn btn-s" onclick="closeModal()">Done</button>`);
+}
+function dspQuickAdd(lineId){
+  const poId=document.getElementById('dsp-po-sel')?.value||S._dspNewPoId;
+  const po=S.pos.find(p=>p.id===poId);
+  const ln=(po&&po.lines||[]).find(l=>l.id===lineId);if(!ln)return;
+  const inp=document.getElementById('dqi-'+lineId);
+  const qty=+(inp?.value||0);
+  if(!qty||qty<=0){toast('Enter qty first');inp?.focus();return}
+  _dspAddLineQty(lineId,qty,ln,poId);
+  inp.value='';
+  inp.focus();
+}
+function dspQuickAddFull(lineId,pending){
+  const poId=document.getElementById('dsp-po-sel')?.value||S._dspNewPoId;
+  const po=S.pos.find(p=>p.id===poId);
+  const ln=(po&&po.lines||[]).find(l=>l.id===lineId);if(!ln)return;
+  _dspAddLineQty(lineId,pending,ln,poId);
+}
+function _dspAddLineQty(lineId,qty,ln,poId){
+  const dispatched=S.dispatches.filter(d=>d.poId===poId).reduce((s,d)=>{
+    const li=(d.items||[]).find(i=>i.lineId===lineId);return s+(li?+li.qty:0);
+  },0);
+  const alreadyInThisInv=(_dspItems.find(i=>i.lineId===lineId)||{qty:0}).qty;
+  const maxQty=Math.max(0,(+ln.qty||0)-dispatched-alreadyInThisInv);
+  if(qty>maxQty){toast(`Max ${maxQty} ${ln.unit} available`);return}
+  const existing=_dspItems.findIndex(i=>i.lineId===lineId);
+  if(existing>=0)_dspItems[existing].qty+=qty;
+  else _dspItems.push({lineId,partId:ln.partId,partNo:ln.partNo,partName:ln.partName,qty,unit:ln.unit,rate:ln.rate||0});
+  renderDspItemsList();
+  toast(`${ln.partName}: ${qty} ${ln.unit} added ✓`,1800);
 }
 
 function dspConfirmItem(){
@@ -3101,10 +3155,12 @@ function renderDspItemsList(){
 }
 
 async function saveDispatch(){
-  const invoiceNo=document.getElementById('dsp-inv').value.trim();
+  const invNum=document.getElementById('dsp-inv').value.trim();
+  const invPrefix=document.getElementById('dsp-inv-prefix')?.textContent||getFYPrefix();
+  const invoiceNo=invNum?invPrefix+invNum:'';
   const date=document.getElementById('dsp-date').value;
   const poId=document.getElementById('dsp-po-sel')?.value||S._dspNewPoId;
-  if(!invoiceNo){toast('Invoice number required');return}
+  if(!invNum){toast('Invoice number required');return}
   if(!poId){toast('Select a PO');return}
   if(!_dspItems.length){toast('Add at least one part');return}
   const po=S.pos.find(p=>p.id===poId);
@@ -3124,6 +3180,46 @@ async function saveDispatch(){
     _dspItems=[];
     go('dsp-po-detail','dsp-new');
     renderDspPoDetail(poId);
+  }catch(e){toast('Error: '+e.message)}
+}
+
+// ── Edit/Delete PO (Tanmay only) ──────────────────────────────
+function dspEditPoModal(id){
+  if(!isTanmay())return;
+  const po=S.pos.find(p=>p.id===id);if(!po)return;
+  openModal(`<div class="mtit">Edit PO Header</div>
+  <div class="f"><label>Customer *</label><input id="epo-cust" type="text" value="${po.customer}"></div>
+  <div class="f"><label>PO Number *</label><input id="epo-no" type="text" value="${po.poNo}"></div>
+  <div class="row2">
+    <div class="f"><label>PO Date</label><input id="epo-date" type="date" value="${po.poDate}"></div>
+    <div class="f"><label>PO Type</label><select id="epo-type"><option value="open" ${(!po.poType||po.poType==='open')?'selected':''}>Open PO</option><option value="monthly" ${po.poType==='monthly'?'selected':''}>Monthly</option></select></div>
+  </div>
+  <div class="f"><label>Month</label><input id="epo-month" type="month" value="${po.month||''}"></div>
+  <div class="f"><label>Remarks</label><input id="epo-remarks" type="text" value="${po.remarks||''}"></div>
+  <button class="btn btn-p mt12" onclick="saveEditPo('${id}')">Update PO</button>
+  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
+}
+async function saveEditPo(id){
+  const cust=document.getElementById('epo-cust').value.trim();
+  const poNo=document.getElementById('epo-no').value.trim();
+  if(!cust||!poNo){toast('Customer and PO number required');return}
+  const d={customer:cust,poNo,poDate:document.getElementById('epo-date').value,poType:document.getElementById('epo-type').value,month:document.getElementById('epo-month').value,remarks:document.getElementById('epo-remarks').value.trim()};
+  try{await db.collection('pos').doc(id).update(d);closeModal();toast('PO updated ✓');}
+  catch(e){toast('Error: '+e.message)}
+}
+async function dspDeletePo(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this PO and all its dispatch records? This cannot be undone.'))return;
+  try{
+    // Delete all dispatches for this PO
+    const disps=S.dispatches.filter(d=>d.poId===id);
+    const batch=db.batch();
+    disps.forEach(d=>batch.delete(db.collection('dispatches').doc(d.id)));
+    batch.delete(db.collection('pos').doc(id));
+    await batch.commit();
+    toast('PO deleted');
+    go('dsp-po-list','dsp-po-detail');
+    renderDspPoList();
   }catch(e){toast('Error: '+e.message)}
 }
 
