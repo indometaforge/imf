@@ -468,6 +468,7 @@ function renderActualHub(){
   document.getElementById('s-actual-hub').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Actual Output</div></div></div><div class="pad">
   <div class="hcard" onclick="go('actual','actual-hub');renderActual()"><div class="hcard-ic" style="background:#dcfce7">✅</div><div><div class="hcard-nm">Submit Shift Report</div><div class="hcard-sub">Fill actual output for end of shift</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
   <div class="hcard" onclick="go('view-actuals','actual-hub');renderViewActuals()"><div class="hcard-ic" style="background:var(--acc2)">📋</div><div><div class="hcard-nm">View All Reports</div><div class="hcard-sub">Browse, filter and edit submitted reports</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
+  <div class="hcard" onclick="snav('ht')"><div class="hcard-ic" style="background:#fff7ed">🔥</div><div><div class="hcard-nm">HT Stage Records</div><div class="hcard-sub">Gas Carburizing charges &amp; inspection</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
   </div>`;
 }
 
@@ -2106,14 +2107,18 @@ const HT_FURNACES_CAR=['CF-1','CF-2']; // Carburizing Furnaces
 const HT_FURNACES_TMP=['TF-1','TF-2']; // Tempering Furnaces
 const MONTH_CODES='ABCDEFGHIJKL'; // A=Jan … L=Dec
 
-function htChargeNo(){
+async function htChargeNo(){
   const now=new Date();
   const yr=String(now.getFullYear()).slice(-2);
   const mo=MONTH_CODES[now.getMonth()];
   const prefix=`I-${yr}-${mo}-`;
-  const existing=S.htCharges.filter(c=>c.chargeNo&&c.chargeNo.startsWith(prefix));
-  const next=String(existing.length+1).padStart(3,'0');
-  return prefix+next;
+  try{
+    const sn=await db.collection('htCharges').where('chargeNo','>=',prefix).where('chargeNo','<',prefix+'ZZZ').get();
+    return prefix+String(sn.size+1).padStart(3,'0');
+  }catch(e){
+    const existing=S.htCharges.filter(c=>c.chargeNo&&c.chargeNo.startsWith(prefix));
+    return prefix+String(existing.length+1).padStart(3,'0');
+  }
 }
 
 function reloadHT(){
@@ -2151,7 +2156,8 @@ function renderHTHub(){
 
 // ── New Charge — Step 1: Header + Components ────────────────
 function renderHTNew(){
-  const chargeNo=htChargeNo();
+  document.getElementById('s-ht-new').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">New HT Charge</div><div class="hdr-sub">Generating charge no...</div></div></div><div class="pad" style="padding-top:40px;text-align:center"><div class="lspin"></div></div>`;
+  htChargeNo().then(chargeNo=>{
   document.getElementById('s-ht-new').innerHTML=`
   <div class="hdr"><button class="hdr-back" onclick="goBack()">←</button>
   <div class="hdr-info"><div class="hdr-title">New HT Charge</div><div class="hdr-sub">${chargeNo}</div></div></div>
@@ -2167,7 +2173,6 @@ function renderHTNew(){
       </select></div>
       <div class="f"><label>Rev No.</label><input id="ht-rev" type="text" value="03/01.04.2026" placeholder="e.g. 03/01.04.2026"></div>
     </div>
-
     <div class="card">
       <div class="card-hd" style="display:flex;justify-content:space-between;align-items:center">
         <span>🔩 Components in Charge</span>
@@ -2175,7 +2180,6 @@ function renderHTNew(){
       </div>
       <div id="ht-comp-list"><div class="tsm tmut" style="padding:8px 0">No components added yet.</div></div>
     </div>
-
     <div class="card">
       <div class="card-hd">🔴 Dot Punching</div>
       <div class="ibox" style="margin-bottom:10px">Required for all customers <strong>except M&M</strong>. Mark as done before washing.</div>
@@ -2184,7 +2188,6 @@ function renderHTNew(){
       <div class="utog" style="margin-top:4px"><label>Dot punching confirmed ✓</label><label class="tsw"><input type="checkbox" id="ht-dp-done"><span class="tsl"></span></label></div>
       <datalist id="ht-op-list">${S.users.filter(u=>u.role==='operator'||u.stage==='ht'||u.stage==='general').map(u=>`<option value="${u.name}">`).join('')}</datalist>
     </div>
-
     <div class="card">
       <div class="card-hd">🚿 Pre-Wash</div>
       <div class="ibox" style="margin-bottom:8px">50–70°C · PH 09-12 · 3 to 5 min cycle time</div>
@@ -2197,12 +2200,12 @@ function renderHTNew(){
         <div class="f"><label>PH Reading</label><input id="ht-wash-ph" type="number" step="0.1" placeholder="9–12"></div>
       </div>
     </div>
-
     <button class="btn btn-p" onclick="htSaveStep1()">Next: Furnace Loading →</button>
     <div style="height:24px"></div>
   </div>`;
   S._htComps=[];
   renderHTCompList();
+  });
 }
 
 let S_htComps=[];
@@ -2280,6 +2283,7 @@ function renderHTDetail(id){
   <div class="hdr-info"><div class="hdr-title">${c.chargeNo}</div>
   <div class="hdr-sub">${c.furnaceNo} · ${c.date} · ${S.shifts[c.shift]?S.shifts[c.shift].label:c.shift}</div></div>
   ${!isClosed?`<button class="hdr-act" style="background:var(--ok);color:#fff" onclick="htCompleteCharge('${id}')">✓ Complete</button>`:`<span class="bdg bdg-g" style="margin-right:12px">Complete</span>`}
+  ${isTanmay()?`<button class="hdr-act" style="background:var(--er);color:#fff" onclick="htDeleteCharge('${id}')">🗑</button>`:''}
   </div>
   <div class="pad">
 
@@ -2571,6 +2575,12 @@ async function htForceComplete(id){
     renderHTDetail(id);
   }catch(e){toast('Error: '+e.message)}
 }
+async function htDeleteCharge(id){
+  if(!isTanmay())return;
+  if(!confirm('Permanently delete this HT charge? This cannot be undone.'))return;
+  try{await db.collection('htCharges').doc(id).delete();toast('HT charge deleted');goBack();}
+  catch(e){toast('Error: '+e.message)}
+}
 
 // ── HT View ─────────────────────────────────────────────────
 let _htVFrom='',_htVTo='',_htVFur='all',_htVStatus='all';
@@ -2737,7 +2747,7 @@ function renderDspPoItems(){
     }).length;
     return`<div class="card" style="margin-bottom:10px">
       <div class="fbw" style="margin-bottom:6px">
-        <div><div style="font-weight:700">${po.poNo}</div>
+        <div><div style="font-weight:700">${po.poNo} <span class="bdg ${po.poType==='open'?'bdg-b':'bdg-soft'}" style="font-size:10px">${po.poType==='open'?'Open PO':'Monthly'}</span></div>
         <div class="tsm tmut">${po.customer} · ${po.poDate}</div></div>
         <span class="bdg ${po.status==='closed'?'bdg-r':'bdg-g'}">${po.status==='closed'?'Closed':'Open'}</span>
       </div>
@@ -2760,6 +2770,12 @@ function renderDspPoNew(){
       <div class="f"><label>Customer *</label>
         <input id="po-cust" type="text" placeholder="e.g. Bajaj Auto" list="po-cust-dl">
         <datalist id="po-cust-dl">${[...new Set(S.parts.map(p=>p.cust).filter(Boolean))].map(c=>`<option value="${c}">`).join('')}${[...new Set(S.pos.map(p=>p.customer).filter(Boolean))].map(c=>`<option value="${c}">`).join('')}</datalist>
+      </div>
+      <div class="f"><label>PO Type</label>
+        <select id="po-type">
+          <option value="open">Open PO (Blanket / 3-month)</option>
+          <option value="monthly">Monthly Specific PO</option>
+        </select>
       </div>
       <div class="row2">
         <div class="f"><label>PO Number *</label><input id="po-no" type="text" placeholder="e.g. PO-2026-001"></div>
@@ -2805,6 +2821,7 @@ function dspAddPoLine(editIdx){
 function dspPartSearch(inp){
   const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}
   const matches=S.parts.filter(p=>p.name.toLowerCase().includes(q)||p.no.toLowerCase().includes(q)).slice(0,12);
+  const dr=document.getElementById('gdrop');if(dr)dr.style.zIndex='9999';
   showGDrop(inp,matches,p=>{
     inp.value=p.name;
     document.getElementById('pol-part-id').value=p.id;
@@ -2849,7 +2866,7 @@ async function saveDspPo(){
   const poDate=document.getElementById('po-date').value;
   if(!cust||!poNo){toast('Customer and PO number required');return}
   if(!S._dspPoLines.length){toast('Add at least one part line');return}
-  const d={customer:cust,poNo,poDate,month:document.getElementById('po-month').value,remarks:document.getElementById('po-remarks').value.trim(),lines:S._dspPoLines,status:'open',createdBy:S.sess.userId,createdAt:nowTS()};
+  const d={customer:cust,poNo,poDate,poType:document.getElementById('po-type')?.value||'open',month:document.getElementById('po-month').value,remarks:document.getElementById('po-remarks').value.trim(),lines:S._dspPoLines,status:'open',createdBy:S.sess.userId,createdAt:nowTS()};
   try{
     const ref=await db.collection('pos').add(d);
     toast('PO saved ✓');
