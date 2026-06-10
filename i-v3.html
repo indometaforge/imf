@@ -222,7 +222,7 @@ const PSEED=[
   {no:'10_2101_008',name:'1ST SPEED GEAR',cust:'MLR',rate:243.87},{no:'10_2101_001',name:'MAIN SHAFT NEW',cust:'MLR',rate:400.55},{no:'10_2101_005',name:'4TH SPEED GEAR',cust:'MLR',rate:134.84},{no:'10_2100_021',name:'CLUSTER GEAR REG.',cust:'MLR',rate:603.08},{no:'12_2300_002',name:'RC GEAR COMM',cust:'MLR',rate:228.00},{no:'11_2300_002',name:'RC GEAR PASS',cust:'MLR',rate:256.34},{no:'11_2101_007',name:'2ND SPEED GEAR',cust:'MLR',rate:196.23},{no:'10_2101_006',name:'3RD SPEED GEAR',cust:'MLR',rate:155.23},{no:'11_2300_001',name:'IDLER GEAR PASS',cust:'MLR',rate:276.40},{no:'11_2300_001B',name:'IDLER GEAR COMM',cust:'MLR',rate:280.00},{no:'11_2301_001',name:'FD GEAR PASS',cust:'MLR',rate:382.20},{no:'12_2301_001',name:'FD GEAR COMM',cust:'MLR',rate:420.97}
 ];
 
-const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:'',inward:[],batches:[],cards:[],storeSrch:'',storeCust:'all',suppliers:[],htCharges:[],pos:[],dispatches:[],customers:[],routeCards:[],requisitions:[]};
+const S={sess:null,users:[],machines:[],parts:[],operations:[],partOps:[],shifts:{s1:{label:'Shift 1',start:'06:30',end:'15:00'},s2:{label:'Shift 2',start:'15:00',end:'23:30'},s3:{label:'Shift 3',start:'23:30',end:'06:30'}},plans:[],actuals:[],listeners:[],cur:'home',prev:null,planEntries:[],planReports:{},planStage:'',planType:'today',planEC:0,editingPlanId:null,planDayMode:false,planDayStage:'',planDayDate:'',planDayShift:'',actStage:'',actReports:{},editingActualId:null,pf:'',inward:[],batches:[],cards:[],storeSrch:'',storeCust:'all',suppliers:[],htCharges:[],pos:[],dispatches:[],customers:[],routeCards:[],requisitions:[],setupApprovals:[],qcInspections:[],breakdowns:[],machineStatus:{},pmSchedules:[],pmLogs:[],sparesRequests:[]};
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const nowTS=()=>new Date().toISOString();
@@ -319,7 +319,14 @@ function setupListeners(){
     db.collection('dispatches').orderBy('date','desc').limit(500).onSnapshot(sn=>{S.dispatches=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur&&S.cur.startsWith('dsp'))reloadDsp();}),
     db.collection('customers').onSnapshot(sn=>{S.customers=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='m-customers')renderCustomers();}),
     db.collection('requisitions').orderBy('createdAt','desc').limit(200).onSnapshot(sn=>{S.requisitions=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='store-req-list')renderReqList();if(S.cur==='store-approvals')renderApprovals();if(S.cur==='store-issue')renderStoreIssue();}),
-    db.collection('routeCards').orderBy('issuedAt','desc').limit(500).onSnapshot(sn=>{S.routeCards=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='store-batches')renderBatchList();if(S.cur==='store-stock')renderStockBody();})
+    db.collection('routeCards').orderBy('issuedAt','desc').limit(500).onSnapshot(sn=>{S.routeCards=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='store-batches')renderBatchList();if(S.cur==='store-stock')renderStockBody();}),
+    db.collection('setupApprovals').orderBy('createdAt','desc').limit(200).onSnapshot(sn=>{S.setupApprovals=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='qc-setups')renderQCSetups();if(S.cur==='production'||S.cur==='prod-entry')renderProductionHub();}),
+    db.collection('qcInspections').orderBy('createdAt','desc').limit(300).onSnapshot(sn=>{S.qcInspections=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='qc-history')renderQCHistory();}),
+    db.collection('breakdowns').orderBy('createdAt','desc').limit(200).onSnapshot(sn=>{S.breakdowns=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='maint-hub')renderMaintHub();if(S.cur==='maint-breakdowns')renderBreakdowns();if(S.cur==='maint-breakdown-detail'){};}),
+    db.collection('machineStatus').onSnapshot(sn=>{S.machineStatus={};sn.docs.forEach(d=>S.machineStatus[d.id]={id:d.id,...d.data()});if(S.cur==='maint-hub')renderMaintHub();if(S.cur==='prod-entry')renderProdMachines();}),
+    db.collection('pmSchedules').onSnapshot(sn=>{S.pmSchedules=sn.docs.map(d=>({id:d.id,...d.data()}));}),
+    db.collection('pmLogs').orderBy('completedAt','desc').limit(200).onSnapshot(sn=>{S.pmLogs=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='maint-pm')renderPMHub();}),
+    db.collection('sparesRequests').orderBy('createdAt','desc').limit(200).onSnapshot(sn=>{S.sparesRequests=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='maint-spares-approval')renderSparesApproval();})
   );
 }
 
@@ -338,7 +345,7 @@ function go(scr,prev){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   const el=document.getElementById('s-'+scr);if(el){el.classList.add('on');window.scrollTo(0,0)}
   ['home','plan','actual','store','ht','dsp','reports','masters'].forEach(t=>{
-    const a=t===scr||(t==='production'&&['production','prod-entry','plan','plan-today','plan-next','view-plan','plan-day','actual-hub','actual','view-actuals','ht-hub','ht-new','ht-view','ht-detail'].includes(scr))||(t==='store'&&scr.startsWith('store'))||(t==='ht'&&scr.startsWith('ht'))||(t==='dsp'&&scr.startsWith('dsp'))||(t==='masters'&&(scr.startsWith('m-')||scr==='masters'));
+    const a=t===scr||(t==='production'&&['production','prod-entry','prod-setup','plan','plan-today','plan-next','view-plan','plan-day','actual-hub','actual','view-actuals','ht-hub','ht-new','ht-view','ht-detail'].includes(scr))||(t==='qc'&&scr.startsWith('qc'))||(t==='maintenance'&&scr.startsWith('maint'))||(t==='store'&&scr.startsWith('store'))||(t==='ht'&&scr.startsWith('ht'))||(t==='dsp'&&scr.startsWith('dsp'))||(t==='masters'&&(scr.startsWith('m-')||scr==='masters'||scr==='m-pm-schedules'));
     const nb=document.getElementById('nb-'+t),sb=document.getElementById('sb-'+t);
     if(nb)nb.classList.toggle('on',a);if(sb)sb.classList.toggle('on',a);
   });
@@ -349,7 +356,7 @@ function goBack(){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
     const el=document.getElementById('s-'+dest);if(el){el.classList.add('on');window.scrollTo(0,0);}
     ['home','plan','actual','store','ht','dsp','reports','masters'].forEach(t=>{
-      const a=t===dest||(t==='production'&&['production','prod-entry','plan','plan-today','plan-next','view-plan','plan-day','actual-hub','actual','view-actuals','ht-hub','ht-new','ht-view','ht-detail'].includes(dest))||(t==='store'&&dest.startsWith('store'))||(t==='ht'&&dest.startsWith('ht'))||(t==='dsp'&&dest.startsWith('dsp'))||(t==='masters'&&dest.startsWith('m-'));
+      const a=t===dest||(t==='production'&&['production','prod-entry','prod-setup','plan','plan-today','plan-next','view-plan','plan-day','actual-hub','actual','view-actuals','ht-hub','ht-new','ht-view','ht-detail'].includes(dest))||(t==='qc'&&dest.startsWith('qc'))||(t==='maintenance'&&dest.startsWith('maint'))||(t==='store'&&dest.startsWith('store'))||(t==='ht'&&dest.startsWith('ht'))||(t==='dsp'&&dest.startsWith('dsp'))||(t==='masters'&&dest.startsWith('m-'));
       const nb=document.getElementById('nb-'+t),sb=document.getElementById('sb-'+t);
       if(nb)nb.classList.toggle('on',a);if(sb)sb.classList.toggle('on',a);
     });
@@ -370,10 +377,21 @@ function goBack(){
     else if(dest==='masters')renderMasters();
     else if(dest==='production')renderProductionHub();
     else if(dest==='prod-entry')renderProdEntry();
+    else if(dest==='prod-setup')renderProdSetup();
+    else if(dest==='qc-hub')renderQCHub();
+    else if(dest==='qc-inspect')renderQCInspect();
+    else if(dest==='qc-history')renderQCHistory();
+    else if(dest==='qc-setups')renderQCSetups();
+    else if(dest==='maint-hub')renderMaintHub();
+    else if(dest==='maint-breakdowns')renderBreakdowns();
+    else if(dest==='maint-pm')renderPMHub();
+    else if(dest==='maint-health')renderMaintHealth();
+    else if(dest==='maint-spares-approval')renderSparesApproval();
     else if(dest==='dsp-po-list')renderDspPoList();
     else if(dest==='ht-view')renderHTView();
     else if(dest==='m-customers')renderCustomers();
     else if(dest==='m-tags')renderTagRegistry();
+    else if(dest==='m-pm-schedules')renderPMSchedulesMaster();
   }else{
     // Never show login page on back — always go home if logged in
     if(S.sess){go('home');renderHome();}else{go('home');}
@@ -468,16 +486,18 @@ function renderApp(){
   const nav=[
     {id:'home',svg:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',l:'Home',s:true},
     {id:'production',svg:'<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',l:'Production',s:getPerm('plan')!=='hidden'||getPerm('actual')!=='hidden'},
+    {id:'qc',svg:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',l:'QC',s:isAdmin()||S.sess.role==='qc'},
+    {id:'maintenance',svg:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M20 12h2"/><path d="M2 12h2"/><path d="M17.66 17.66l-1.41-1.41"/><path d="M6.34 6.34L4.93 4.93"/>',l:'Maintain',s:isAdmin()||S.sess.role==='maintenance'||S.sess.role==='production'},
     {id:'store',svg:'<path d="M3 3h18v4H3z"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/><line x1="9" y1="11" x2="15" y2="11"/>',l:'Store',s:getPerm('store')!=='hidden'},
     {id:'dsp',svg:'<rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 3-5 3V8z"/>',l:'Dispatch',s: isAdmin() || S.sess.role === 'dispatch'},
     {id:'reports',svg:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',l:'Reports',s:getPerm('reports')!=='hidden'},
     {id:'masters',svg:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',l:'Masters',s:isA}
   ].filter(n=>n.s);
-  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><img class="sb-logo-img" src="data:image/png;base64,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" alt="Indo Metaforge Pvt Ltd"><div class="sb-tag">ProTrack MES</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-production"></div><div class="screen" id="s-prod-entry"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-store-req-new"></div><div class="screen" id="s-store-req-list"></div><div class="screen" id="s-store-approvals"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div><div class="screen" id="s-m-suppliers"></div><div class="screen" id="s-m-customers"></div><div class="screen" id="s-m-tags"></div><div class="screen" id="s-ht-hub"></div><div class="screen" id="s-ht-new"></div><div class="screen" id="s-ht-view"></div><div class="screen" id="s-ht-detail"></div><div class="screen" id="s-dsp-hub"></div><div class="screen" id="s-dsp-po-list"></div><div class="screen" id="s-dsp-po-new"></div><div class="screen" id="s-dsp-po-detail"></div><div class="screen" id="s-dsp-new"></div><div class="screen" id="s-dsp-track"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
+  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><img class="sb-logo-img" src="data:image/png;base64,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" alt="Indo Metaforge Pvt Ltd"><div class="sb-tag">ProTrack MES</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-production"></div><div class="screen" id="s-prod-entry"></div><div class="screen" id="s-prod-setup"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-store-req-new"></div><div class="screen" id="s-store-req-list"></div><div class="screen" id="s-store-approvals"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div><div class="screen" id="s-m-suppliers"></div><div class="screen" id="s-m-customers"></div><div class="screen" id="s-m-tags"></div><div class="screen" id="s-m-pm-schedules"></div><div class="screen" id="s-maint-hub"></div><div class="screen" id="s-maint-breakdown-new"></div><div class="screen" id="s-maint-breakdown-detail"></div><div class="screen" id="s-maint-breakdowns"></div><div class="screen" id="s-maint-pm"></div><div class="screen" id="s-maint-pm-machine"></div><div class="screen" id="s-maint-health"></div><div class="screen" id="s-maint-spares-approval"></div><div class="screen" id="s-qc-hub"></div><div class="screen" id="s-qc-inspect"></div><div class="screen" id="s-qc-history"></div><div class="screen" id="s-qc-setups"></div><div class="screen" id="s-ht-hub"></div><div class="screen" id="s-ht-new"></div><div class="screen" id="s-ht-view"></div><div class="screen" id="s-ht-detail"></div><div class="screen" id="s-dsp-hub"></div><div class="screen" id="s-dsp-po-list"></div><div class="screen" id="s-dsp-po-new"></div><div class="screen" id="s-dsp-po-detail"></div><div class="screen" id="s-dsp-new"></div><div class="screen" id="s-dsp-track"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
   renderHome();
   initBackBtn();
 }
-function snav(id){if(id==='home'){go('home');renderHome()}else if(id==='production'){go('production');renderProductionHub()}else if(id==='store'){go('store-hub');renderStoreHub()}else if(id==='dsp'){go('dsp-hub');renderDspHub()}else if(id==='reports'){go('reports');renderReports()}else if(id==='masters'){go('masters');renderMasters()}}
+function snav(id){if(id==='home'){go('home');renderHome()}else if(id==='production'){go('production');renderProductionHub()}else if(id==='qc'){go('qc-hub');renderQCHub()}else if(id==='maintenance'){go('maint-hub');renderMaintHub()}else if(id==='store'){go('store-hub');renderStoreHub()}else if(id==='dsp'){go('dsp-hub');renderDspHub()}else if(id==='reports'){go('reports');renderReports()}else if(id==='masters'){go('masters');renderMasters()}}
 
 function getActiveSh(){const h=new Date().getHours()*60+new Date().getMinutes();const toM=t=>{const[hh,mm]=t.split(':').map(Number);return hh*60+mm};for(const[k,v]of Object.entries(S.shifts)){const s=toM(v.start),e=toM(v.end);if(s<e){if(h>=s&&h<e)return v}else{if(h>=s||h<e)return v}}return Object.values(S.shifts)[0]}
 
@@ -527,6 +547,7 @@ function renderProductionHub(){
     <div class="mtiles">
       <div class="mtile" onclick="startProdEntry('actual','soft')"><div class="mtic">✅</div><div class="mtnm">Soft — Actual</div><div class="mtct">Log shift output</div></div>
       <div class="mtile" onclick="startProdEntry('actual','hard')"><div class="mtic">💎</div><div class="mtnm">Hard — Actual</div><div class="mtct">Log shift output</div></div>
+      <div class="mtile" onclick="go('prod-setup','production');renderProdSetup()"><div class="mtic">⚙️</div><div class="mtnm">Log Setup</div><div class="mtct">Record machine changeover</div></div>
       <div class="mtile" onclick="startProdEntry('plan','soft')"><div class="mtic">📅</div><div class="mtnm">Soft — Plan</div><div class="mtct">Plan next shift</div></div>
       <div class="mtile" onclick="startProdEntry('plan','hard')"><div class="mtic">📅</div><div class="mtnm">Hard — Plan</div><div class="mtct">Plan next shift</div></div>
       <div class="mtile" onclick="go('ht-hub','production');renderHTHub()"><div class="mtic">🔥</div><div class="mtnm">Heat Treatment</div><div class="mtct">HT charges & records</div></div>
@@ -611,14 +632,22 @@ function buildProdMC(m){
   const totalSetup=(r.setupTimes||[]).reduce((s,v)=>s+(+v||0),0);
   const otherDT=r.hasOtherDowntime?(+r.otherDowntimeMins||0):0;
   const totalDT=totalSetup+otherDT;
+  // Check live machine status
+  const ms=S.machineStatus[m.id];
+  const isBroken=ms&&ms.status==='breakdown';
+  const isPM=ms&&ms.status==='pm';
+  const statusBanner=isBroken?`<div style="background:var(--erbg);border:.5px solid var(--er);border-radius:var(--rs);padding:6px 10px;margin-bottom:8px;font-size:12px;color:var(--er);font-weight:600">🔴 BREAKDOWN — Active ticket: ${ms.activeBreakdownId||'—'}</div>`:isPM?`<div style="background:#fef3c7;border:.5px solid #d97706;border-radius:var(--rs);padding:6px 10px;margin-bottom:8px;font-size:12px;color:#92400e;font-weight:600">🟡 PREVENTIVE MAINTENANCE IN PROGRESS</div>`:'';
   return`<div class="mc" id="pmc-${m.id}">
   <div class="mc-hd" onclick="togProdMC('${m.id}')">
     <div class="mc-ic">⚙️</div>
     <div style="flex:1;min-width:0"><div class="mc-nm">${m.name}</div><div class="mc-mt">${m.id_code||''} ${m.type?'· '+m.type:''}</div></div>
+    ${isBroken?`<span class="bdg bdg-r" style="margin-right:4px">BREAKDOWN</span>`:''}
+    ${isPM?`<span class="bdg bdg-a" style="margin-right:4px">PM</span>`:''}
     <span class="bdg ${scls}" id="pmcs-${m.id}" style="margin-right:8px;flex-shrink:0">${stat}</span>
     <span class="mc-cv" id="pmcc-${m.id}">▾</span>
   </div>
   <div class="mc-body" id="pmcb-${m.id}">
+    ${statusBanner}
     <div class="utog"><label>Machine was used this shift</label><label class="tsw"><input type="checkbox" ${r.used?'checked':''} onchange="togProdMCUsed('${m.id}',this.checked)"><span class="tsl"></span></label></div>
     <div id="pmcu-form-${m.id}" style="display:${r.used===true?'block':'none'}">
       <div class="f"><label>Operator</label><select id="pmcop-${m.id}" onchange="setProdMach('${m.id}','operatorId',this.value)"><option value="">— Select —</option>${usrs.map(u=>`<option value="${u.id}" ${r.operatorId===u.id?'selected':''}>${u.name}</option>`).join('')}</select></div>
@@ -627,6 +656,7 @@ function buildProdMC(m){
       <button class="btn btn-s btn-sm" style="width:100%;margin-top:6px" onclick="prodAddRun('${m.id}')">+ Add TAG / Run</button>
       ${isActual?`
       <div class="totals-bar" style="margin-top:10px"><span>⚙️ Setup: <strong id="pmc-setup-total-${m.id}">${totalSetup}</strong> mins</span><span>⏱ Downtime: <strong id="pmc-dt-total-${m.id}">${totalDT}</strong> mins</span></div>
+      ${(()=>{const md=getMaintDowntimeForMachine(m.id,dateStr());return md?`<div class="ibox" style="background:var(--erbg);border-color:var(--er);margin-top:8px"><span style="font-size:12px;color:var(--er)">🔒 <strong>Maintenance downtime today: ${md.mins} mins</strong> (${md.reasons}) — auto-populated, locked</span></div>`:'';})()}
       <div class="utog" style="margin-top:10px"><label>Other downtime this shift?</label><label class="tsw"><input type="checkbox" ${r.hasOtherDowntime?'checked':''} onchange="togProdOtherDT('${m.id}',this.checked)"><span class="tsl"></span></label></div>
       <div id="pmc-odt-${m.id}" style="display:${r.hasOtherDowntime?'block':'none'}">
         <div class="row2">
@@ -661,6 +691,10 @@ function buildProdRunsHTML(mid,r){
 function buildProdRunBlock(mid,idx,run){
   const isActual=_prodMode==='actual';
   const hasTag=!!run.tagId;
+  // Check setup approval status
+  const sa=run.setupApprovalId?S.setupApprovals.find(x=>x.id===run.setupApprovalId):null;
+  const setupApproved=!isActual||!run.setupApprovalId||(sa&&sa.status==='approved');
+  const setupPending=isActual&&run.setupApprovalId&&sa&&sa.status==='pending';
   // Get ops for this part filtered to stage
   const ops=run.partId?S.partOps.filter(po=>po.partId===run.partId&&po.stage===_prodStage).sort((a,b)=>(a.seqNo||0)-(b.seqNo||0)):[];
   const opOpts=ops.map(po=>{const o=S.operations.find(x=>x.id===po.opId);return`<option value="${po.opId}" ${run.opId===po.opId?'selected':''}>${o?o.name:'?'} (seq ${po.seqNo})</option>`;}).join('');
@@ -696,7 +730,8 @@ function buildProdRunBlock(mid,idx,run){
         <select onchange="setProdRunOp('${mid}',${idx},this.value)">${opOpts}</select>
       </div>
       ${targetDisplay}
-      <div class="row2">
+      ${setupPending?`<div class="ibox" style="background:#fef3c7;border-color:#d97706;color:#92400e;margin-bottom:8px">⏳ <strong>Awaiting QC Setup Approval</strong> — quantity entry locked until QC HOD approves this setup</div>`:''}
+      <div class="row2" style="${setupPending?'opacity:0.4;pointer-events:none':''}">
         <div class="f" style="margin-bottom:0"><label>Max Qty (on TAG)</label><input type="number" value="${run.tagQty||card?.currentQty||''}" disabled style="background:var(--bg);color:var(--mut)"></div>
         <div class="f" style="margin-bottom:0"><label>${isActual?'Actual Qty *':'Planned Qty *'}</label><input type="number" min="0" max="${run.tagQty||card?.currentQty||9999}" value="${isActual?run.actualQty||'':run.plannedQty||''}" placeholder="0" onchange="${isActual?`setProdRun('${mid}',${idx},'actualQty',this.value)`:`setProdRun('${mid}',${idx},'plannedQty',this.value)`}"></div>
       </div>
@@ -795,7 +830,15 @@ async function prodConfirmTagById(mid,idx,tagId){
     const opName=nextOp?(S.operations.find(o=>o.id===nextOp.opId)?.name||''):'';
     // Update run
     const r=_prodReports[mid];if(!r||!r.runs||!r.runs[idx])return;
-    r.runs[idx]={...r.runs[idx],tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,customerName:card.customerName||'',customerId:card.customerId||'',tagQty:card.currentQty,opId,opName,batchCode:card.batchCode,masterLotCode:card.masterLotCode,heatCode:card.heatCode||''};
+    r.runs[idx]={...r.runs[idx],tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,customerName:card.customerName||'',customerId:card.customerId||'',tagQty:card.currentQty,opId,opName,batchCode:card.batchCode,masterLotCode:card.masterLotCode,heatCode:card.heatCode||'',setupApprovalId:'',setupApproved:false};
+    // Create setup approval token in Firestore (QC HOD must approve before qty can be saved)
+    if(_prodMode==='actual'){
+      try{
+        const saRef=await db.collection('setupApprovals').add({tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,customerName:card.customerName||'',opId,opName,machineId:mid,machineName:_prodReports[mid]?.machineName||'',stage:_prodStage,batchCode:card.batchCode,status:'pending',requestedBy:S.sess.userId,requestedByName:S.sess.name,date:dateStr(),createdAt:nowTS()});
+        r.runs[idx].setupApprovalId=saRef.id;
+        S.setupApprovals=[...S.setupApprovals,{id:saRef.id,tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,customerName:card.customerName||'',opId,opName,machineId:mid,machineName:_prodReports[mid]?.machineName||'',stage:_prodStage,batchCode:card.batchCode,status:'pending',requestedBy:S.sess.userId,requestedByName:S.sess.name,date:dateStr(),createdAt:nowTS()}];
+      }catch(e){console.warn('Setup approval creation failed:',e.message);}
+    }
     // Refresh run block
     const div=document.getElementById('pmc-runs-'+mid);
     if(div)div.innerHTML=buildProdRunsHTML(mid,r);
@@ -820,6 +863,11 @@ async function submitProdEntry(){
   if(missingTag.length){toast(`${missingTag.length} machine(s) marked as used but have no TAGs scanned`);return}
   const missingQty=reports.filter(r=>r.used&&(r.runs||[]).some(run=>run.tagId&&(isActual?(!run.actualQty&&run.actualQty!==0):(!run.plannedQty&&run.plannedQty!==0))));
   if(missingQty.length){toast('Some TAGs are missing quantity — please fill all quantities');return}
+  // Check no pending setup approvals
+  if(isActual){
+    const pendingSetups=reports.flatMap(r=>r.runs||[]).filter(run=>run.setupApprovalId&&S.setupApprovals.find(sa=>sa.id===run.setupApprovalId&&sa.status==='pending'));
+    if(pendingSetups.length){toast(`${pendingSetups.length} setup(s) awaiting QC approval — cannot submit until approved`);return}
+  }
   // Hard stage: block if any TAG has no heatCode
   if(_prodStage==='hard'){
     const noHeat=reports.flatMap(r=>r.runs||[]).filter(run=>run.tagId&&!run.heatCode);
@@ -829,17 +877,21 @@ async function submitProdEntry(){
   try{
     if(isActual){
       // Build machineReports compatible with existing actuals schema
-      const machineReports=reports.map(r=>({
-        ...r,
-        runs:(r.runs||[]).map(run=>({
-          ...run,
-          targetQty:run.tagQty||0,
-          // Keep backward compat fields
-          partId:run.partId,partNo:run.partNo,partName:run.partName,customer:run.customerName,
-          opId:run.opId,opName:run.opName,
-          hoursRun:'',
-        }))
-      }));
+      const machineReports=reports.map(r=>{
+        const md=getMaintDowntimeForMachine(r.machineId,date);
+        return{
+          ...r,
+          maintDowntimeMins:md?md.mins:0,
+          maintDowntimeReasons:md?md.reasons:'',
+          runs:(r.runs||[]).map(run=>({
+            ...run,
+            targetQty:run.tagQty||0,
+            partId:run.partId,partNo:run.partNo,partName:run.partName,customer:run.customerName,
+            opId:run.opId,opName:run.opName,
+            hoursRun:'',
+          }))
+        };
+      });
       if(_prodEditId){
         await db.collection('actuals').doc(_prodEditId).update({shift,stage:_prodStage,supervisorId:supId,machineReports,updatedBy:S.sess.userId,updatedAt:nowTS()});
       } else {
@@ -887,6 +939,175 @@ async function submitProdEntry(){
 // ══════════════════════════════════════════
 function renderPlanHub(){go('production');renderProductionHub();}
 function renderActualHub(){go('production');renderProductionHub();}
+
+// ══════════════════════════════════════════
+// SETUP LOGGING SCREEN
+// ══════════════════════════════════════════
+let _setupCard=null;
+let _setupTagId='';
+let _setupStage='';
+
+function renderProdSetup(){
+  _setupCard=null;_setupTagId='';
+  const machOpts=(stage)=>S.machines.filter(m=>m.stage===stage&&m.active!==false)
+    .sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0))
+    .map(m=>`<option value="${m.id}|${m.name}|${stage}">${m.name}</option>`).join('');
+  document.getElementById('s-prod-setup').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Log Setup</div><div class="hdr-sub">Machine changeover record</div></div></div>
+  <div class="pad">
+    <div class="card">
+      <div class="card-hd">⚙️ Setup Details</div>
+      <div class="f"><label>Machine *</label>
+        <select id="setup-mach" onchange="onSetupMachChange(this.value)">
+          <option value="">— Select Machine —</option>
+          <optgroup label="Soft Stage">${machOpts('soft')}</optgroup>
+          <optgroup label="Hard Stage">${machOpts('hard')}</optgroup>
+        </select>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Date</label><input id="setup-date" type="date" value="${dateStr()}"></div>
+        <div class="f"><label>Shift</label><select id="setup-shift">${Object.entries(S.shifts).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}</select></div>
+      </div>
+      <div class="f"><label>Operator</label>
+        <select id="setup-operator">
+          <option value="">— Select —</option>
+          ${S.users.filter(u=>!u.appUser||u.role==='operator').map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd">🏷 Scan Route Card TAG</div>
+      <div style="text-align:center;margin-bottom:10px">
+        <button class="scan-btn-lg" onclick="startScan('setup-tag-input')" title="Scan TAG">📷</button>
+        <div class="tsm tmut" style="margin-top:6px">Scan TAG of incoming batch</div>
+      </div>
+      <div class="bin-bc">
+        <input id="setup-tag-input" type="text" placeholder="Or type TAG number (e.g. TAG042)..." oninput="this.value=this.value.toUpperCase()" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <button class="btn btn-s mt8" style="width:100%" onclick="setupFetchTag()">Load TAG →</button>
+    </div>
+    <div id="setup-tag-info"></div>
+    <div id="setup-form" style="display:none"></div>
+  </div>`;
+  setTimeout(()=>{
+    const i=document.getElementById('setup-tag-input');
+    if(i)i.addEventListener('keydown',e=>{if(e.key==='Enter')setupFetchTag();});
+  },100);
+}
+
+function onSetupMachChange(val){
+  if(!val)return;
+  const parts=val.split('|');
+  _setupStage=parts[2]||'';
+}
+
+async function setupFetchTag(){
+  const tagId=(document.getElementById('setup-tag-input')?.value||'').trim().toUpperCase();
+  if(!tagId){toast('Enter or scan a TAG');return}
+  if(!tagId.match(/^TAG\d+$/)){toast('Invalid TAG format');return}
+  const infoDiv=document.getElementById('setup-tag-info');
+  const formDiv=document.getElementById('setup-form');
+  infoDiv.innerHTML=`<div class="tsm tmut" style="padding:12px;text-align:center">Loading...</div>`;
+  formDiv.style.display='none';
+  try{
+    const doc=await db.collection('routeCards').doc(tagId).get();
+    if(!doc.exists){
+      infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)"><div style="color:var(--er);font-weight:600">❌ TAG ${tagId} not found</div></div>`;
+      return;
+    }
+    const card={id:doc.id,...doc.data()};
+    const validStatuses=['store_issued','soft_wip','hard_wip'];
+    if(!validStatuses.includes(card.status)){
+      infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)"><div style="color:var(--er);font-weight:600">❌ TAG status is "${card.status}"</div><div class="tsm tmut">Only store-issued or WIP TAGs can have a setup logged.</div></div>`;
+      return;
+    }
+    _setupCard=card;_setupTagId=tagId;
+    if(!_setupStage)_setupStage=card.status==='hard_wip'?'hard':'soft';
+    // Get ops for this part + stage
+    const partOpsForStage=S.partOps.filter(po=>po.partId===card.partId&&po.stage===_setupStage)
+      .sort((a,b)=>(a.seqNo||0)-(b.seqNo||0));
+    const completedOpIds=(card.opHistory||[]).filter(h=>h.stage===_setupStage).map(h=>h.opId);
+    const nextOp=partOpsForStage.find(po=>!completedOpIds.includes(po.opId));
+    const opOpts=partOpsForStage.map(po=>{
+      const o=S.operations.find(x=>x.id===po.opId);
+      return`<option value="${po.opId}" ${nextOp&&nextOp.opId===po.opId?'selected':''}>${o?o.name:'?'} (seq ${po.seqNo})</option>`;
+    }).join('');
+    infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--ok);margin-bottom:4px">
+      <div style="font-size:13px;font-weight:700;color:var(--ok);margin-bottom:8px">✅ TAG Valid</div>
+      <div class="rrow"><span class="tsm tmut">TAG</span><span style="font-family:monospace;font-weight:700;color:var(--acc)">${tagId}</span></div>
+      <div class="rrow"><span class="tsm tmut">Part</span><span style="font-weight:600">${card.partName}</span></div>
+      <div class="rrow"><span class="tsm tmut">Part No.</span><span style="font-family:monospace">${card.partNo}</span></div>
+      <div class="rrow"><span class="tsm tmut">Customer</span><span>${card.customerName||'—'}</span></div>
+      <div class="rrow"><span class="tsm tmut">Batch</span><span style="font-family:monospace">${card.batchCode||'—'}</span></div>
+      ${card.heatCode?`<div class="rrow"><span class="tsm tmut">Heat Code</span><span style="color:var(--ok)">🔥 ${card.heatCode}</span></div>`:''}
+      <div class="rrow"><span class="tsm tmut">Qty on TAG</span><span style="font-weight:700;color:var(--acc)">${card.currentQty} pcs</span></div>
+    </div>`;
+    formDiv.style.display='block';
+    formDiv.innerHTML=`<div class="card">
+      <div class="card-hd">📋 Setup Information</div>
+      <div class="f"><label>Operation *</label>
+        <select id="setup-op-sel">${opOpts||`<option value="">No operations defined for this part</option>`}</select>
+      </div>
+      <div class="f"><label>Setup Time (minutes) *</label>
+        <input id="setup-mins" type="number" min="1" max="999" placeholder="e.g. 45" style="font-size:20px;font-weight:700;text-align:center;letter-spacing:2px">
+        <div class="tsm tmut" style="margin-top:4px">Total changeover time in minutes</div>
+      </div>
+      <div class="f"><label>Remarks</label>
+        <input id="setup-remarks" type="text" placeholder="Optional — tooling used, issues encountered...">
+      </div>
+      <button class="btn btn-p mt8" style="width:100%" onclick="submitSetupLog()">Submit Setup → QC Approval</button>
+    </div>
+    <div style="height:24px"></div>`;
+  }catch(e){
+    infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)"><div style="color:var(--er)">Error: ${e.message}</div></div>`;
+  }
+}
+
+async function submitSetupLog(){
+  if(!_setupCard||!_setupTagId){toast('Load a TAG first');return}
+  const machVal=document.getElementById('setup-mach')?.value||'';
+  if(!machVal){toast('Select a machine');return}
+  const[machId,machName,stage]=machVal.split('|');
+  const opId=document.getElementById('setup-op-sel')?.value;
+  if(!opId){toast('Select an operation');return}
+  const mins=parseInt(document.getElementById('setup-mins')?.value)||0;
+  if(!mins||mins<1){toast('Enter setup time in minutes');return}
+  const date=document.getElementById('setup-date')?.value||dateStr();
+  const shift=document.getElementById('setup-shift')?.value;
+  const opName=S.operations.find(o=>o.id===opId)?.name||'';
+  const operatorId=document.getElementById('setup-operator')?.value||'';
+  const operatorName=S.users.find(u=>u.id===operatorId)?.name||'';
+  const remarks=document.getElementById('setup-remarks')?.value.trim()||'';
+  const btn=document.querySelector('#s-prod-setup .btn-p');
+  if(btn){btn.disabled=true;btn.textContent='Submitting...';}
+  try{
+    await db.collection('setupApprovals').add({
+      tagId:_setupTagId,
+      partId:_setupCard.partId,
+      partNo:_setupCard.partNo,
+      partName:_setupCard.partName,
+      customerName:_setupCard.customerName||'',
+      batchCode:_setupCard.batchCode||'',
+      heatCode:_setupCard.heatCode||'',
+      opId,opName,
+      machineId:machId||'',
+      machineName:machName||'',
+      stage:stage||_setupStage,
+      setupMins:mins,
+      operatorId,operatorName,
+      shift,date,remarks,
+      status:'pending',
+      requestedBy:S.sess.userId,
+      requestedByName:S.sess.name,
+      createdAt:nowTS()
+    });
+    toast('Setup logged ✓ — sent to QC for approval');
+    _setupCard=null;_setupTagId='';_setupStage='';
+    go('production');renderProductionHub();
+  }catch(e){
+    toast('Error: '+e.message);
+    if(btn){btn.disabled=false;btn.textContent='Submit Setup → QC Approval';}
+  }
+}
 
 function renderPlanDay(){
   S.planDayStage='';S.planDayDate=tomStr();
@@ -1611,7 +1832,8 @@ function renderMasters(){
     <div class="mtile" onclick="go('m-customers','masters');renderCustomers()"><div class="mtic">🏢</div><div class="mtnm">Customers</div><div class="mtct">${S.customers.length} customers</div></div>
     <div class="mtile" onclick="go('m-suppliers','masters');renderSuppliers()"><div class="mtic">🏭</div><div class="mtnm">Suppliers</div><div class="mtct">${S.suppliers.length} suppliers</div></div>
     <div class="mtile" onclick="go('m-shifts','masters');renderShifts()"><div class="mtic">🕐</div><div class="mtnm">Shift Timings</div><div class="mtct">Edit times</div></div>
-    ${isAdmin()?`<div class="mtile" onclick="go('m-tags','masters');renderTagRegistry()"><div class="mtic">🏷</div><div class="mtnm">TAG Registry</div><div class="mtct">Route card TAGs</div></div>`:''}
+    <div class="mtile" onclick="go('m-tags','masters');renderTagRegistry()"><div class="mtic">🏷</div><div class="mtnm">TAG Registry</div><div class="mtct">Route card TAGs</div></div>
+    ${isAdmin()?`<div class="mtile" onclick="go('m-pm-schedules','masters');renderPMSchedulesMaster()"><div class="mtic">🗓</div><div class="mtnm">PM Schedules</div><div class="mtct">Set maintenance due dates</div></div>`:''}
   </div></div>`;
 }
 
@@ -3180,6 +3402,862 @@ function htChargeNo(){
   return prefix+next;
 }
 
+// ══════════════════════════════════════════
+// MAINTENANCE MODULE
+// ══════════════════════════════════════════
+const FAULT_TYPES=['Mechanical','Electrical','Hydraulic','Pneumatic','Tooling','Electronic (CNC Control)'];
+const PM_STANDARD_TASKS=['Lubrication Check','Coolant Level & Quality','Tool Condition Inspection','Electrical Connection Check','Hydraulic Oil Check','Axis Calibration Check','Chip Conveyor Cleaning','Filter Cleaning/Replacement','Way Covers Inspection','Safety Guard Check'];
+
+// ── Helper: get machine status label ──
+function getMachineStatusBadge(machineId){
+  const ms=S.machineStatus[machineId];
+  if(!ms||ms.status==='operational')return'';
+  if(ms.status==='breakdown')return`<span class="bdg bdg-r">BREAKDOWN</span>`;
+  if(ms.status==='pm')return`<span class="bdg bdg-a">PM IN PROGRESS</span>`;
+  return'';
+}
+
+// ── Maintenance Hub ──────────────────────
+function renderMaintHub(){
+  const activeBreakdowns=S.breakdowns.filter(b=>['pending','acknowledged','in_repair'].includes(b.status));
+  const pendingSpares=S.sparesRequests.filter(s=>s.status==='pending');
+  const today=dateStr();
+  // PM dues today or overdue
+  const pmDue=S.pmSchedules.filter(ps=>{
+    if(!ps.nextDue||ps.status==='paused')return false;
+    return ps.nextDue<=today;
+  });
+  const isViewOnly=S.sess.role==='production';
+  document.getElementById('s-maint-hub').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Maintenance</div><div class="hdr-sub">Breakdowns, PM & Assets</div></div></div>
+  <div class="pad">
+    ${activeBreakdowns.length?`<div class="ibox" style="background:var(--erbg);border-color:var(--er);color:var(--er);margin-bottom:12px">🔴 <strong>${activeBreakdowns.length} active breakdown${activeBreakdowns.length>1?'s':''}</strong></div>`:''}
+    ${pmDue.length?`<div class="ibox" style="background:#fef3c7;border-color:#d97706;color:#92400e;margin-bottom:12px">🟡 <strong>${pmDue.length} PM task${pmDue.length>1?'s':''} due or overdue</strong></div>`:''}
+    ${pendingSpares.length&&isAdmin()?`<div class="ibox" style="background:var(--acc3);border-color:var(--acc2);margin-bottom:12px">🔧 <strong>${pendingSpares.length} spare request${pendingSpares.length>1?'s':''} awaiting approval</strong></div>`:''}
+    <div class="slbl">Machine Status</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      ${S.machines.filter(m=>m.active!==false).slice(0,8).map(m=>{
+        const ms=S.machineStatus[m.id];
+        const st=ms?ms.status:'operational';
+        const clr=st==='breakdown'?'var(--er)':st==='pm'?'#d97706':'var(--ok)';
+        const lbl=st==='breakdown'?'BREAKDOWN':st==='pm'?'PM':'OK';
+        return`<div style="background:var(--sur);border:.5px solid ${clr};border-radius:var(--rs);padding:8px 10px;display:flex;align-items:center;gap:8px">
+          <div style="width:10px;height:10px;border-radius:50%;background:${clr};flex-shrink:0"></div>
+          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.name}</div><div style="font-size:10px;color:${clr};font-weight:700">${lbl}</div></div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="mtiles">
+      ${!isViewOnly?`<div class="mtile" onclick="go('maint-breakdown-new','maint-hub');renderBreakdownNew()"><div class="mtic">🔴</div><div class="mtnm">Report Breakdown</div><div class="mtct">${activeBreakdowns.length?`<span style="color:var(--er);font-weight:700">${activeBreakdowns.length} active</span>`:'Log a machine breakdown'}</div></div>`:''}
+      <div class="mtile" onclick="go('maint-breakdowns','maint-hub');renderBreakdowns()"><div class="mtic">📋</div><div class="mtnm">Breakdown Log</div><div class="mtct">All tickets</div></div>
+      <div class="mtile" onclick="go('maint-pm','maint-hub');renderPMHub()"><div class="mtic">🗓</div><div class="mtnm">Preventive Maintenance</div><div class="mtct">${pmDue.length?`<span style="color:#d97706;font-weight:700">${pmDue.length} due</span>`:'Schedule & log PM'}</div></div>
+      ${isAdmin()?`<div class="mtile" onclick="go('maint-spares-approval','maint-hub');renderSparesApproval()"><div class="mtic">🔧</div><div class="mtnm">Spares Approval</div><div class="mtct">${pendingSpares.length?`<span style="color:var(--er);font-weight:700">${pendingSpares.length} pending</span>`:'Approve spare requests'}</div></div>`:''}
+      <div class="mtile" onclick="go('maint-health','maint-hub');renderMaintHealth()"><div class="mtic">📊</div><div class="mtnm">Asset Health</div><div class="mtct">MTBF & MTTR metrics</div></div>
+    </div>
+  </div>`;
+}
+
+// ── Report Breakdown (new ticket) ────────
+function renderBreakdownNew(){
+  if(S.sess.role==='production'&&!isAdmin()){toast('View only for production role');goBack();return}
+  const machOpts=S.machines.filter(m=>m.active!==false).map(m=>{
+    const ms=S.machineStatus[m.id];
+    const broken=ms&&ms.status==='breakdown';
+    return`<option value="${m.id}" ${broken?'disabled':''} style="${broken?'color:var(--dim)':''}"> ${m.name}${broken?' (BREAKDOWN)':''}</option>`;
+  }).join('');
+  document.getElementById('s-maint-breakdown-new').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Report Breakdown</div><div class="hdr-sub">Log machine failure</div></div></div>
+  <div class="pad">
+    <div class="card">
+      <div class="card-hd">🔴 Breakdown Details</div>
+      <div class="f"><label>Machine *</label><select id="bd-mach"><option value="">— Select Machine —</option>${machOpts}</select></div>
+      <div class="row2">
+        <div class="f"><label>Date</label><input id="bd-date" type="date" value="${dateStr()}"></div>
+        <div class="f"><label>Breakdown Time *</label><input id="bd-time" type="time" value="${timeStr()}"></div>
+      </div>
+      <div class="f"><label>Shift</label><select id="bd-shift">${Object.entries(S.shifts).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}</select></div>
+      <div class="f"><label>Reported By</label><select id="bd-rep"><option value="">— Select —</option>${S.users.filter(u=>u.role==='production'||u.role==='supervisor'||u.role==='admin').map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select></div>
+      <div class="f"><label>Brief Description *</label><input id="bd-desc" type="text" placeholder="e.g. Spindle stopped mid-operation"></div>
+    </div>
+    <button class="btn btn-p" style="background:var(--er)" onclick="submitBreakdown()">🔴 Report Breakdown</button>
+    <div style="height:24px"></div>
+  </div>`;
+}
+async function submitBreakdown(){
+  const machId=document.getElementById('bd-mach')?.value;
+  const desc=document.getElementById('bd-desc')?.value.trim();
+  const time=document.getElementById('bd-time')?.value;
+  const date=document.getElementById('bd-date')?.value;
+  const shift=document.getElementById('bd-shift')?.value;
+  const repId=document.getElementById('bd-rep')?.value;
+  if(!machId){toast('Select a machine');return}
+  if(!desc){toast('Enter a description');return}
+  if(!time){toast('Enter breakdown time');return}
+  const mach=S.machines.find(m=>m.id===machId);
+  const rep=S.users.find(u=>u.id===repId);
+  try{
+    const bdRef=await db.collection('breakdowns').add({machineId:machId,machineName:mach?.name||'',date,shift,breakdownTime:time,breakdownTimestamp:nowTS(),description:desc,reportedBy:repId||S.sess.userId,reportedByName:rep?.name||S.sess.name,status:'pending',acknowledgedBy:'',acknowledgedAt:null,faultCategory:'',faultDescription:'',upTime:null,upTimestamp:null,fixDescription:'',totalDowntimeMins:0,spares:[],sparesApproved:false,createdAt:nowTS()});
+    // Update machine status
+    await db.collection('machineStatus').doc(machId).set({status:'pending_breakdown',activeBreakdownId:bdRef.id,updatedAt:nowTS()},{merge:true});
+    toast('Breakdown reported ✓');
+    go('maint-breakdown-detail','maint-hub');
+    renderBreakdownDetail(bdRef.id);
+  }catch(e){toast('Error: '+e.message)}
+}
+
+// ── Breakdown List ───────────────────────
+let _bdFilt='active';
+function renderBreakdowns(){
+  document.getElementById('s-maint-breakdowns').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Breakdown Log</div><div class="hdr-sub">${S.breakdowns.length} records</div></div></div>
+  <div class="pad">
+    <div class="mfilt"><select onchange="_bdFilt=this.value;applyBdFilter()">
+      <option value="active">Active</option>
+      <option value="all">All</option>
+      <option value="resolved">Resolved</option>
+    </select></div>
+    <div id="bd-list"></div>
+  </div>`;
+  _bdFilt='active';applyBdFilter();
+}
+function applyBdFilter(){
+  const active=['pending','acknowledged','in_repair'];
+  const list=S.breakdowns.filter(b=>_bdFilt==='all'?true:_bdFilt==='active'?active.includes(b.status):b.status==='resolved');
+  const w=document.getElementById('bd-list');if(!w)return;
+  if(!list.length){w.innerHTML=`<div class="empty"><div class="empty-ic">✅</div><h3>${_bdFilt==='active'?'No active breakdowns':'No records found'}</h3></div>`;return}
+  const stBdg={pending:'bdg-a',acknowledged:'bdg-r',in_repair:'bdg-r',resolved:'bdg-g'};
+  const stLbl={pending:'Pending Ack.',acknowledged:'Acknowledged',in_repair:'In Repair',resolved:'Resolved'};
+  w.innerHTML=list.map(b=>`<div class="card" style="margin-bottom:10px;cursor:pointer" onclick="go('maint-breakdown-detail','maint-breakdowns');renderBreakdownDetail('${b.id}')">
+    <div class="fbw" style="margin-bottom:6px">
+      <div><div style="font-weight:700">${b.machineName||'—'}</div><div class="tsm tmut">${b.date||'—'} ${b.breakdownTime||''} · ${b.shift||''}</div></div>
+      <span class="bdg ${stBdg[b.status]||'bdg-gr'}">${stLbl[b.status]||b.status}</span>
+    </div>
+    <div class="tsm tmut">${b.description||'—'}</div>
+    <div class="tsm tmut" style="margin-top:4px">By ${b.reportedByName||'—'}${b.faultCategory?' · '+b.faultCategory:''}</div>
+    ${b.totalDowntimeMins?`<div style="font-size:11px;color:var(--er);font-weight:600;margin-top:4px">⏱ ${b.totalDowntimeMins} mins downtime</div>`:''}
+  </div>`).join('');
+}
+
+// ── Breakdown Detail / Workflow ──────────
+async function renderBreakdownDetail(id){
+  const b=S.breakdowns.find(x=>x.id===id)||(await db.collection('breakdowns').doc(id).get().then(d=>d.exists?{id:d.id,...d.data()}:null));
+  if(!b){document.getElementById('s-maint-breakdown-detail').innerHTML=`<div class="pad"><div class="empty"><h3>Not found</h3></div></div>`;return}
+  const isMaint=S.sess.role==='maintenance'||isAdmin();
+  const stBdg={pending:'bdg-a',acknowledged:'bdg-r',in_repair:'bdg-r',resolved:'bdg-g'};
+  const stLbl={pending:'Pending Acknowledgement',acknowledged:'Acknowledged',in_repair:'In Repair',resolved:'Resolved'};
+  // Historical failures for same machine same category
+  let histNote='';
+  if(b.faultCategory){
+    const prev=S.breakdowns.filter(x=>x.id!==id&&x.machineId===b.machineId&&x.faultCategory===b.faultCategory&&x.status==='resolved').sort((a,c)=>((c.date||'')>(a.date||''))?1:-1);
+    if(prev.length){const days=Math.floor((new Date()-new Date(prev[0].date))/(86400000));histNote=`<div class="ibox" style="background:#fef3c7;border-color:#d97706;color:#92400e;margin-bottom:12px">⚠️ SYSTEM NOTE: This machine last suffered a <strong>${b.faultCategory}</strong> fault on <strong>${prev[0].date}</strong> (${days} days ago). Repeated failure warning.</div>`;}
+  }
+  // Spares section
+  const spares=b.spares||[];
+  const sparesTotal=spares.reduce((s,sp)=>(s+(+sp.qty||0)*(+sp.unitCost||0)),0);
+  document.getElementById('s-maint-breakdown-detail').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">${b.machineName||'Breakdown'}</div><div class="hdr-sub">${b.date||'—'}</div></div></div>
+  <div class="pad">
+    <div class="fbw" style="margin-bottom:12px"><span class="bdg ${stBdg[b.status]||'bdg-gr'}" style="font-size:13px;padding:6px 12px">${stLbl[b.status]||b.status}</span></div>
+    ${histNote}
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-hd">📋 Breakdown Info</div>
+      <div class="rrow"><span class="tsm tmut">Machine</span><span class="tsm" style="font-weight:600">${b.machineName}</span></div>
+      <div class="rrow"><span class="tsm tmut">Date / Time</span><span class="tsm">${b.date} ${b.breakdownTime}</span></div>
+      <div class="rrow"><span class="tsm tmut">Reported By</span><span class="tsm">${b.reportedByName||'—'}</span></div>
+      <div class="rrow"><span class="tsm tmut">Description</span><span class="tsm">${b.description||'—'}</span></div>
+      ${b.faultCategory?`<div class="rrow"><span class="tsm tmut">Fault Type</span><span class="tsm" style="font-weight:600">${b.faultCategory}</span></div>`:''}
+      ${b.totalDowntimeMins?`<div class="rrow"><span class="tsm tmut">Total Downtime</span><span class="tsm" style="font-weight:700;color:var(--er)">${b.totalDowntimeMins} mins</span></div>`:''}
+    </div>
+    ${b.status==='pending'&&isMaint?`
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-hd">🔧 Step 1 — Acknowledge & Diagnose</div>
+      <div class="f"><label>Fault Category *</label><select id="bd-fault"><option value="">— Select —</option>${FAULT_TYPES.map(f=>`<option>${f}</option>`).join('')}</select></div>
+      <div class="f"><label>Technician</label><select id="bd-tech"><option value="">— Select —</option>${S.users.filter(u=>u.role==='maintenance'||u.role==='admin').map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select></div>
+      <button class="btn btn-p" style="background:var(--er)" onclick="acknowledgeBreakdown('${b.id}')">Acknowledge Breakdown</button>
+    </div>`:b.status==='acknowledged'||b.status==='in_repair'?`
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-hd">ℹ️ Acknowledged</div>
+      <div class="rrow"><span class="tsm tmut">Fault Type</span><span class="tsm" style="font-weight:600">${b.faultCategory||'—'}</span></div>
+      <div class="rrow"><span class="tsm tmut">Technician</span><span class="tsm">${b.acknowledgedByName||'—'}</span></div>
+    </div>
+    ${isMaint?`
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-hd">🔧 Step 2 — Spares Required?</div>
+      <div id="bd-spares-list">${spares.map((sp,i)=>spareRow(sp,i,b.id)).join('')}</div>
+      <button class="btn btn-s btn-sm" style="margin-top:8px" onclick="addSpareRow('${b.id}')">+ Add Spare Item</button>
+      ${spares.length?`<div class="rrow" style="margin-top:8px"><span class="tsm tmut">Total Value</span><span class="tsm" style="font-weight:700">₹${sparesTotal.toLocaleString('en-IN')}</span></div>`:''}
+    </div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-hd">✅ Step 3 — Machine Up & Running</div>
+      ${b.spares&&b.spares.length>0&&!b.sparesApproved?`<div class="ibox" style="background:#fef3c7;border-color:#d97706;color:#92400e">⚠️ Spares request pending admin approval — cannot close until approved</div>`:`
+      <div class="row2">
+        <div class="f"><label>Up Time *</label><input id="bd-uptime" type="time" value="${timeStr()}"></div>
+        <div class="f"><label>Up Date</label><input id="bd-update" type="date" value="${dateStr()}"></div>
+      </div>
+      <div class="f"><label>Fix Description *</label><input id="bd-fix" type="text" placeholder="e.g. Replaced proximity sensor on X axis"></div>
+      <div class="f"><label>Closed By</label><select id="bd-closetech"><option value="">— Select —</option>${S.users.filter(u=>u.role==='maintenance'||u.role==='admin').map(u=>`<option value="${u.id}" ${u.id===b.acknowledgedBy?'selected':''}>${u.name}</option>`).join('')}</select></div>
+      <button class="btn btn-p" style="background:var(--ok)" onclick="closeBreakdown('${b.id}','${b.machineId}','${b.breakdownTime}','${b.date}')">✅ Machine Up & Running</button>
+      `}
+    </div>`:''}`:b.status==='resolved'?`
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-hd">✅ Resolved</div>
+      <div class="rrow"><span class="tsm tmut">Up Time</span><span class="tsm">${b.upDate||b.date} ${b.upTime||'—'}</span></div>
+      <div class="rrow"><span class="tsm tmut">Downtime</span><span class="tsm" style="font-weight:700;color:var(--er)">${b.totalDowntimeMins} mins</span></div>
+      <div class="rrow"><span class="tsm tmut">Fix</span><span class="tsm">${b.fixDescription||'—'}</span></div>
+      <div class="rrow"><span class="tsm tmut">Closed By</span><span class="tsm">${b.closedByName||'—'}</span></div>
+    </div>
+    ${spares.length?`<div class="card" style="margin-bottom:10px"><div class="card-hd">🔧 Spares Used</div>${spares.map(sp=>`<div class="rrow"><span class="tsm" style="flex:2">${sp.name}</span><span class="tsm tmut">${sp.qty} ${sp.unit||'pcs'} × ₹${sp.unitCost}</span><span class="tsm" style="font-weight:600">₹${((+sp.qty||0)*(+sp.unitCost||0)).toLocaleString('en-IN')}</span></div>`).join('')}<div class="rrow" style="margin-top:4px"><span class="tsm tmut">Total</span><span class="tsm" style="font-weight:700">₹${sparesTotal.toLocaleString('en-IN')}</span></div></div>`:''}
+    `:''}
+  </div>`;
+}
+
+function spareRow(sp,i,bdId){
+  return`<div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:6px;align-items:center;margin-bottom:6px" id="spare-row-${i}">
+    <input type="text" placeholder="Item name/description" value="${sp.name||''}" oninput="updateSpare('${bdId}',${i},'name',this.value)">
+    <input type="number" placeholder="Qty" min="1" value="${sp.qty||''}" oninput="updateSpare('${bdId}',${i},'qty',this.value)">
+    <input type="number" placeholder="₹/unit" min="0" value="${sp.unitCost||''}" oninput="updateSpare('${bdId}',${i},'unitCost',this.value)">
+    <button onclick="removeSpare('${bdId}',${i})" style="width:32px;height:32px;border-radius:8px;border:none;background:var(--erbg);color:var(--er);font-size:16px;cursor:pointer">✕</button>
+  </div>`;
+}
+async function addSpareRow(bdId){
+  const b=S.breakdowns.find(x=>x.id===bdId);if(!b)return;
+  const spares=[...(b.spares||[]),{name:'',qty:'',unitCost:'',unit:'pcs'}];
+  await db.collection('breakdowns').doc(bdId).update({spares,sparesApproved:false,updatedAt:nowTS()});
+  // Submit spares request to admin
+  await db.collection('sparesRequests').add({breakdownId:bdId,machineId:b.machineId,machineName:b.machineName,spares,status:'pending',requestedBy:S.sess.userId,requestedByName:S.sess.name,createdAt:nowTS()});
+  renderBreakdownDetail(bdId);
+}
+async function updateSpare(bdId,idx,field,val){
+  const b=S.breakdowns.find(x=>x.id===bdId);if(!b)return;
+  const spares=[...(b.spares||[])];if(!spares[idx])return;
+  spares[idx]={...spares[idx],[field]:val};
+  await db.collection('breakdowns').doc(bdId).update({spares,updatedAt:nowTS()});
+}
+async function removeSpare(bdId,idx){
+  const b=S.breakdowns.find(x=>x.id===bdId);if(!b)return;
+  const spares=[...(b.spares||[])];spares.splice(idx,1);
+  await db.collection('breakdowns').doc(bdId).update({spares,updatedAt:nowTS()});
+  renderBreakdownDetail(bdId);
+}
+async function acknowledgeBreakdown(id){
+  const fault=document.getElementById('bd-fault')?.value;
+  const techId=document.getElementById('bd-tech')?.value;
+  if(!fault){toast('Select fault category');return}
+  const tech=S.users.find(u=>u.id===techId);
+  const b=S.breakdowns.find(x=>x.id===id);if(!b)return;
+  try{
+    await db.collection('breakdowns').doc(id).update({status:'acknowledged',faultCategory:fault,acknowledgedBy:techId||S.sess.userId,acknowledgedByName:tech?.name||S.sess.name,acknowledgedAt:nowTS(),updatedAt:nowTS()});
+    await db.collection('machineStatus').doc(b.machineId).set({status:'breakdown',activeBreakdownId:id,updatedAt:nowTS()},{merge:true});
+    toast('Breakdown acknowledged');
+    renderBreakdownDetail(id);
+  }catch(e){toast('Error: '+e.message)}
+}
+async function closeBreakdown(id,machineId,startTime,startDate){
+  const upTime=document.getElementById('bd-uptime')?.value;
+  const upDate=document.getElementById('bd-update')?.value||startDate;
+  const fix=document.getElementById('bd-fix')?.value.trim();
+  const closedById=document.getElementById('bd-closetech')?.value;
+  if(!upTime){toast('Enter up time');return}
+  if(!fix){toast('Enter fix description');return}
+  // Calculate downtime
+  const start=new Date(`${startDate}T${startTime}`);
+  const end=new Date(`${upDate}T${upTime}`);
+  const mins=Math.max(0,Math.round((end-start)/60000));
+  const closedBy=S.users.find(u=>u.id===closedById);
+  try{
+    await db.collection('breakdowns').doc(id).update({status:'resolved',upTime,upDate,upTimestamp:nowTS(),fixDescription:fix,closedBy:closedById||S.sess.userId,closedByName:closedBy?.name||S.sess.name,totalDowntimeMins:mins,updatedAt:nowTS()});
+    await db.collection('machineStatus').doc(machineId).set({status:'operational',activeBreakdownId:null,updatedAt:nowTS()},{merge:true});
+    toast(`Breakdown closed — ${mins} mins downtime logged ✓`);
+    go('maint-breakdowns','maint-breakdown-detail');renderBreakdowns();
+  }catch(e){toast('Error: '+e.message)}
+}
+
+// ── Spares Approval (Admin) ──────────────
+function renderSparesApproval(){
+  if(!isAdmin()){toast('Admin only');goBack();return}
+  const pending=S.sparesRequests.filter(s=>s.status==='pending');
+  const done=S.sparesRequests.filter(s=>s.status!=='pending').slice(0,10);
+  document.getElementById('s-maint-spares-approval').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Spares Approval</div><div class="hdr-sub">${pending.length} pending</div></div></div>
+  <div class="pad">
+    ${pending.length?`<div class="slbl">Pending (${pending.length})</div>`+pending.map(s=>spareApprovalCard(s,true)).join(''):`<div class="card" style="text-align:center;padding:24px"><div style="font-size:32px">✅</div><div style="font-weight:600;margin-top:8px">No pending spares requests</div></div>`}
+    ${done.length?`<div class="slbl" style="margin-top:16px">Recently Processed</div>`+done.map(s=>spareApprovalCard(s,false)).join(''):''}
+  </div>`;
+}
+function spareApprovalCard(s,canApprove){
+  const total=(s.spares||[]).reduce((t,sp)=>(t+(+sp.qty||0)*(+sp.unitCost||0)),0);
+  const stBdg={pending:'bdg-a',approved:'bdg-g',rejected:'bdg-r'};
+  return`<div class="card" style="margin-bottom:10px">
+    <div class="fbw" style="margin-bottom:8px">
+      <div><div style="font-weight:700">${s.machineName||'—'}</div><div class="tsm tmut">By ${s.requestedByName||'—'}</div></div>
+      <span class="bdg ${stBdg[s.status]||'bdg-gr'}">${s.status}</span>
+    </div>
+    ${(s.spares||[]).map(sp=>`<div class="rrow" style="padding:2px 0"><span class="tsm" style="flex:2">${sp.name||'—'}</span><span class="tsm tmut">${sp.qty||0} pcs × ₹${sp.unitCost||0}</span></div>`).join('')}
+    <div class="rrow" style="margin-top:6px"><span class="tsm tmut">Total</span><span class="tsm" style="font-weight:700">₹${total.toLocaleString('en-IN')}</span></div>
+    ${canApprove?`<div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-p" style="flex:1" onclick="approveSpares('${s.id}','${s.breakdownId}')">✅ Approve</button>
+      <button class="btn btn-d" style="flex:1" onclick="rejectSpares('${s.id}')">✗ Reject</button>
+    </div>`:`<div class="tsm tmut" style="margin-top:6px">${s.status==='approved'?'Approved':'Rejected'} by ${s.approvedByName||'—'}</div>`}
+  </div>`;
+}
+async function approveSpares(id,bdId){
+  try{
+    await db.collection('sparesRequests').doc(id).update({status:'approved',approvedBy:S.sess.userId,approvedByName:S.sess.name,approvedAt:nowTS()});
+    if(bdId)await db.collection('breakdowns').doc(bdId).update({sparesApproved:true,updatedAt:nowTS()});
+    toast('Spares approved ✓');
+  }catch(e){toast('Error: '+e.message)}
+}
+async function rejectSpares(id){
+  try{
+    await db.collection('sparesRequests').doc(id).update({status:'rejected',approvedBy:S.sess.userId,approvedByName:S.sess.name,approvedAt:nowTS()});
+    toast('Spares request rejected');
+  }catch(e){toast('Error: '+e.message)}
+}
+
+// ── PM Hub ───────────────────────────────
+function renderPMHub(){
+  const today=dateStr();
+  const due=S.pmSchedules.filter(ps=>ps.nextDue&&ps.nextDue<=today&&ps.status!=='paused');
+  const upcoming=S.pmSchedules.filter(ps=>ps.nextDue&&ps.nextDue>today&&ps.status!=='paused');
+  document.getElementById('s-maint-pm').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Preventive Maintenance</div><div class="hdr-sub">Schedules & Logs</div></div></div>
+  <div class="pad">
+    ${due.length?`<div class="slbl" style="color:var(--er)">Due / Overdue (${due.length})</div>`+due.map(ps=>pmCard(ps,true)).join(''):'<div class="card" style="text-align:center;padding:16px;margin-bottom:12px"><div style="font-size:24px">✅</div><div class="tsm" style="margin-top:4px">No overdue PM tasks</div></div>'}
+    ${upcoming.length?`<div class="slbl" style="margin-top:8px">Upcoming</div>`+upcoming.slice(0,10).map(ps=>pmCard(ps,false)).join(''):''}
+    <div class="slbl" style="margin-top:16px">Recent PM Logs</div>
+    ${S.pmLogs.slice(0,10).map(l=>`<div class="card" style="margin-bottom:8px">
+      <div class="fbw"><div><div style="font-weight:600">${l.machineName||'—'}</div><div class="tsm tmut">${l.taskName} · ${l.completedDate}</div></div><span class="bdg bdg-g">Done</span></div>
+      <div class="tsm tmut" style="margin-top:4px">By ${l.techName||'—'}${l.remarks?' · '+l.remarks:''}</div>
+    </div>`).join('')||'<div class="tsm tmut" style="padding:8px">No PM logs yet</div>'}
+  </div>`;
+}
+function pmCard(ps,isDue){
+  const today=dateStr();
+  const daysStr=ps.nextDue?Math.round((new Date(ps.nextDue)-new Date(today))/(86400000)):'—';
+  const overdue=typeof daysStr==='number'&&daysStr<0;
+  return`<div class="card" style="margin-bottom:8px;border:.5px solid ${isDue?'var(--er)':'var(--bdr)'}">
+    <div class="fbw" style="margin-bottom:6px">
+      <div><div style="font-weight:700">${ps.machineName||'—'}</div><div class="tsm tmut">${ps.taskName} · ${ps.frequency}</div></div>
+      <div style="text-align:right"><div style="font-size:12px;font-weight:700;color:${overdue?'var(--er)':'var(--wa)'}">${overdue?Math.abs(daysStr)+' days overdue':daysStr+' days'}</div><div class="tsm tmut">Due: ${ps.nextDue||'—'}</div></div>
+    </div>
+    ${isDue&&(S.sess.role==='maintenance'||isAdmin())?`<button class="btn btn-p btn-sm" style="width:100%" onclick="logPM('${ps.id}')">✅ Log PM Completion</button>`:''}
+  </div>`;
+}
+async function logPM(psId){
+  const ps=S.pmSchedules.find(x=>x.id===psId);if(!ps)return;
+  openModal(`<div class="mtit">Log PM — ${ps.machineName}</div>
+  <div class="f"><label>Task</label><input type="text" value="${ps.taskName}" disabled></div>
+  <div class="f"><label>Completed By</label><select id="pm-tech"><option value="">— Select —</option>${S.users.filter(u=>u.role==='maintenance'||u.role==='admin').map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select></div>
+  <div class="f"><label>Date</label><input id="pm-date" type="date" value="${dateStr()}"></div>
+  <div class="f"><label>Remarks</label><input id="pm-rmk" type="text" placeholder="Optional observations..."></div>
+  <button class="btn btn-p mt8" style="width:100%" onclick="submitPMLog('${psId}')">Submit PM Log</button>
+  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
+}
+async function submitPMLog(psId){
+  const ps=S.pmSchedules.find(x=>x.id===psId);if(!ps)return;
+  const techId=document.getElementById('pm-tech')?.value;
+  const date=document.getElementById('pm-date')?.value||dateStr();
+  const rmk=document.getElementById('pm-rmk')?.value.trim()||'';
+  if(!techId){toast('Select technician');return}
+  const tech=S.users.find(u=>u.id===techId);
+  try{
+    await db.collection('pmLogs').add({scheduleId:psId,machineId:ps.machineId,machineName:ps.machineName,taskName:ps.taskName,frequency:ps.frequency,completedDate:date,techId,techName:tech?.name||'',remarks:rmk,completedAt:nowTS()});
+    // Calculate next due date
+    const nextDue=calcNextDue(date,ps.frequency,ps.frequencyDays);
+    await db.collection('pmSchedules').doc(psId).update({lastCompleted:date,nextDue,updatedAt:nowTS()});
+    closeModal();toast('PM logged ✓');
+  }catch(e){toast('Error: '+e.message)}
+}
+function calcNextDue(fromDate,freq,days){
+  const d=new Date(fromDate);
+  const n=parseInt(days)||{daily:1,weekly:7,monthly:30,quarterly:90,yearly:365}[freq]||30;
+  d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+
+// ── PM Schedules Master (in Masters module) ──
+async function renderPMSchedulesMaster(){
+  document.getElementById('s-m-pm-schedules').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">PM Schedules</div><div class="hdr-sub">Set maintenance dates per machine</div></div><button class="hdr-act" onclick="addPMScheduleModal()">+ Add</button></div>
+  <div class="pad" id="pm-sched-list"><div class="tsm tmut" style="padding:20px;text-align:center">Loading...</div></div>`;
+  renderPMSchedList();
+}
+function renderPMSchedList(){
+  const w=document.getElementById('pm-sched-list');if(!w)return;
+  if(!S.pmSchedules.length){w.innerHTML=`<div class="empty"><div class="empty-ic">🗓</div><h3>No PM schedules</h3><p>Add schedules per machine.</p></div>`;return}
+  const byMachine={};
+  S.pmSchedules.forEach(ps=>{if(!byMachine[ps.machineId])byMachine[ps.machineId]=[];byMachine[ps.machineId].push(ps);});
+  w.innerHTML=Object.entries(byMachine).map(([mid,schedules])=>{
+    const m=S.machines.find(x=>x.id===mid);
+    return`<div class="slbl">${m?m.name:'Unknown Machine'}</div>`+schedules.map(ps=>`<div class="card" style="margin-bottom:8px">
+      <div class="fbw">
+        <div><div style="font-weight:600">${ps.taskName}</div><div class="tsm tmut">${ps.frequency}${ps.frequencyDays?' (every '+ps.frequencyDays+' days)':''} · Next: ${ps.nextDue||'not set'}</div></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-s btn-sm" onclick="editPMScheduleModal('${ps.id}')">Edit</button>
+          ${isTanmay()?`<button class="btn btn-d btn-sm" onclick="delPMSchedule('${ps.id}')">Del</button>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+  }).join('');
+}
+function pmSchedF(ps){
+  const machOpts=S.machines.filter(m=>m.active!==false).map(m=>`<option value="${m.id}" ${ps&&ps.machineId===m.id?'selected':''}>${m.name}</option>`).join('');
+  const stdTasks=PM_STANDARD_TASKS.map(t=>`<option>${t}</option>`).join('');
+  return`<div class="f"><label>Machine *</label><select id="pms-mid"><option value="">— Select —</option>${machOpts}</select></div>
+  <div class="f"><label>Task Name *</label>
+    <input id="pms-task" type="text" value="${ps?ps.taskName:''}" placeholder="e.g. Lubrication Check" list="pms-task-dl">
+    <datalist id="pms-task-dl">${stdTasks}</datalist>
+  </div>
+  <div class="row2">
+    <div class="f"><label>Frequency</label><select id="pms-freq" onchange="togPMFreqDays(this.value)">
+      <option value="daily" ${ps&&ps.frequency==='daily'?'selected':''}>Daily</option>
+      <option value="weekly" ${ps&&ps.frequency==='weekly'?'selected':''}>Weekly</option>
+      <option value="monthly" ${(!ps||ps.frequency==='monthly')?'selected':''}>Monthly</option>
+      <option value="quarterly" ${ps&&ps.frequency==='quarterly'?'selected':''}>Quarterly</option>
+      <option value="yearly" ${ps&&ps.frequency==='yearly'?'selected':''}>Yearly</option>
+      <option value="custom" ${ps&&ps.frequency==='custom'?'selected':''}>Custom (days)</option>
+    </select></div>
+    <div class="f" id="pms-days-row" style="display:${ps&&ps.frequency==='custom'?'block':'none'}"><label>Every N days</label><input id="pms-days" type="number" min="1" value="${ps?ps.frequencyDays||'':''}" placeholder="e.g. 45"></div>
+  </div>
+  <div class="f"><label>Next Due Date *</label><input id="pms-next" type="date" value="${ps?ps.nextDue||'':''}"></div>`;
+}
+function togPMFreqDays(v){const r=document.getElementById('pms-days-row');if(r)r.style.display=v==='custom'?'block':'none';}
+function addPMScheduleModal(){openModal(`<div class="mtit">Add PM Schedule</div>${pmSchedF(null)}<button class="btn btn-p mt12" onclick="savePMSchedule()">Add Schedule</button><button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);}
+function editPMScheduleModal(id){const ps=S.pmSchedules.find(x=>x.id===id);if(!ps)return;openModal(`<div class="mtit">Edit PM Schedule</div>${pmSchedF(ps)}<button class="btn btn-p mt12" onclick="savePMSchedule('${id}')">Update</button>${isTanmay()?`<button class="btn btn-d mt8" onclick="delPMSchedule('${id}')">Delete</button>`:''}<button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);}
+async function savePMSchedule(id){
+  const mid=document.getElementById('pms-mid')?.value;
+  const task=document.getElementById('pms-task')?.value.trim();
+  const freq=document.getElementById('pms-freq')?.value;
+  const days=document.getElementById('pms-days')?.value;
+  const next=document.getElementById('pms-next')?.value;
+  if(!mid){toast('Select machine');return}
+  if(!task){toast('Enter task name');return}
+  if(!next){toast('Set next due date');return}
+  const m=S.machines.find(x=>x.id===mid);
+  const d={machineId:mid,machineName:m?m.name:'',taskName:task,frequency:freq,frequencyDays:freq==='custom'?parseInt(days)||30:null,nextDue:next,status:'active',lastCompleted:null};
+  try{
+    if(id){await db.collection('pmSchedules').doc(id).update({...d,updatedAt:nowTS()});}
+    else{await db.collection('pmSchedules').add({...d,createdAt:nowTS()});}
+    closeModal();toast(id?'PM schedule updated ✓':'PM schedule added ✓');
+  }catch(e){toast('Error: '+e.message)}
+}
+async function delPMSchedule(id){
+  if(!isTanmay())return;
+  if(!confirm('Delete this PM schedule?'))return;
+  try{await db.collection('pmSchedules').doc(id).delete();closeModal();toast('Deleted');}
+  catch(e){toast('Error: '+e.message)}
+}
+
+// ── Asset Health Dashboard ───────────────
+function renderMaintHealth(){
+  document.getElementById('s-maint-health').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Asset Health</div><div class="hdr-sub">MTBF & MTTR metrics</div></div></div>
+  <div class="pad">
+    ${S.machines.filter(m=>m.active!==false).map(m=>{
+      const mBreakdowns=S.breakdowns.filter(b=>b.machineId===m.id&&b.status==='resolved');
+      if(!mBreakdowns.length)return`<div class="card" style="margin-bottom:8px"><div class="fbw"><span style="font-weight:600">${m.name}</span><span class="tsm tmut">No breakdown history</span></div></div>`;
+      // MTTR = avg downtime mins
+      const mttr=Math.round(mBreakdowns.reduce((s,b)=>s+(+b.totalDowntimeMins||0),0)/mBreakdowns.length);
+      // MTBF — avg days between consecutive failures
+      let mtbf='N/A';
+      if(mBreakdowns.length>=2){
+        const sorted=mBreakdowns.slice().sort((a,b)=>a.date>b.date?1:-1);
+        let totalDays=0;
+        for(let i=1;i<sorted.length;i++){totalDays+=Math.max(0,Math.round((new Date(sorted[i].date)-new Date(sorted[i-1].date))/(86400000)));}
+        mtbf=Math.round(totalDays/(sorted.length-1))+' days';
+      }
+      const faultCounts={};
+      mBreakdowns.forEach(b=>{if(b.faultCategory)faultCounts[b.faultCategory]=(faultCounts[b.faultCategory]||0)+1;});
+      const topFault=Object.entries(faultCounts).sort((a,b)=>b[1]-a[1])[0];
+      return`<div class="card" style="margin-bottom:10px">
+        <div style="font-weight:700;margin-bottom:8px">${m.name} <span class="tsm tmut">${m.id_code||''}</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          <div class="sc"><div class="sl">Breakdowns</div><div class="sv">${mBreakdowns.length}</div></div>
+          <div class="sc"><div class="sl">MTBF</div><div class="sv" style="font-size:13px">${mtbf}</div></div>
+          <div class="sc"><div class="sl">MTTR (avg)</div><div class="sv" style="font-size:13px">${mttr} min</div></div>
+        </div>
+        ${topFault?`<div class="tsm tmut">Top fault: <strong>${topFault[0]}</strong> (${topFault[1]}x)</div>`:''}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ── Production downtime prefill from maintenance ──
+function getMaintDowntimeForMachine(machineId,date){
+  // Returns closed breakdown downtime for this machine today — for prefill in production
+  const closed=S.breakdowns.filter(b=>b.machineId===machineId&&b.date===date&&b.status==='resolved');
+  if(!closed.length)return null;
+  const total=closed.reduce((s,b)=>s+(+b.totalDowntimeMins||0),0);
+  const reasons=closed.map(b=>b.faultCategory||'Breakdown').join(', ');
+  return{mins:total,reasons,count:closed.length};
+}
+
+// ══════════════════════════════════════════
+// QC MODULE
+// ══════════════════════════════════════════
+const QC_DEFECT_REASONS=[
+  'Surface Hardness Low','OD Oversize','OD Undersize','ID Oversize','ID Undersize',
+  'Hobbing Chatter Marks','Visual Cracks','Dimensional Out of Spec',
+  'Surface Finish Poor','Heat Treatment Distortion','Runout Exceeded',
+  'Improper Burr Removal','Tooth Profile Error','Thread Damage','Other'
+];
+
+function renderQCHub(){
+  const pendingSetups=S.setupApprovals.filter(s=>s.status==='pending').length;
+  const isHOD=S.sess&&(S.users.find(u=>u.id===S.sess.userId)?.isHOD||S.sess.role==='admin');
+  document.getElementById('s-qc-hub').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Quality Control</div><div class="hdr-sub">Inspection & Approvals</div></div></div>
+  <div class="pad">
+    ${pendingSetups>0?`<div class="ibox" style="background:#fef3c7;border-color:#d97706;color:#92400e;margin-bottom:16px">⏳ <strong>${pendingSetups} setup${pendingSetups>1?'s':''} awaiting approval</strong></div>`:''}
+    <div class="mtiles">
+      <div class="mtile" onclick="go('qc-inspect','qc-hub');renderQCInspect()"><div class="mtic">🔍</div><div class="mtnm">Final Inspection</div><div class="mtct">Inspect completed batches</div></div>
+      <div class="mtile" onclick="go('qc-setups','qc-hub');renderQCSetups()"><div class="mtic">✅</div><div class="mtnm">Setup Approvals</div><div class="mtct">${pendingSetups>0?`<span style="color:var(--er);font-weight:700">${pendingSetups} pending</span>`:'First-piece approvals'}</div></div>
+      <div class="mtile" onclick="go('qc-history','qc-hub');renderQCHistory()"><div class="mtic">📋</div><div class="mtnm">Inspection History</div><div class="mtct">View past QC records</div></div>
+    </div>
+  </div>`;
+}
+
+// ── QC SETUP APPROVALS ──────────────────
+function renderQCSetups(){
+  const isHOD=S.sess&&(S.users.find(u=>u.id===S.sess.userId)?.isHOD||S.sess.role==='admin');
+  const pending=S.setupApprovals.filter(s=>s.status==='pending');
+  const recent=S.setupApprovals.filter(s=>s.status!=='pending').slice(0,20);
+  document.getElementById('s-qc-setups').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Setup Approvals</div><div class="hdr-sub">${pending.length} pending</div></div></div>
+  <div class="pad">
+    ${!isHOD?`<div class="ibox" style="margin-bottom:12px">View only — Setup approval requires HOD or Admin access</div>`:''}
+    ${pending.length?`<div class="slbl">Pending Approval (${pending.length})</div>`+pending.map(s=>setupApprovalCard(s,isHOD)).join(''):`<div class="card" style="text-align:center;padding:24px"><div style="font-size:32px;margin-bottom:8px">✅</div><div style="font-weight:600">No pending setup approvals</div></div>`}
+    ${recent.length?`<div class="slbl" style="margin-top:16px">Recently Processed (${recent.length})</div>`+recent.map(s=>setupApprovalCard(s,false)).join(''):''}
+  </div>`;
+}
+function setupApprovalCard(s,canApprove){
+  const stBdg={pending:'bdg-a',approved:'bdg-g',rejected:'bdg-r'};
+  const stLbl={pending:'Pending',approved:'Approved',rejected:'Rejected'};
+  return`<div class="card" style="margin-bottom:10px">
+    <div class="fbw" style="margin-bottom:8px">
+      <div>
+        <div style="font-weight:700">${s.partName||'—'}</div>
+        <div class="tsm tmut">${s.partNo||''}${s.customerName?' · '+s.customerName:''}</div>
+        <div class="tsm tmut">${s.machineName||'—'} · ${s.opName||'—'} · ${slbl(s.stage)}</div>
+        <div class="tsm tmut">By ${s.requestedByName||'—'} · ${s.date||'—'}</div>
+      </div>
+      <span class="bdg ${stBdg[s.status]||'bdg-gr'}">${stLbl[s.status]||s.status}</span>
+    </div>
+    <div style="font-family:monospace;font-size:11px;color:var(--acc);margin-bottom:8px">TAG: ${s.tagId} · Batch: ${s.batchCode||'—'}</div>
+    ${s.setupMins?`<div class="tsm tmut" style="margin-bottom:8px">⏱ Setup time logged: <strong>${s.setupMins} mins</strong></div>`:''}
+    ${canApprove&&s.status==='pending'?`
+    <div class="f" style="margin-bottom:8px"><label style="font-size:11px">Inspector Remarks (optional)</label><input id="sa-rmk-${s.id}" type="text" placeholder="e.g. First piece checked — dims OK"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p" style="flex:1" onclick="approveSetup('${s.id}')">✅ Approve Setup</button>
+      <button class="btn btn-d" style="flex:1" onclick="rejectSetup('${s.id}')">✗ Reject</button>
+    </div>`:`${s.approvedByName?`<div class="tsm tmut">${s.status==='approved'?'Approved':'Rejected'} by ${s.approvedByName}${s.remarks?' · '+s.remarks:''}</div>`:''}`}
+  </div>`;
+}
+async function approveSetup(id){
+  const isHOD=S.sess&&(S.users.find(u=>u.id===S.sess.userId)?.isHOD||S.sess.role==='admin');
+  if(!isHOD){toast('Only HOD or Admin can approve setups');return}
+  const rmk=document.getElementById(`sa-rmk-${id}`)?.value.trim()||'';
+  try{
+    await db.collection('setupApprovals').doc(id).update({status:'approved',approvedBy:S.sess.userId,approvedByName:S.sess.name,remarks:rmk,approvedAt:nowTS()});
+    toast('Setup approved ✓');
+  }catch(e){toast('Error: '+e.message)}
+}
+async function rejectSetup(id){
+  const isHOD=S.sess&&(S.users.find(u=>u.id===S.sess.userId)?.isHOD||S.sess.role==='admin');
+  if(!isHOD){toast('Only HOD or Admin can reject setups');return}
+  const rmk=document.getElementById(`sa-rmk-${id}`)?.value.trim();
+  if(!rmk){toast('Please enter a reason for rejection');return}
+  try{
+    await db.collection('setupApprovals').doc(id).update({status:'rejected',approvedBy:S.sess.userId,approvedByName:S.sess.name,remarks:rmk,approvedAt:nowTS()});
+    toast('Setup rejected');
+  }catch(e){toast('Error: '+e.message)}
+}
+
+// ── QC FINAL INSPECTION ─────────────────
+let _qcCard=null;   // fetched routeCard doc
+let _qcTagId='';
+
+function renderQCInspect(){
+  _qcCard=null;_qcTagId='';
+  document.getElementById('s-qc-inspect').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Final Inspection</div><div class="hdr-sub">Scan completed batch TAG</div></div></div>
+  <div class="pad">
+    <div class="card">
+      <div class="card-hd">🔍 Scan Route Card TAG</div>
+      <div style="text-align:center;margin-bottom:10px">
+        <button class="scan-btn-lg" onclick="startScan('qc-tag-input')" title="Scan TAG">📷</button>
+        <div class="tsm tmut" style="margin-top:6px">Scan physical TAG QR code</div>
+      </div>
+      <div class="bin-bc">
+        <input id="qc-tag-input" type="text" placeholder="Or type TAG number (e.g. TAG042)..." oninput="this.value=this.value.toUpperCase()" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <button class="btn btn-p mt8" style="width:100%" onclick="qcFetchTag()">Load TAG →</button>
+    </div>
+    <div id="qc-card-info"></div>
+    <div id="qc-disposition-form" style="display:none"></div>
+  </div>`;
+  // Wire enter key
+  setTimeout(()=>{const i=document.getElementById('qc-tag-input');if(i)i.addEventListener('keydown',e=>{if(e.key==='Enter')qcFetchTag();});},100);
+}
+
+async function qcFetchTag(){
+  const tagId=(document.getElementById('qc-tag-input')?.value||'').trim().toUpperCase();
+  if(!tagId){toast('Enter a TAG number');return}
+  if(!tagId.match(/^TAG\d+$/)){toast('Invalid TAG format');return}
+  const infoDiv=document.getElementById('qc-card-info');
+  const formDiv=document.getElementById('qc-disposition-form');
+  infoDiv.innerHTML=`<div class="tsm tmut" style="padding:12px;text-align:center">Loading...</div>`;
+  formDiv.style.display='none';
+  try{
+    const doc=await db.collection('routeCards').doc(tagId).get();
+    if(!doc.exists){infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)"><div style="color:var(--er);font-weight:600">❌ TAG ${tagId} not found</div></div>`;return}
+    const card={id:doc.id,...doc.data()};
+    // Validate: must be qc_pending status
+    if(card.status!=='qc_pending'&&card.status!=='hard_wip'){
+      infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)">
+        <div style="color:var(--er);font-weight:600">❌ Cannot inspect this TAG</div>
+        <div class="tsm tmut" style="margin-top:4px">Status: <strong>${card.status}</strong></div>
+        <div class="tsm tmut">TAG must complete final hard machining operation before QC.</div>
+      </div>`;return
+    }
+    // Validate: final hard op must be in opHistory
+    const hardOps=S.partOps.filter(po=>po.partId===card.partId&&po.stage==='hard').sort((a,b)=>(b.seqNo||0)-(a.seqNo||0));
+    const finalOpId=hardOps.length?hardOps[0].opId:null;
+    if(finalOpId){
+      const completed=(card.opHistory||[]).some(h=>h.opId===finalOpId&&h.stage==='hard');
+      if(!completed){
+        const finalOpName=S.operations.find(o=>o.id===finalOpId)?.name||'final operation';
+        infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)">
+          <div style="color:var(--er);font-weight:600">❌ Final operation not completed</div>
+          <div class="tsm tmut" style="margin-top:4px">Required: <strong>${finalOpName}</strong> (last hard stage op) must be logged before QC.</div>
+        </div>`;return
+      }
+    }
+    _qcCard=card;_qcTagId=tagId;
+    // Show card info
+    infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--ok);margin-top:12px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--ok)">✅ TAG Valid — Ready for Inspection</div>
+      <div class="rrow" style="padding:3px 0"><span class="tsm tmut">TAG</span><span class="tsm" style="font-family:monospace;font-weight:700;color:var(--acc)">${tagId}</span></div>
+      <div class="rrow" style="padding:3px 0"><span class="tsm tmut">Part</span><span class="tsm" style="font-weight:600">${card.partName}</span></div>
+      <div class="rrow" style="padding:3px 0"><span class="tsm tmut">Part No.</span><span class="tsm" style="font-family:monospace">${card.partNo}</span></div>
+      <div class="rrow" style="padding:3px 0"><span class="tsm tmut">Customer</span><span class="tsm">${card.customerName||'—'}</span></div>
+      <div class="rrow" style="padding:3px 0"><span class="tsm tmut">Batch Code</span><span class="tsm" style="font-family:monospace">${card.batchCode||'—'}</span></div>
+      ${card.heatCode?`<div class="rrow" style="padding:3px 0"><span class="tsm tmut">Heat Code</span><span class="tsm" style="font-family:monospace;color:var(--ok)">🔥 ${card.heatCode}</span></div>`:''}
+      <div class="rrow" style="padding:3px 0"><span class="tsm tmut">Qty Available</span><span class="tsm" style="font-weight:700;color:var(--acc);font-size:16px">${card.currentQty} pcs</span></div>
+    </div>`;
+    // Render disposition form
+    qcRenderDispositionForm(card);
+    formDiv.style.display='block';
+  }catch(e){infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)"><div style="color:var(--er)">Error: ${e.message}</div></div>`;}
+}
+
+function qcRenderDispositionForm(card){
+  const formDiv=document.getElementById('qc-disposition-form');
+  if(!formDiv)return;
+  const inspectors=S.users.filter(u=>u.role==='qc'||u.role==='admin');
+  const hardOpsForPart=S.partOps.filter(po=>po.partId===card.partId&&po.stage==='hard').sort((a,b)=>(a.seqNo||0)-(b.seqNo||0));
+  const defectOpts=QC_DEFECT_REASONS.map(r=>`<option value="${r}">${r}</option>`).join('');
+  const reworkOpOpts=hardOpsForPart.map(po=>{const o=S.operations.find(x=>x.id===po.opId);return`<option value="${po.opId}">${o?o.name:'?'} (seq ${po.seqNo})</option>`;}).join('');
+  formDiv.innerHTML=`<div class="card" style="margin-top:12px">
+    <div class="card-hd">📊 Disposition — ${card.currentQty} pcs total</div>
+    <div class="ibox" style="margin-bottom:12px;font-size:12px">Scrap + Rework + OK must equal <strong>${card.currentQty} pcs</strong></div>
+    <div class="f"><label>Inspector Name *</label><select id="qc-inspector"><option value="">— Select Inspector —</option>${inspectors.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select></div>
+    <div class="f"><label>Inspection Date</label><input id="qc-date" type="date" value="${dateStr()}"></div>
+
+    <div class="slbl" style="margin-top:8px">Bucket A — Scrap / Rejection</div>
+    <div class="row2">
+      <div class="f"><label>Rejection Qty</label><input id="qc-scrap-qty" type="number" min="0" value="0" placeholder="0" oninput="qcUpdateOKQty(${card.currentQty})"></div>
+      <div class="f"><label>Defect Reason *</label><select id="qc-scrap-reason"><option value="">— Select —</option>${defectOpts}</select></div>
+    </div>
+
+    <div class="slbl" style="margin-top:8px">Bucket B — Rework</div>
+    <div class="row2">
+      <div class="f"><label>Rework Qty</label><input id="qc-rework-qty" type="number" min="0" value="0" placeholder="0" oninput="qcUpdateOKQty(${card.currentQty})"></div>
+      <div class="f"><label>Return to Operation *</label><select id="qc-rework-op"><option value="">— Select —</option>${reworkOpOpts}</select></div>
+    </div>
+    <div id="qc-rework-tag-section" style="display:none">
+      <div class="ibox" style="background:#fef3c7;border-color:#d97706;color:#92400e;margin-bottom:8px">⚠️ Use a <strong>YELLOW or RED</strong> physical TAG card for rework — visually distinct on shop floor</div>
+      <div style="text-align:center;margin-bottom:8px"><button class="scan-btn-lg" onclick="startScan('qc-rework-tag')" title="Scan rework TAG">📷</button><div class="tsm tmut" style="margin-top:4px">Scan new TAG for rework batch</div></div>
+      <div class="bin-bc"><input id="qc-rework-tag" type="text" placeholder="Or type new TAG number..." oninput="this.value=this.value.toUpperCase()" autocomplete="off"></div>
+    </div>
+
+    <div class="slbl" style="margin-top:8px">Bucket C — OK Quantity</div>
+    <div id="qc-ok-display" style="background:var(--okbg);border:.5px solid var(--ok);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;text-align:center">
+      <div style="font-size:24px;font-weight:700;color:var(--ok)" id="qc-ok-qty">${card.currentQty}</div>
+      <div class="tsm tmut">pcs cleared as OK</div>
+    </div>
+    <div class="ibox" style="margin-bottom:10px;font-size:12px">Distribute OK qty across commercial streams (must sum to OK total)</div>
+    <div id="qc-ok-err" style="color:var(--er);font-size:12px;margin-bottom:8px;display:none"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="f" style="margin:0"><label style="font-size:10px;font-weight:700;color:var(--ok)">OEM</label><input id="qc-ok-oem" type="number" min="0" value="0" placeholder="0" oninput="qcCheckOKSplit(${card.currentQty})"></div>
+      <div class="f" style="margin:0"><label style="font-size:10px;font-weight:700;color:var(--wa)">Spares</label><input id="qc-ok-spares" type="number" min="0" value="0" placeholder="0" oninput="qcCheckOKSplit(${card.currentQty})"></div>
+      <div class="f" style="margin:0"><label style="font-size:10px;font-weight:700;color:var(--acc)">Market</label><input id="qc-ok-market" type="number" min="0" value="0" placeholder="0" oninput="qcCheckOKSplit(${card.currentQty})"></div>
+    </div>
+
+    <button class="btn btn-p" style="width:100%" onclick="submitQCDisposition()">Submit QC Disposition</button>
+    <div style="height:24px"></div>
+  </div>`;
+  // Wire rework tag section visibility
+  document.getElementById('qc-rework-qty').addEventListener('input',function(){
+    const v=parseInt(this.value)||0;
+    document.getElementById('qc-rework-tag-section').style.display=v>0?'block':'none';
+  });
+  // Auto-fill OK qty
+  qcUpdateOKQty(card.currentQty);
+}
+
+function qcUpdateOKQty(total){
+  const scrap=parseInt(document.getElementById('qc-scrap-qty')?.value)||0;
+  const rework=parseInt(document.getElementById('qc-rework-qty')?.value)||0;
+  const ok=Math.max(0,total-scrap-rework);
+  const el=document.getElementById('qc-ok-qty');if(el)el.textContent=ok;
+  const disp=document.getElementById('qc-ok-display');
+  if(disp){
+    const over=scrap+rework>total;
+    disp.style.borderColor=over?'var(--er)':'var(--ok)';
+    disp.style.background=over?'var(--erbg)':'var(--okbg)';
+    if(el)el.style.color=over?'var(--er)':'var(--ok)';
+  }
+  // Reset stream split
+  ['qc-ok-oem','qc-ok-spares','qc-ok-market'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=0;});
+  document.getElementById('qc-ok-oem').value=ok;
+  qcCheckOKSplit(total);
+}
+
+function qcCheckOKSplit(total){
+  const scrap=parseInt(document.getElementById('qc-scrap-qty')?.value)||0;
+  const rework=parseInt(document.getElementById('qc-rework-qty')?.value)||0;
+  const ok=Math.max(0,total-scrap-rework);
+  const oem=parseInt(document.getElementById('qc-ok-oem')?.value)||0;
+  const spares=parseInt(document.getElementById('qc-ok-spares')?.value)||0;
+  const market=parseInt(document.getElementById('qc-ok-market')?.value)||0;
+  const errEl=document.getElementById('qc-ok-err');
+  if(oem+spares+market!==ok){
+    if(errEl){errEl.style.display='block';errEl.textContent=`Stream total (${oem+spares+market}) must equal OK qty (${ok})`;}
+  }else{if(errEl)errEl.style.display='none';}
+}
+
+async function submitQCDisposition(){
+  if(!_qcCard){toast('No TAG loaded');return}
+  const inspectorId=document.getElementById('qc-inspector')?.value;
+  if(!inspectorId){toast('Select an inspector');return}
+  const inspector=S.users.find(u=>u.id===inspectorId);
+  const date=document.getElementById('qc-date')?.value||dateStr();
+  const scrapQty=parseInt(document.getElementById('qc-scrap-qty')?.value)||0;
+  const scrapReason=document.getElementById('qc-scrap-reason')?.value||'';
+  const reworkQty=parseInt(document.getElementById('qc-rework-qty')?.value)||0;
+  const reworkOpId=document.getElementById('qc-rework-op')?.value||'';
+  const reworkTag=(document.getElementById('qc-rework-tag')?.value||'').trim().toUpperCase();
+  const okOEM=parseInt(document.getElementById('qc-ok-oem')?.value)||0;
+  const okSpares=parseInt(document.getElementById('qc-ok-spares')?.value)||0;
+  const okMarket=parseInt(document.getElementById('qc-ok-market')?.value)||0;
+  const total=_qcCard.currentQty;
+  const okQty=okOEM+okSpares+okMarket;
+  // Validate totals
+  if(scrapQty+reworkQty+okQty!==total){toast(`Total mismatch: ${scrapQty}+${reworkQty}+${okQty}=${scrapQty+reworkQty+okQty} ≠ ${total} pcs`);return}
+  if(scrapQty>0&&!scrapReason){toast('Select a defect reason for rejected qty');return}
+  if(reworkQty>0&&!reworkOpId){toast('Select rework operation');return}
+  if(reworkQty>0&&!reworkTag){toast('Scan or enter a new TAG for rework batch');return}
+  if(reworkQty>0&&reworkTag===_qcTagId){toast('Rework TAG must be different from original TAG');return}
+  if(reworkQty>0&&!reworkTag.match(/^TAG\d+$/)){toast('Invalid rework TAG format');return}
+  const btn=document.querySelector('#qc-disposition-form .btn-p');
+  if(btn){btn.disabled=true;btn.textContent='Submitting...';}
+  try{
+    const batch=db.batch();
+    // 1. Update original route card
+    const cardUpdates={
+      status:'qc_cleared',
+      qty_oem:okOEM,qty_spares:okSpares,qty_market:okMarket,
+      qtyRejected:scrapQty,qtyRework:reworkQty,
+      currentQty:okQty,
+      updatedAt:nowTS()
+    };
+    if(reworkQty>0)cardUpdates.reworkTagId=reworkTag;
+    batch.update(db.collection('routeCards').doc(_qcTagId),cardUpdates);
+    // 2. Rework card — inherit genealogy
+    if(reworkQty>0){
+      const reworkOpName=S.operations.find(o=>o.id===reworkOpId)?.name||'';
+      const reworkSeq=(_qcCard.reworkSeq||0)+1;
+      batch.set(db.collection('routeCards').doc(reworkTag),{
+        tagId:reworkTag,
+        batchCode:_qcCard.batchCode+'-RWK'+reworkSeq,
+        status:'hard_wip',
+        cardType:'rework',
+        isRework:true,
+        reworkSeq,
+        reworkOp:reworkOpId,
+        reworkOpName:reworkOpName,
+        parentTagId:_qcTagId,
+        rootBatchCode:_qcCard.rootBatchCode||_qcCard.batchCode,
+        masterLotCode:_qcCard.masterLotCode||'',
+        inwardId:_qcCard.inwardId||'',
+        partId:_qcCard.partId,partNo:_qcCard.partNo,partName:_qcCard.partName,
+        customerId:_qcCard.customerId||'',customerName:_qcCard.customerName||'',
+        issuedQty:reworkQty,currentQty:reworkQty,
+        currentStage:'hard',currentOpId:reworkOpId,
+        opHistory:[..._qcCard.opHistory||[]],
+        heatCode:_qcCard.heatCode||null,htChargeId:_qcCard.htChargeId||null,
+        qty_oem:0,qty_spares:0,qty_market:0,qtyRejected:0,qtyRework:0,reworkTagId:null,
+        dispatchedQty:0,
+        issuedBy:S.sess.userId,issuedByName:S.sess.name,
+        issueDate:date,issuedAt:nowTS(),updatedAt:nowTS()
+      });
+    }
+    // 3. Scrap ledger entry
+    if(scrapQty>0){
+      batch.set(db.collection('scrapLedger').doc(),{
+        tagId:_qcTagId,batchCode:_qcCard.batchCode||'',heatCode:_qcCard.heatCode||'',
+        masterLotCode:_qcCard.masterLotCode||'',
+        partId:_qcCard.partId,partNo:_qcCard.partNo,partName:_qcCard.partName,
+        customerName:_qcCard.customerName||'',
+        qtyRejected:scrapQty,defectReason:scrapReason,
+        inspectorId,inspectorName:inspector?.name||'',
+        date,createdAt:nowTS()
+      });
+    }
+    // 4. QC inspection record
+    const qcRef=db.collection('qcInspections').doc();
+    batch.set(qcRef,{
+      tagId:_qcTagId,batchCode:_qcCard.batchCode||'',heatCode:_qcCard.heatCode||'',
+      masterLotCode:_qcCard.masterLotCode||'',
+      partId:_qcCard.partId,partNo:_qcCard.partNo,partName:_qcCard.partName,
+      customerName:_qcCard.customerName||'',
+      totalQty:total,scrapQty,reworkQty,okQty,
+      okOEM,okSpares,okMarket,
+      scrapReason:scrapReason||'',
+      reworkOpId:reworkOpId||'',reworkTag:reworkTag||'',
+      inspectorId,inspectorName:inspector?.name||'',
+      date,createdAt:nowTS()
+    });
+    await batch.commit();
+    toast(`✅ QC done — ${okQty} OK · ${scrapQty} scrapped · ${reworkQty} rework`);
+    _qcCard=null;_qcTagId='';
+    renderQCInspect();
+  }catch(e){
+    toast('Error: '+e.message);
+    if(btn){btn.disabled=false;btn.textContent='Submit QC Disposition';}
+  }
+}
+
+// ── QC HISTORY ──────────────────────────
+function renderQCHistory(){
+  const list=[...S.qcInspections].slice(0,50);
+  document.getElementById('s-qc-history').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Inspection History</div><div class="hdr-sub">${S.qcInspections.length} records</div></div></div>
+  <div class="pad">
+    ${!list.length?`<div class="empty"><div class="empty-ic">🔍</div><h3>No inspections yet</h3></div>`:
+    list.map(q=>`<div class="card" style="margin-bottom:10px">
+      <div class="fbw" style="margin-bottom:6px">
+        <div><div style="font-weight:700">${q.partName||'—'}</div>
+        <div class="tsm tmut">${q.partNo||''} · ${q.customerName||'—'}</div>
+        <div class="tsm tmut">By ${q.inspectorName||'—'} · ${q.date||'—'}</div></div>
+        <div style="text-align:right">
+          <div style="font-weight:700;font-size:15px;color:var(--ok)">${q.okQty} OK</div>
+          ${q.scrapQty?`<div style="font-size:11px;color:var(--er)">${q.scrapQty} scrapped</div>`:''}
+          ${q.reworkQty?`<div style="font-size:11px;color:var(--wa)">${q.reworkQty} rework</div>`:''}
+        </div>
+      </div>
+      <div style="font-family:monospace;font-size:11px;color:var(--mut)">TAG: ${q.tagId} · Batch: ${q.batchCode||'—'}</div>
+      ${q.heatCode?`<div style="font-size:11px;color:var(--ok)">🔥 ${q.heatCode}</div>`:''}
+      <div style="display:flex;gap:8px;margin-top:6px;font-size:11px">
+        ${q.okOEM?`<span class="bdg bdg-g">OEM: ${q.okOEM}</span>`:''}
+        ${q.okSpares?`<span class="bdg bdg-a">Spares: ${q.okSpares}</span>`:''}
+        ${q.okMarket?`<span class="bdg bdg-b">Market: ${q.okMarket}</span>`:''}
+      </div>
+      ${q.scrapReason?`<div class="tsm tmut" style="margin-top:4px">Defect: ${q.scrapReason}</div>`:''}
+    </div>`).join('')}
+  </div>`;
+}
+
+// ══════════════════════════════════════════
 function reloadHT(){
   const c=S.cur;
   if(c==='ht-hub')renderHTHub();
@@ -3781,6 +4859,7 @@ function renderDspHub(){
       <div class="mtile" onclick="go('dsp-po-list','dsp-hub');renderDspPoList()"><div class="mtic">📄</div><div class="mtnm">PO / Schedule</div><div class="mtct">${S.pos.length} POs loaded</div></div>
       <div class="mtile" onclick="go('dsp-track','dsp-hub');renderDspTrack()"><div class="mtic">📊</div><div class="mtnm">Tracksheet</div><div class="mtct">Schedule vs dispatched</div></div>
     </div>
+    ${(()=>{const cleared=S.routeCards.filter(rc=>rc.status==='qc_cleared');return cleared.length?`<div class="slbl" style="margin-top:8px">Ready for Dispatch (${cleared.length} TAGs)</div>`+cleared.slice(0,5).map(rc=>`<div class="card" style="margin-bottom:8px;padding:10px 12px"><div class="fbw"><div><div style="font-weight:700;font-family:monospace;color:var(--acc)">${rc.tagId}</div><div style="font-size:13px;font-weight:600">${rc.partName||'—'}</div><div class="tsm tmut">${rc.partNo||''}${rc.customerName?' · '+rc.customerName:''}</div>${rc.heatCode?`<div style="font-size:11px;color:var(--ok)">🔥 ${rc.heatCode}</div>`:''}</div><div style="text-align:right;flex-shrink:0">${rc.qty_oem?`<div class="tsm bdg-g" style="font-size:11px">OEM: ${rc.qty_oem}</div>`:''}${rc.qty_spares?`<div class="tsm" style="font-size:11px;color:var(--wa)">Spares: ${rc.qty_spares}</div>`:''}${rc.qty_market?`<div class="tsm" style="font-size:11px;color:var(--acc)">Market: ${rc.qty_market}</div>`:''}</div></div></div>`).join('')+(cleared.length>5?`<div class="tsm tmut" style="text-align:center;padding:4px">+${cleared.length-5} more TAGs ready</div>`:''):'';})()}
   </div>`;
 }
 
@@ -4026,7 +5105,7 @@ function renderDspPoDetail(id){
           ${d.vehicleNo?`<div class="tsm tmut">${d.vehicleNo}</div>`:''}
         </div>
       </div>
-      ${(d.items||[]).map(item=>{const ln=(po.lines||[]).find(l=>l.id===item.lineId);return ln?`<div class="tsm tmut" style="padding:2px 0">• ${ln.partName}: ${item.qty} ${ln.unit}</div>`:''}).join('')}
+      ${(d.items||[]).map(item=>{const ln=(po.lines||[]).find(l=>l.id===item.lineId);return`<div style="padding:3px 0"><span class="tsm tmut">• </span><span class="tsm" style="font-weight:600">${item.partName||ln?.partName||'—'}</span><span class="tsm tmut">: ${item.qty} ${item.unit||ln?.unit||'pcs'}</span>${item.tagId?`<span style="font-family:monospace;font-size:10px;color:var(--acc);margin-left:4px">${item.tagId}</span>`:''}${item.heatCode?`<span style="font-size:10px;color:var(--ok);margin-left:4px">🔥${item.heatCode}</span>`:''}</div>`;}).join('')}
       ${d.remarks?`<div class="tsm tmut" style="margin-top:4px;font-style:italic">${d.remarks}</div>`:''}
       ${isTanmay()?`<button class="btn btn-d btn-sm" style="margin-top:6px" onclick="delDispatch('${d.id}')">🗑 Delete</button>`:''}
     </div>`).join(''):`<div class="empty" style="padding:20px 0"><div class="empty-ic">🚚</div><h3>No dispatches yet</h3></div>`}
@@ -4264,83 +5343,139 @@ function dspAddItem(){
   const poId=document.getElementById('dsp-po-sel')?.value||S._dspNewPoId;
   const po=S.pos.find(p=>p.id===poId);
   if(!po){toast('Select a PO first');return}
-
-  // Build pending lines for quick-tap cards
+  // Get customer stream type
+  const cust=S.customers.find(c=>c.name===po.customer||c.id===po.customerId);
+  const streamType=cust?.streamType||'oem';
+  const streamLabel={oem:'OEM',spares:'Spares',market:'Market'}[streamType]||'OEM';
+  // Build pending lines
   const pendingLines=(po.lines||[]).map(ln=>{
     const dispatched=S.dispatches.filter(d=>d.poId===poId).reduce((s,d)=>{
       const li=(d.items||[]).find(i=>i.lineId===ln.id);return s+(li?+li.qty:0);
     },0);
-    const alreadyInThisInv=(_dspItems.find(i=>i.lineId===ln.id)||{qty:0}).qty;
+    const alreadyInThisInv=(_dspItems.filter(i=>i.lineId===ln.id).reduce((s,i)=>s+(+i.qty||0),0));
     const pending=Math.max(0,(+ln.qty||0)-dispatched-alreadyInThisInv);
     return{...ln,dispatched,alreadyInThisInv,pending};
   }).filter(ln=>ln.pending>0);
-
   if(!pendingLines.length){toast('All lines in this PO are fully dispatched');return}
-
   openModal(`<div class="mtit">Add Parts to Dispatch</div>
-  <div style="font-size:12px;color:var(--mut);margin-bottom:12px">Tap Add or All to add parts. You can add multiple without closing.</div>
+  <div class="ibox" style="margin-bottom:12px;font-size:12px">Each item requires a TAG scan. Customer stream: <strong>${streamLabel}</strong></div>
   ${pendingLines.map(ln=>`
   <div style="background:var(--bg);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:.5px solid var(--bdr)">
-    <div style="font-weight:700;font-size:13px;margin-bottom:4px">${ln.partName}</div>
-    <div style="font-size:11px;color:var(--mut);margin-bottom:8px">${ln.partNo||'—'} · <strong style="color:var(--wa)">${ln.pending} ${ln.unit} pending</strong></div>
+    <div style="font-weight:700;font-size:13px;margin-bottom:2px">${ln.partName}</div>
+    <div style="font-size:11px;color:var(--mut);margin-bottom:8px">${ln.partNo||'—'} · <strong style="color:var(--wa)">${ln.pending} ${ln.unit||'pcs'} pending</strong></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <div style="flex:1;border:.5px solid var(--bdr);border-radius:6px;padding:6px 8px;background:#fff;min-height:32px;display:flex;align-items:center">
+        <span id="dsp-tag-lbl-${ln.id}" style="font-family:monospace;font-size:12px;color:var(--mut)">No TAG scanned</span>
+        <input type="hidden" id="dsp-tag-id-${ln.id}">
+      </div>
+      <button class="scan-btn" onclick="dspScanTag('${ln.id}','${streamType}',${ln.pending},'${poId}')" title="Scan TAG">📷</button>
+    </div>
+    <div id="dsp-tag-info-${ln.id}" style="display:none;font-size:11px;color:var(--ok);margin-bottom:6px"></div>
     <div style="display:flex;align-items:center;gap:8px">
       <input id="dsp-qty-${ln.id}" type="number" min="1" max="${ln.pending}" value="1" style="width:80px;padding:7px 10px;font-size:15px;font-weight:700;border:1.5px solid var(--bdr);border-radius:6px;text-align:center">
-      <button class="btn btn-p btn-sm" style="flex:1" onclick="dspQuickAdd('${ln.id}')">Add</button>
-      <button class="btn btn-s btn-sm" onclick="dspQuickAddAll('${ln.id}',${ln.pending})">All ${ln.pending}</button>
+      <button class="btn btn-p btn-sm" style="flex:1" onclick="dspConfirmTagItem('${ln.id}','${poId}','${streamType}')">Add ✓</button>
     </div>
   </div>`).join('')}
   <button class="btn btn-s mt8" onclick="closeModal()">Done</button>`);
 }
-
-function dspQuickAdd(lineId){
-  const qtyEl=document.getElementById('dsp-qty-'+lineId);
-  const qty=+qtyEl?.value;
-  if(!qty||qty<1){toast('Enter a valid qty');return}
-  const poId=document.getElementById('dsp-po-sel')?.value||S._dspNewPoId;
+function dspScanTag(lineId,streamType,maxQty,poId){
+  openModal(`<div class="mtit">📷 Scan Route Card TAG</div>
+  <div id="qr-reader-dsp" style="width:100%;border-radius:8px;overflow:hidden"></div>
+  <div class="tsm tmut" style="margin:8px 0;text-align:center">Scan TAG on the physical container</div>
+  <div class="bin-bc" style="margin-bottom:10px"><input id="dsp-tag-manual" type="text" placeholder="Or type TAG number (e.g. TAG042)..." oninput="this.value=this.value.toUpperCase()" autocomplete="off"></div>
+  <button class="btn btn-p mt8" style="width:100%" onclick="dspConfirmTagScan('${lineId}','${streamType}',${maxQty},'${poId}')">Use this TAG</button>
+  <button class="btn btn-s mt8" onclick="stopDspScan()">Cancel</button>`);
+  setTimeout(()=>{
+    try{
+      _html5Qr=new Html5Qrcode('qr-reader-dsp');
+      _html5Qr.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:120},aspectRatio:1.5},
+        (decoded)=>{stopDspScan();dspConfirmTagById(lineId,streamType,maxQty,poId,decoded.toUpperCase());},()=>{}).catch(()=>{});
+    }catch(e){}
+  },200);
+}
+function stopDspScan(){if(_html5Qr){_html5Qr.stop().catch(()=>{}).finally(()=>{_html5Qr.clear();_html5Qr=null;});}closeModal();}
+async function dspConfirmTagScan(lineId,streamType,maxQty,poId){
+  const tagId=(document.getElementById('dsp-tag-manual')?.value||'').trim().toUpperCase();
+  stopDspScan();
+  if(tagId)await dspConfirmTagById(lineId,streamType,maxQty,poId,tagId);
+}
+async function dspConfirmTagById(lineId,streamType,maxQty,poId,tagId){
+  if(!tagId.match(/^TAG\d+$/)){toast('Invalid TAG format');return}
+  // Check not already used in this session for same line
+  if(_dspItems.find(i=>i.lineId===lineId&&i.tagId===tagId)){toast(tagId+' already added for this line');return}
+  try{
+    const doc=await db.collection('routeCards').doc(tagId).get();
+    if(!doc.exists){toast(tagId+' not found');return}
+    const card=doc.data();
+    // Must be qc_cleared
+    if(card.status!=='qc_cleared'){toast(`${tagId} is not QC cleared (status: ${card.status})`);return}
+    // Check stream balance
+    const streamQtyMap={oem:'qty_oem',spares:'qty_spares',market:'qty_market'};
+    const streamField=streamQtyMap[streamType]||'qty_oem';
+    const available=+card[streamField]||0;
+    if(available<=0){toast(`${tagId} has no ${streamType.toUpperCase()} qty available (balance: 0)`);return}
+    // Check customer match
+    const po=S.pos.find(p=>p.id===poId);
+    const poCustomer=po?.customer||'';
+    if(card.customerName&&card.customerName!==poCustomer){
+      // Warn but don't hard block — customer names might differ slightly
+      console.warn(`TAG customer ${card.customerName} vs PO customer ${poCustomer}`);
+    }
+    // Update TAG scan display in modal
+    const lbl=document.getElementById(`dsp-tag-lbl-${lineId}`);
+    const hiddenInput=document.getElementById(`dsp-tag-id-${lineId}`);
+    const infoDiv=document.getElementById(`dsp-tag-info-${lineId}`);
+    const qtyInput=document.getElementById(`dsp-qty-${lineId}`);
+    if(lbl){lbl.style.color='var(--ok)';lbl.style.fontWeight='700';lbl.textContent=tagId;}
+    if(hiddenInput)hiddenInput.value=tagId;
+    if(infoDiv){
+      infoDiv.style.display='block';
+      infoDiv.innerHTML=`✅ ${card.partName} · Batch: ${card.batchCode||'—'}${card.heatCode?' · 🔥 '+card.heatCode:''} · ${streamType.toUpperCase()} available: <strong>${available} pcs</strong>`;
+    }
+    if(qtyInput){qtyInput.max=Math.min(maxQty,available);qtyInput.value=Math.min(1,available);}
+    // Store TAG data temporarily
+    if(!window._dspTagCache)window._dspTagCache={};
+    window._dspTagCache[lineId]={tagId,batchCode:card.batchCode||'',heatCode:card.heatCode||'',partName:card.partName,partNo:card.partNo,streamType,streamField,available};
+    toast(`✅ ${tagId} — ${available} ${streamType.toUpperCase()} pcs available`);
+  }catch(e){toast('Error fetching TAG: '+e.message)}
+}
+async function dspConfirmTagItem(lineId,poId,streamType){
+  const tagId=document.getElementById(`dsp-tag-id-${lineId}`)?.value||'';
+  const qty=parseInt(document.getElementById(`dsp-qty-${lineId}`)?.value)||0;
+  if(!tagId){toast('Scan a TAG first');return}
+  if(!qty||qty<1){toast('Enter a valid quantity');return}
+  const tagData=window._dspTagCache?.[lineId];
+  if(!tagData){toast('TAG data not loaded — scan again');return}
+  if(qty>tagData.available){toast(`Only ${tagData.available} ${streamType.toUpperCase()} pcs available on this TAG`);return}
   const po=S.pos.find(p=>p.id===poId);
-  const ln=(po&&po.lines||[]).find(l=>l.id===lineId);
-  if(!ln){toast('Part not found');return}
+  const ln=(po?.lines||[]).find(l=>l.id===lineId);
+  if(!ln){toast('Line not found');return}
+  // Check PO pending qty
   const dispatched=S.dispatches.filter(d=>d.poId===poId).reduce((s,d)=>{
     const li=(d.items||[]).find(i=>i.lineId===lineId);return s+(li?+li.qty:0);
   },0);
-  const alreadyInThisInv=(_dspItems.find(i=>i.lineId===lineId)||{qty:0}).qty;
-  const maxQty=(+ln.qty||0)-dispatched-alreadyInThisInv;
-  if(qty>maxQty){toast(`Max ${maxQty} ${ln.unit} can be dispatched`);return}
-  const existing=_dspItems.findIndex(i=>i.lineId===lineId);
-  if(existing>=0)_dspItems[existing].qty+=qty;
-  else _dspItems.push({lineId,partId:ln.partId,partNo:ln.partNo,partName:ln.partName,qty,unit:ln.unit,rate:ln.rate||0});
+  const alreadyInThisInv=(_dspItems.filter(i=>i.lineId===lineId).reduce((s,i)=>s+(+i.qty||0),0));
+  const maxPOQty=(+ln.qty||0)-dispatched-alreadyInThisInv;
+  if(qty>maxPOQty){toast(`PO allows max ${maxPOQty} more pcs for this line`);return}
+  _dspItems.push({
+    lineId,partId:ln.partId,partNo:ln.partNo||tagData.partNo,
+    partName:ln.partName||tagData.partName,
+    qty,unit:ln.unit||'pcs',rate:ln.rate||0,
+    tagId,batchCode:tagData.batchCode,heatCode:tagData.heatCode,
+    streamType,streamField:tagData.streamField
+  });
+  // Reset this line's TAG state
+  const lbl=document.getElementById(`dsp-tag-lbl-${lineId}`);
+  const hiddenInput=document.getElementById(`dsp-tag-id-${lineId}`);
+  const infoDiv=document.getElementById(`dsp-tag-info-${lineId}`);
+  const qtyInput=document.getElementById(`dsp-qty-${lineId}`);
+  if(lbl){lbl.style.color='var(--mut)';lbl.style.fontWeight='400';lbl.textContent='No TAG scanned';}
+  if(hiddenInput)hiddenInput.value='';
+  if(infoDiv)infoDiv.style.display='none';
+  if(qtyInput)qtyInput.value=1;
+  if(window._dspTagCache)delete window._dspTagCache[lineId];
   renderDspItemsList();
-  if(qtyEl)qtyEl.value=1;
-  toast(ln.partName+' added ✓');
-  // Update the pending display in the modal
-  const card=qtyEl?.closest('div[style]');
-  if(card){const pendSpan=card.querySelector('strong');if(pendSpan)pendSpan.textContent=(maxQty-qty)+' '+ln.unit+' pending';}
-}
-function dspQuickAddAll(lineId,pendingQty){
-  const qtyEl=document.getElementById('dsp-qty-'+lineId);
-  if(qtyEl)qtyEl.value=pendingQty;
-  dspQuickAdd(lineId);
-}
-
-// kept for compat but no longer used from the quick-add flow
-function dspConfirmItem(){
-  const lineId=document.getElementById('dsp-item-line')?.value;
-  const qty=+document.getElementById('dsp-item-qty')?.value;
-  if(!lineId||!qty){toast('Select part and qty');return}
-  const poId=document.getElementById('dsp-po-sel')?.value||S._dspNewPoId;
-  const po=S.pos.find(p=>p.id===poId);
-  const ln=(po&&po.lines||[]).find(l=>l.id===lineId);
-  if(!ln){toast('Part not found');return}
-  const dispatched=S.dispatches.filter(d=>d.poId===poId).reduce((s,d)=>{
-    const li=(d.items||[]).find(i=>i.lineId===lineId);return s+(li?+li.qty:0);
-  },0);
-  const alreadyInThisInv=(_dspItems.find(i=>i.lineId===lineId)||{qty:0}).qty;
-  const maxQty=(+ln.qty||0)-dispatched-alreadyInThisInv;
-  if(qty>maxQty){toast(`Max ${maxQty} ${ln.unit} can be dispatched`);return}
-  const existing=_dspItems.findIndex(i=>i.lineId===lineId);
-  if(existing>=0)_dspItems[existing].qty+=qty;
-  else _dspItems.push({lineId,partId:ln.partId,partNo:ln.partNo,partName:ln.partName,qty,unit:ln.unit,rate:ln.rate||0});
-  closeModal();renderDspItemsList();
+  toast(`${tagData.partName} (${qty} pcs) added ✓`);
 }
 
 function renderDspItemsList(){
@@ -4348,16 +5483,20 @@ function renderDspItemsList(){
   if(!_dspItems.length){w.innerHTML=`<div class="tsm tmut" style="padding:8px 0">No parts added yet.</div>`;return}
   const totalValue=_dspItems.reduce((s,i)=>s+(i.qty*(i.rate||0)),0);
   w.innerHTML=_dspItems.map((item,i)=>`
-  <div class="rrow" style="padding:8px 0;border-bottom:.5px solid var(--bdr)">
-    <div><div style="font-weight:600">${item.partName}</div>
-    <div class="tsm tmut">${item.partNo||'—'} · ${item.qty} ${item.unit}${item.rate?' · ₹'+item.rate+'/pc':''}</div></div>
-    <button class="btn btn-d btn-sm" onclick="_dspItems.splice(${i},1);renderDspItemsList()">✕</button>
+  <div style="padding:8px 0;border-bottom:.5px solid var(--bdr)">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+      <div style="flex:1">
+        <div style="font-weight:600">${item.partName}</div>
+        <div class="tsm tmut">${item.partNo||'—'} · ${item.qty} ${item.unit||'pcs'}${item.rate?' · ₹'+item.rate+'/pc':''}</div>
+        ${item.tagId?`<div style="font-size:11px;margin-top:2px"><span style="font-family:monospace;color:var(--acc);font-weight:700">${item.tagId}</span>${item.batchCode?' · '+item.batchCode:''}${item.heatCode?' · 🔥 '+item.heatCode:''}</div>`:'<div style="font-size:11px;color:var(--er)">⚠️ No TAG</div>'}
+      </div>
+      <button class="btn btn-d btn-sm" onclick="_dspItems.splice(${i},1);renderDspItemsList()">✕</button>
+    </div>
   </div>`).join('')+
-  (totalValue>0?`<div class="fbw" style="padding:8px 0;font-size:13px;font-weight:700"><span>Invoice Value</span><span>₹${totalValue.toLocaleString('en-IN')}</span></div>`:'');
+  (totalValue>0?`<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;font-weight:700"><span>Invoice Value</span><span>₹${totalValue.toLocaleString('en-IN')}</span></div>`:'');
 }
 
 async function saveDispatch(){
-  // Combine prefix + suffix for invoice number
   const prefix=document.getElementById('dsp-inv-prefix')?.textContent||getFYPrefix();
   const suffix=document.getElementById('dsp-inv-suffix')?.value.trim()||'';
   const invoiceNo=suffix?prefix+suffix:(document.getElementById('dsp-inv').value.trim());
@@ -4366,6 +5505,9 @@ async function saveDispatch(){
   if(!invoiceNo){toast('Invoice number required');return}
   if(!poId){toast('Select a PO');return}
   if(!_dspItems.length){toast('Add at least one part');return}
+  // Validate all items have TAGs
+  const missingTag=_dspItems.filter(i=>!i.tagId);
+  if(missingTag.length){toast(`${missingTag.length} item(s) missing TAG scan — all items require a TAG`);return}
   const po=S.pos.find(p=>p.id===poId);
   const d={
     invoiceNo,date,poId,
@@ -4377,13 +5519,50 @@ async function saveDispatch(){
     totalValue:_dspItems.reduce((s,i)=>s+(i.qty*(i.rate||0)),0),
     createdBy:S.sess.userId,createdAt:nowTS()
   };
+  const btn=document.querySelector('#s-dsp-new .btn-p');
+  if(btn){btn.disabled=true;btn.textContent='Saving...';}
   try{
-    await db.collection('dispatches').add(d);
+    // Batch write: save dispatch + update each routeCard's stream balance
+    const fbBatch=db.batch();
+    const dspRef=db.collection('dispatches').doc();
+    fbBatch.set(dspRef,d);
+    // Group items by tagId to handle same TAG dispatched for multiple lines
+    const tagUpdates={};
+    _dspItems.forEach(item=>{
+      if(!item.tagId)return;
+      if(!tagUpdates[item.tagId])tagUpdates[item.tagId]={streamField:item.streamField,qty:0};
+      tagUpdates[item.tagId].qty+=item.qty;
+    });
+    for(const[tagId,upd] of Object.entries(tagUpdates)){
+      const tagRef=db.collection('routeCards').doc(tagId);
+      // Decrement stream balance and increment dispatchedQty
+      const tagDoc=await tagRef.get();
+      if(tagDoc.exists){
+        const td=tagDoc.data();
+        const newStreamQty=Math.max(0,(+td[upd.streamField]||0)-upd.qty);
+        const newDispatched=(+td.dispatchedQty||0)+upd.qty;
+        // Check if all streams now zero
+        const newOEM=upd.streamField==='qty_oem'?newStreamQty:(+td.qty_oem||0);
+        const newSpares=upd.streamField==='qty_spares'?newStreamQty:(+td.qty_spares||0);
+        const newMarket=upd.streamField==='qty_market'?newStreamQty:(+td.qty_market||0);
+        const allZero=(newOEM+newSpares+newMarket)===0;
+        fbBatch.update(tagRef,{
+          [upd.streamField]:newStreamQty,
+          dispatchedQty:newDispatched,
+          status:allZero?'dispatched':'qc_cleared',
+          updatedAt:nowTS()
+        });
+      }
+    }
+    await fbBatch.commit();
     toast('Dispatch saved ✓');
     _dspItems=[];
     go('dsp-po-detail','dsp-new');
     renderDspPoDetail(poId);
-  }catch(e){toast('Error: '+e.message)}
+  }catch(e){
+    toast('Error: '+e.message);
+    if(btn){btn.disabled=false;btn.textContent='💾 Save Dispatch';}
+  }
 }
 
 // ── Tracksheet ────────────────────────────────────────────────
