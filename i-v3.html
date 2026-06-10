@@ -2730,7 +2730,7 @@ function renderStoreIssue(){
     ${!approved.length?`<div class="card" style="text-align:center;padding:24px"><div style="font-size:32px;margin-bottom:8px">📋</div><div style="font-weight:600;margin-bottom:4px">No approved requisitions</div><div class="tsm tmut">Requisitions must be approved by Admin before issuing</div></div>`:`
     <div class="slbl">Select Requisition to Fulfill</div>
     ${approved.map(r=>`
-      <div class="card" style="margin-bottom:8px;cursor:pointer;border:1.5px solid ${_issReq&&_issReq.id===r.id?'var(--acc)':'var(--bdr)'}" onclick="issSelectReq('${r.id}')">
+      <div class="card" data-req-id="${r.id}" style="margin-bottom:8px;cursor:pointer;border:1.5px solid var(--bdr)" onclick="issSelectReq('${r.id}')">
         <div class="fbw"><div><div style="font-weight:700">${r.reqNo}</div><div class="tsm tmut">By ${r.requestedByName||'—'} · Needed by ${r.neededBy||r.date}</div></div>
         <span class="bdg ${r.status==='partial'?'bdg-a':'bdg-g'}">${r.status==='partial'?'Partial':'Approved'}</span></div>
         <div style="margin-top:6px">${(r.lines||[]).map(l=>{const issued=issLineIssued(r.id,l.lineNo);const rem=l.qtyApproved-issued;return rem>0?`<div class="tsm" style="padding:2px 0"><span style="font-weight:600">${l.partName}</span> · <span style="color:var(--acc);font-weight:700">${rem} pcs remaining</span></div>`:''}).join('')}</div>
@@ -2749,8 +2749,10 @@ function issSelectReq(id){
   _issReq=S.requisitions.find(r=>r.id===id);
   if(!_issReq)return;
   _issLine=null;_issTags=[];
-  // Re-render to highlight selected card
-  renderStoreIssue();
+  // Highlight selected card in place (do NOT call renderStoreIssue — it resets _issReq and destroys the DOM)
+  document.querySelectorAll('[data-req-id]').forEach(el=>{
+    el.style.border=el.dataset.reqId===id?'1.5px solid var(--acc)':'1.5px solid var(--bdr)';
+  });
   // Show line selector
   const linesDiv=document.getElementById('iss-line-select');
   if(!linesDiv)return;
@@ -3506,7 +3508,10 @@ async function submitBreakdown(){
 // ── Breakdown List ───────────────────────
 let _bdFilt='active';
 function renderBreakdowns(){
-  document.getElementById('s-maint-breakdowns').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Breakdown Log</div><div class="hdr-sub">${S.breakdowns.length} records</div></div></div>
+  const el=document.getElementById('s-maint-breakdowns');
+  if(!el){console.error('s-maint-breakdowns not found');return;}
+  const isViewOnly=S.sess&&S.sess.role==='production';
+  el.innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Breakdown Log</div><div class="hdr-sub">${S.breakdowns.length} records</div></div>${!isViewOnly?`<button class="hdr-act" onclick="go('maint-breakdown-new','maint-breakdowns');renderBreakdownNew()">+ Report</button>`:''}</div>
   <div class="pad">
     <div class="mfilt"><select onchange="_bdFilt=this.value;applyBdFilter()">
       <option value="active">Active</option>
