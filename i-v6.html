@@ -496,13 +496,7 @@ function renderHome(){
   <div class="slbl" style="margin-top:16px">Shift Timings</div><div class="card">${Object.values(S.shifts).map(s=>`<div class="rrow"><span class="tsm" style="font-weight:600">${s.label}</span><span class="tsm tmut">${s.start} – ${s.end}</span></div>`).join('')}</div></div>`;
 }
 
-function renderActualHub(){
-  document.getElementById('s-actual-hub').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Actual Output</div></div></div><div class="pad">
-  <div class="hcard" onclick="go('actual','actual-hub');renderActual()"><div class="hcard-ic" style="background:#dcfce7">✅</div><div><div class="hcard-nm">Submit Shift Report</div><div class="hcard-sub">Fill actual output for end of shift</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
-  <div class="hcard" onclick="go('view-actuals','actual-hub');renderViewActuals()"><div class="hcard-ic" style="background:var(--acc2)">📋</div><div><div class="hcard-nm">View All Reports</div><div class="hcard-sub">Browse, filter and edit submitted reports</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
-  <div class="hcard" onclick="go('ht-hub','actual-hub');renderHTHub()"><div class="hcard-ic" style="background:#fef3c7">🔥</div><div><div class="hcard-nm">HT Stage Records</div><div class="hcard-sub">Heat treatment charges &amp; records</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
-  </div>`;
-}
+function renderActualHub(){go('production');renderProductionHub();}
 
 // ══════════════════════════════════════════
 // PRODUCTION MODULE
@@ -894,12 +888,6 @@ async function submitProdEntry(){
 function renderPlanHub(){go('production');renderProductionHub();}
 function renderActualHub(){go('production');renderProductionHub();}
 
-
-  document.getElementById('s-plan').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Production Planning</div></div></div><div class="pad">
-  <div class="hcard" onclick="go('plan-day','plan');renderPlanDay()"><div class="hcard-ic" style="background:#ede9fe">📆</div><div><div class="hcard-nm">Plan for a Day</div><div class="hcard-sub">Fill Shift 1, 2 &amp; 3 for any date</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
-  <div class="hcard" onclick="go('view-plan');rvp()"><div class="hcard-ic" style="background:var(--okbg)">📋</div><div><div class="hcard-nm">View All Plans</div><div class="hcard-sub">Browse, filter and edit plans</div></div><div style="margin-left:auto;color:var(--dim);font-size:20px">›</div></div>
-  </div>`;
-}
 function renderPlanDay(){
   S.planDayStage='';S.planDayDate=tomStr();
   document.getElementById('s-plan-day').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Plan for a Day</div></div></div>
