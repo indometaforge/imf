@@ -208,37 +208,11 @@ textarea{resize:none}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 <div class="mov" id="mov" onclick="if(event.target===this)closeModal()"><div class="modal" id="mcont"></div></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 firebase.initializeApp({apiKey:"AIzaSyA3-RPrX4ysIwTHAn_nnbMGJSghv3RRcLs",authDomain:"imf-pro-track.firebaseapp.com",projectId:"imf-pro-track",storageBucket:"imf-pro-track.firebasestorage.app",messagingSenderId:"288808983033",appId:"1:288808983033:web:0c02884447ba6f25734528"});
 const db=firebase.firestore();
 db.enablePersistence().catch(()=>{});
-
-// ═══════════════════════════════════════════════════════════
-// TEST MODE — all transactional writes go to TEST_ collections
-// Masters (users/machines/parts/ops/customers/suppliers/config)
-// are READ from live collections so the app has real data.
-// On deployment: set TEST_MODE = false and remove this block.
-// ═══════════════════════════════════════════════════════════
-const TEST_MODE = true;
-
-// Transactional collections that get prefixed in test mode
-const TEST_COLLECTIONS = new Set([
-  'plans','actuals','inward','routeCards','requisitions',
-  'setupApprovals','qcInspections','htCharges','breakdowns',
-  'machineStatus','pmLogs','sparesRequests','dispatches','pos',
-  'scrapLedger','batches','cards','pmSchedules'
-]);
-
-// Wrap db.collection so test writes go to TEST_ namespace
-const _origCol = db.collection.bind(db);
-db.collection = function(name) {
-  if (TEST_MODE && TEST_COLLECTIONS.has(name)) {
-    return _origCol('TEST_' + name);
-  }
-  return _origCol(name);
-};
 
 const PSEED=[
   {no:'1A009578R',name:'1ST SPEED 501',cust:'PVPL',rate:191.56},{no:'1A010700R',name:'2ND SPEED 501',cust:'PVPL',rate:151.57},{no:'1A010698R',name:'CLUSTER G 501',cust:'PVPL',rate:485.34},{no:'127309515R',name:'REGULAR',cust:'PVPL',rate:192.14},{no:'127302517R',name:'1ST SPEED',cust:'PVPL',rate:152.10},{no:'127303016R',name:'2NT SPEED',cust:'PVPL',rate:122.32},{no:'127306513R',name:'3RD SPEED',cust:'PVPL',rate:106.06},{no:'127203010R',name:'4TH SPEED',cust:'PVPL',rate:495.71},{no:'127740018',name:'CLUSTER GEARS',cust:'PVPL',rate:169.46},{no:'127451019R',name:'CLUTCH SHAFT',cust:'PVPL',rate:323.94},{no:'227555010',name:'MAIN SHAFT',cust:'PVPL',rate:336.95},{no:'227571014R',name:'FD CARGO FOR SPD',cust:'PVPL',rate:213.97},{no:'227403011R',name:'IDLER CARGO',cust:'PVPL',rate:173.24},{no:'127555016',name:'RC CARGO FOR SPD',cust:'PVPL',rate:278.09},{no:'127571015R',name:'FD PASS',cust:'PVPL',rate:223.83},{no:'127404016R',name:'IDLER PASS',cust:'PVPL',rate:210.25},{no:'1A011810',name:'RC PASS',cust:'PVPL',rate:329.19},{no:'1A014033',name:'FD PASS 8HOLE',cust:'PVPL',rate:365.15},{no:'1A010160',name:'FD COMM 8HOLE',cust:'PVPL',rate:229.08},{no:'1A010161',name:'1ST SPEED B',cust:'PVPL',rate:177.60},{no:'1A010162',name:'2NT SPEED B',cust:'PVPL',rate:145.85},{no:'1A010163',name:'3RD SPEED B',cust:'PVPL',rate:122.25},{no:'1A010159',name:'4TH SPEED B',cust:'PVPL',rate:536.85},{no:'1A011044',name:'SECONDARY SHAFT',cust:'PVPL',rate:472.23},{no:'1A017329',name:'CLUSTER',cust:'PVPL',rate:216.63},{no:'1A017330',name:'1ST DRIVEN',cust:'PVPL',rate:179.71},{no:'1A013333',name:'2ND DRIVEN',cust:'PVPL',rate:149.26},{no:'1A013334',name:'3RT DRIVEN',cust:'PVPL',rate:115.44},{no:'1A018761',name:'4TH DRIVEN',cust:'PVPL',rate:92.48},{no:'1A013303',name:'5TH DRIVEN',cust:'PVPL',rate:0},{no:'1A013304',name:'2ND DRIVING',cust:'PVPL',rate:84.66},{no:'1A013305',name:'3RD DRIVING',cust:'PVPL',rate:100.76},{no:'1A004868',name:'4H DRIVING',cust:'PVPL',rate:140.44},{no:'1A013372',name:'STARTING AXEL WITH IP',cust:'PVPL',rate:226.28},{no:'1A014034',name:'SLIDING PASSENGER',cust:'PVPL',rate:338.47},{no:'1A013336',name:'DIFFERENTIAL CROWN PASS',cust:'PVPL',rate:332.62},{no:'1A003607R',name:'SECONDARY SHAFT MAIN',cust:'PVPL',rate:535.37},{no:'1A003607RB',name:'CLUSTER GEAR PAXX',cust:'PVPL',rate:535.37},
@@ -346,7 +320,7 @@ function setupListeners(){
     db.collection('customers').onSnapshot(sn=>{S.customers=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='m-customers')renderCustomers();}),
     db.collection('requisitions').orderBy('createdAt','desc').limit(200).onSnapshot(sn=>{S.requisitions=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='store-req-list')renderReqList();if(S.cur==='store-approvals')renderApprovals();if(S.cur==='store-issue')renderStoreIssue();}),
     db.collection('routeCards').orderBy('issuedAt','desc').limit(500).onSnapshot(sn=>{S.routeCards=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='store-batches')renderBatchList();if(S.cur==='store-stock')renderStockBody();}),
-    db.collection('setupApprovals').orderBy('createdAt','desc').limit(200).onSnapshot(sn=>{S.setupApprovals=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='qc-setups')renderQCSetups();if(S.cur==='production'||S.cur==='prod-entry')renderProductionHub();}),
+    db.collection('setupApprovals').orderBy('createdAt','desc').limit(200).onSnapshot(sn=>{S.setupApprovals=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='qc-setups')renderQCSetups();if(S.cur==='production')renderProductionHub();if(S.cur==='prod-entry')refreshProdEntryApprovals();}),
     db.collection('qcInspections').orderBy('createdAt','desc').limit(300).onSnapshot(sn=>{S.qcInspections=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='qc-history')renderQCHistory();}),
     db.collection('breakdowns').orderBy('createdAt','desc').limit(200).onSnapshot(sn=>{S.breakdowns=sn.docs.map(d=>({id:d.id,...d.data()}));if(S.cur==='maint-hub')renderMaintHub();if(S.cur==='maint-breakdowns')renderBreakdowns();if(S.cur==='maint-breakdown-detail'){};}),
     db.collection('machineStatus').onSnapshot(sn=>{S.machineStatus={};sn.docs.forEach(d=>S.machineStatus[d.id]={id:d.id,...d.data()});if(S.cur==='maint-hub')renderMaintHub();if(S.cur==='prod-entry')renderProdMachines();}),
@@ -519,7 +493,7 @@ function renderApp(){
     {id:'reports',svg:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',l:'Reports',s:getPerm('reports')!=='hidden'},
     {id:'masters',svg:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',l:'Masters',s:isA}
   ].filter(n=>n.s);
-  document.getElementById('app').innerHTML=`${TEST_MODE ? '<div id="test-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#d97706;color:#fff;text-align:center;font-size:12px;font-weight:700;padding:5px;letter-spacing:.05em">⚠ TEST MODE — Data saves to TEST_ collections. Not live. <button onclick="clearTestData()" style=\"margin-left:12px;background:rgba(0,0,0,.25);border:none;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer\">🗑 Clear All Test Data</button></div>' : ''}<div class="shell"><aside class="sidebar"><div class="sb-logo"><img class="sb-logo-img" src="data:image/png;base64,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" alt="Indo Metaforge Pvt Ltd"><div class="sb-tag">ProTrack MES</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-production"></div><div class="screen" id="s-prod-entry"></div><div class="screen" id="s-prod-setup"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-store-req-new"></div><div class="screen" id="s-store-req-list"></div><div class="screen" id="s-store-approvals"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div><div class="screen" id="s-m-suppliers"></div><div class="screen" id="s-m-customers"></div><div class="screen" id="s-m-tags"></div><div class="screen" id="s-m-pm-schedules"></div><div class="screen" id="s-maint-hub"></div><div class="screen" id="s-maint-breakdown-new"></div><div class="screen" id="s-maint-breakdown-detail"></div><div class="screen" id="s-maint-breakdowns"></div><div class="screen" id="s-maint-pm"></div><div class="screen" id="s-maint-pm-machine"></div><div class="screen" id="s-maint-health"></div><div class="screen" id="s-maint-spares-approval"></div><div class="screen" id="s-qc-hub"></div><div class="screen" id="s-qc-inspect"></div><div class="screen" id="s-qc-history"></div><div class="screen" id="s-qc-setups"></div><div class="screen" id="s-ht-hub"></div><div class="screen" id="s-ht-new"></div><div class="screen" id="s-ht-view"></div><div class="screen" id="s-ht-detail"></div><div class="screen" id="s-dsp-hub"></div><div class="screen" id="s-dsp-po-list"></div><div class="screen" id="s-dsp-po-new"></div><div class="screen" id="s-dsp-po-detail"></div><div class="screen" id="s-dsp-new"></div><div class="screen" id="s-dsp-track"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
+  document.getElementById('app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="sb-logo"><img class="sb-logo-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABGCAYAAABL0p+yAAAM5klEQVR42u1d/2tcxxGf8ZkzVxRcXBwcVGwcElxcUhpSElISHCiEloQGSk1NTUoCIaX5gxwUDAouMTIyCgoyKgoJLjYqCgoyMldOyMgoqCjISEjoOPGOe0x/uFlrbjz7vtydFD1lBx7v7r399nY/O7MzO7sLsI9ERMNEtNRl3FUiGoFAgXICZ5aINqmTVnOmsaTibxPRfKjdQGnAucaAaYmrwc+WM6ZRFaCL+Grxs69CLRebjuxx+if4HotnZQDYAYDTDKThBPBtA8B5AGgCQAUASny59I6HJiw24R5zwDUAOMkAKqnXsQAUAMAjBmaZ47jnTb7r+CUAaCLisdCMAYA+AJLifhpAsQFECToLeDJMBQA+RsSPQlMGAGrwbbKIbCaACBIACinxAhc8BHR0j8C3kgA+KVLLGUAWqziaU5aJaBMRfxqa80fAAYloDhFfTHjfcpxJgCUWCoikDQDY4vHflhDHA6zAnODxoA/AmlN+iojve8pVQ8RfhCYvtllF0joRzbGdrybMK8SmElLPiI3J4z2YdJZVepEy8Tha4bLVDBvk1dCSxQZfQwBMUkvY6aStLiKisT6X5Sp3AAlEnS8Z7x1dCS1aTPC11BUpLiQbupXW0EQ0w1wxMsC8SUSLaeDl+KTKEhllc9c2a+eBCgK+CcH5Wp6LFIgmPGlNifBrRDSVkveImAkhIqp5wg0pDt1KuFw5Z0PrFosDtlIu4pkLUyvm99UeyzElgDZsvF9SwwEvAEOrFguAc55Bv5zbrSYAYnwPymQCiYjGFUe2OspyaNViAXDcA8DIErlCJM7sE3dezMi1g/g9YJTVEN30PKsAwA1EvCTtbQBwDhFxPz4AEdGNE2We/JzAP5ccqEAccNrggBbna+T19etjGT/ziGSr3CuhVYsFwG0l0kg7hHIjVw9AWUn9HxUgbDgtObRq8bTgDjubAdDqQSqv+j9vGKenQ8sWA3wtPZug3ld95pdAgXoF36Yy8JI2HgebWqA9G9CrATzpsVMAX6Be6agA0zKbKgb5kfRWdvfrclwFAP89BJ1tGABKiPg33QkBABDxsicOaNcvjrPj6g8R/56zLJPAfpSI+EZepsHxfO5oI9B2eSvLMByvDp1rbVz7D8h6YU8i6cEei7BlK2+ehIi5Pi6mmVkoYZqtkYf7GW5Qj71QqDta5Lg1491EjwoW8foVrTlTgmmnw5xDRHcSyt4iotsZymDRcIZvGEkp77zvfYZ6n8rRZlXdUa32l+RWxZ2DTs9jUD0BAOCuSHgOAL5NqZcNvu84ruDWbgiD8Q7n2VS/3VXn/OuI+DzHqet0uWf3Shvi95Ysn9b6RT3JfOvi3TcsLb6EXcfcC0S0rhpoSKybaQLALa6bWyKt9zL4MNbFvSlBxhzuBVG/FjUBYIHz/hja62wQ2g6+b4o2uwEAnwLAQ4GLb/jZ54j4S5Xun0VbAgD8I83M0vLN9eYd+wnn0UgoMFeMcWbHGNNyMFXpzhrxNpkDzQonWXdNJ+3GoDmsp+d2SADLO0c6Shh5SI+eIZVOy2eXFO/TpM2wYaet+jiX5/vHckiNId+3Gmk32CegZTkEHyGia/y75OF+FdHDgEG0kaGcFb6XxW93d2Orh/w+TuC819Vza3nncQB4DQBeAoBf891drwLA2S65Yiy+tSJEbq7pPcUZXjW+564n6tcZ84hFub7j3+cFQL6H9rIHSOCAb3FHdtd6whBgIIsFxeWNiM+KevyLFsHnE9IpCTbr6I8A8HmGSlngynjA1yM9SOWCNQ0QxvxswVIC9pFKiPgzFjEAAIMsjpt9zqeZ87m303Od3hRDCEDEZwQwk9q6oi5IYQ5Jit1x0cYAAF848EpJeBQRf8PjhL+KhDvW7CLi70T6g4j4QYZe/3pG7nDMx8ozLiIqcQ+/Lzms1uZ6QQcivk9ELzBHdVw9j6IzK7THbw2QXfBEvSA6KGRgFK68F3nYcVaMtysJ8csA8AUivtOnDvWuG/vyuFd+Q5Pff/TYDIOIl4moDgAf7kHvzkLfA8ApkXc5gcvGykxUAYCv+8Ap46Qezh11EQCe4yFJ2RMnJqI7iPg6d+zX2LRVYmVKSoFbAPAWAOzwbNJNBvsQALwnzB3Xc5T9sXRR47pmCkc73WVd6c52RZlo3BAsZo5c8jIE4Xja4WovE5fmipRev2aMf696wtaMxUNXPGEX98gMs2qZNRKUK22GuZ1iopj35D+REm80z8RBQpilLs0wE0ZaoxlMVK00k1OHIZp7zYtGonXx+yyP57JQHdpreneECIhz9KiSRxw+32fu+yXn9T+RxyUiGvTkf4aNq6cA4J54/gYR3VHmmB3pK+lJ721hLjnHY6c6ANzzGZWNNC4TURoH+ze3na7Xu6qNtSH6bSO/iwl2zf8kGdLZT/O2FwtC+4mMXj6T1b1emWEibYLwmClSwwY6XGR5RD8AgJc9HHDA01t6pTgLoMUYIikN3y5aYVeEggCwlFXb2mc6LTTJQIcYgKcNFR2EXWngByprnfPeyQnCUhYOG+jgAPCkMsXIXUgf5VTX+yaCEfEpYa/Uu27FKWmXE0T7pDLtyHgVRPyDJ95XsLtx0pbP7slj2bNCGYuFSeZymnbLZp8BjvcAEf9khJviOok9isSbhUCjsf5Xm2GGsi46yqmEzOYIu27MG6fRSAYzjI/GM5iXSNeVCL+Skv66EWc4Jc5kzm+YLAL4rhoNG3XjiLDHAJwzwlZ7+G73zSseo6r8v2m5HmlXrAQNf1R05KroPHOedmg4v0SR1lrCNxTz5ABheNVeKUUB4Gc9ApDYhpcoDkXY2wl1qAG1mGK0bSlfxEweMJ5vyGoii7i8M87QLDmx8vKp6m9Saa3q4QC3/bqrJyKa5E2kJp9YP8SFICXK9E4CUzJD4UHTLwBO9wjA0T5wwG2ekZkXLl1LslHSgCHSWk8DoALsjJHGnCHKp3nGZdHIt+GTYLqDKtsu8X1ePNtW4bcTvnnJkhxS7OudKGR6R6HtJfGyZzDvBvoviWe3oO0R00/qdf457kP8AWjPROjKHOdJ+lJG7bvkUXqaBnhjaHsJvWLZLpUyMgi7yyUscsdfbEHnzrTHDWXnFIO+5JwVEPFXDMIFaM8OSarkrM9KSpzY6rmZd5PqwiE1javd7pEDjvTIAVPHkcrpc94CqrXmWMxzt7jsiykKSCPLXGqPInja87xmcTs1Tz5vtMcSS4wx8XxM1c2K2w/yibTErqdRwoY+4yrT6ZSPXNpHAI72AYB3MoSVSsiyWOMy75uEF2OoliGWoxRlsCEdQrkBowQAVtMUqYOqhEwbW+0+wQ3zcEFj59K9AGBjvzigNaYzaDVBEpChCPiUk6spZpWVw2KGcf6Av+XKi2HXd62pZhLKRDQklhouEFHVWIjiDMfPcOVmmYnoZgzofAFTPU5S6Ca0lxRmcsZ03jjMdd2YbMPyGuHwZ6z1FuyIOwFtX8AR+Q3s8PuBMDIPcB19p5ePMv0L7IVZzhD9DhSJlIbW08J0pWH7uNpUFxzwiaWigYpHRzy99hJrR49g1/PXuVhPinCYBkJOp9knbVWm8RARfxKa8BACUIDnaSGGnVj+vQp2P81LmoGyAP452Twi2K1feDY034+EDPHYMEwHtR7SHxPG1EavDqkJ02FkGX8DHVAOKMgdo+q4YEVat5nDPdfDnOxxw4BZ6RZ8cqte1pDPw+7OAG6p4iuh+YvDAWeUQhJ5PEUo66KlPSjjtYT51obynFkNrVosAI4asyUOhNcscbfP5atl3B86CuK3mCLYUh6cOH5XzkSwXfBG1tmFfoxPhbatn/vOKi6Hpi8WB5z37DYvD6qZMeKt9jpVllCm7QwH1fi2mlsLrVosAKYd0xUlHX8gvIjn+jAUiBKO6qqlgC8c1VVA8GU5rLClDisc86Qldw9YS/PeYMVCbki57Ak3lHCGcDgt6RCA0OekkOQ9E6WkOcSifc1z/vB2xuNa11MOU9RbjfRsZwz0w4Iw7cBqzQ3Xe/FWSSjPmsH1It9iobDrwuEBoeRQNXblWlQu/ZFnxdpyt2BkF6WaAXrrvOJl4fzZUHEC+A4QYRdAqPm2uWDnxw+FicbaJkPSFrS3ZtvgyzkaDADACWhvAHQSnlwDrHdIcL9v+nZiJ6KlMH98CACYEaQr0PaVS1pAnnWNRWzE06COEfFoaM4AQAnCbdh1pCxlANljMHmA5qPSfh0NG6j/dGTPkI34VMagDqBldY8zxvskNGPggF5Nlcdw1nLPphLDj2B346FBA2hgpYGIx0IzBg7oo3vG2A+g073rn9impxHxDCL+nEXqJyJc7BHZ90MTBkrigKPKRihXsq1kTGNRGJAjtUblTqjlQGkAmjPOjVvLmcayPrXoIB2QHag4YLzWrTMoz6iMhVo8XPR/OTxGhZZ+9MEAAAAASUVORK5CYII=" alt="Indo Metaforge Pvt Ltd"><div class="sb-tag">ProTrack MES</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-production"></div><div class="screen" id="s-prod-entry"></div><div class="screen" id="s-prod-setup"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-store-req-new"></div><div class="screen" id="s-store-req-list"></div><div class="screen" id="s-store-approvals"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div><div class="screen" id="s-m-suppliers"></div><div class="screen" id="s-m-customers"></div><div class="screen" id="s-m-tags"></div><div class="screen" id="s-m-pm-schedules"></div><div class="screen" id="s-maint-hub"></div><div class="screen" id="s-maint-breakdown-new"></div><div class="screen" id="s-maint-breakdown-detail"></div><div class="screen" id="s-maint-breakdowns"></div><div class="screen" id="s-maint-pm"></div><div class="screen" id="s-maint-pm-machine"></div><div class="screen" id="s-maint-health"></div><div class="screen" id="s-maint-spares-approval"></div><div class="screen" id="s-qc-hub"></div><div class="screen" id="s-qc-inspect"></div><div class="screen" id="s-qc-history"></div><div class="screen" id="s-qc-setups"></div><div class="screen" id="s-ht-hub"></div><div class="screen" id="s-ht-new"></div><div class="screen" id="s-ht-view"></div><div class="screen" id="s-ht-detail"></div><div class="screen" id="s-dsp-hub"></div><div class="screen" id="s-dsp-po-list"></div><div class="screen" id="s-dsp-po-new"></div><div class="screen" id="s-dsp-po-detail"></div><div class="screen" id="s-dsp-new"></div><div class="screen" id="s-dsp-track"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
   renderHome();
   initBackBtn();
 }
@@ -772,6 +746,26 @@ function buildProdRunBlock(mid,idx,run){
   </div>`;
 }
 
+// Refresh run blocks in prod-entry when a setup approval status changes (called by onSnapshot)
+// Safe total refresh across all machines
+function updProdTotalsAll(){
+  if(!_prodReports)return;
+  Object.keys(_prodReports).forEach(mid=>updProdMCBdg(mid));
+}
+
+function refreshProdEntryApprovals(){
+  if(!_prodReports)return;
+  Object.keys(_prodReports).forEach(mid=>{
+    const r=_prodReports[mid];
+    if(!r||!r.runs||!r.runs.length)return;
+    const div=document.getElementById('pmc-runs-'+mid);
+    if(div)div.innerHTML=buildProdRunsHTML(mid,r);
+    updProdMCBdg(mid);
+  });
+  // Also refresh the submit button state
+  updProdTotalsAll();
+}
+
 function togProdMC(id){const b=document.getElementById('pmcb-'+id),c=document.getElementById('pmcc-'+id);if(b){b.classList.toggle('op');if(c)c.classList.toggle('op',b.classList.contains('op'))}}
 function togProdMCUsed(id,used){
   if(!_prodReports[id])return;
@@ -857,12 +851,23 @@ async function prodConfirmTagById(mid,idx,tagId){
     // Update run
     const r=_prodReports[mid];if(!r||!r.runs||!r.runs[idx])return;
     r.runs[idx]={...r.runs[idx],tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,customerName:card.customerName||'',customerId:card.customerId||'',tagQty:card.currentQty,opId,opName,batchCode:card.batchCode,masterLotCode:card.masterLotCode,heatCode:card.heatCode||'',setupApprovalId:'',setupApproved:false};
-    // Create setup approval token in Firestore (QC HOD must approve before qty can be saved)
+    // Create setup approval token — but only if one doesn't already exist for this TAG+machine+stage
     if(_prodMode==='actual'){
       try{
-        const saRef=await db.collection('setupApprovals').add({tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,customerName:card.customerName||'',opId,opName,machineId:mid,machineName:_prodReports[mid]?.machineName||'',stage:_prodStage,batchCode:card.batchCode,status:'pending',requestedBy:S.sess.userId,requestedByName:S.sess.name,date:dateStr(),createdAt:nowTS()});
-        r.runs[idx].setupApprovalId=saRef.id;
-        S.setupApprovals=[...S.setupApprovals,{id:saRef.id,tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,customerName:card.customerName||'',opId,opName,machineId:mid,machineName:_prodReports[mid]?.machineName||'',stage:_prodStage,batchCode:card.batchCode,status:'pending',requestedBy:S.sess.userId,requestedByName:S.sess.name,date:dateStr(),createdAt:nowTS()}];
+        const existingSA=S.setupApprovals.find(sa=>sa.tagId===tagId&&sa.machineId===mid&&sa.stage===_prodStage&&(sa.status==='pending'||sa.status==='approved'));
+        if(existingSA){
+          // Reuse existing approval — just link it to this run
+          r.runs[idx].setupApprovalId=existingSA.id;
+          if(existingSA.status==='approved'){
+            toast(`✅ ${tagId} — setup already approved, qty entry unlocked`);
+          } else {
+            toast(`✅ ${tagId} loaded — setup approval already pending at QC`);
+          }
+        } else {
+          const saRef=await db.collection('setupApprovals').add({tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,customerName:card.customerName||'',opId,opName,machineId:mid,machineName:_prodReports[mid]?.machineName||'',stage:_prodStage,batchCode:card.batchCode,status:'pending',requestedBy:S.sess.userId,requestedByName:S.sess.name,date:dateStr(),createdAt:nowTS()});
+          r.runs[idx].setupApprovalId=saRef.id;
+          S.setupApprovals=[...S.setupApprovals,{id:saRef.id,tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,customerName:card.customerName||'',opId,opName,machineId:mid,machineName:_prodReports[mid]?.machineName||'',stage:_prodStage,batchCode:card.batchCode,status:'pending',requestedBy:S.sess.userId,requestedByName:S.sess.name,date:dateStr(),createdAt:nowTS()}];
+        }
       }catch(e){console.warn('Setup approval creation failed:',e.message);}
     }
     // Refresh run block
@@ -1106,6 +1111,19 @@ async function submitSetupLog(){
   const btn=document.querySelector('#s-prod-setup .btn-p');
   if(btn){btn.disabled=true;btn.textContent='Submitting...';}
   try{
+    // Check for existing pending/approved setup for same TAG+machine+stage
+    const resolvedStage=stage||_setupStage;
+    const existingSA=S.setupApprovals.find(sa=>sa.tagId===_setupTagId&&sa.machineId===(machId||'')&&sa.stage===resolvedStage&&(sa.status==='pending'||sa.status==='approved'));
+    if(existingSA){
+      if(existingSA.status==='approved'){
+        toast('Setup already approved for this TAG on this machine ✓');
+      } else {
+        toast('A pending setup approval already exists for this TAG — check QC Approvals');
+      }
+      _setupCard=null;_setupTagId='';_setupStage='';
+      go('production');renderProductionHub();
+      return;
+    }
     await db.collection('setupApprovals').add({
       tagId:_setupTagId,
       partId:_setupCard.partId,
@@ -1117,7 +1135,7 @@ async function submitSetupLog(){
       opId,opName,
       machineId:machId||'',
       machineName:machName||'',
-      stage:stage||_setupStage,
+      stage:resolvedStage,
       setupMins:mins,
       operatorId,operatorName,
       shift,date,remarks,
@@ -2756,7 +2774,7 @@ function renderStoreIssue(){
     ${!approved.length?`<div class="card" style="text-align:center;padding:24px"><div style="font-size:32px;margin-bottom:8px">📋</div><div style="font-weight:600;margin-bottom:4px">No approved requisitions</div><div class="tsm tmut">Requisitions must be approved by Admin before issuing</div></div>`:`
     <div class="slbl">Select Requisition to Fulfill</div>
     ${approved.map(r=>`
-      <div class="card" data-req-id="${r.id}" style="margin-bottom:8px;cursor:pointer;border:1.5px solid var(--bdr)" onclick="issSelectReq('${r.id}')">
+      <div class="card" style="margin-bottom:8px;cursor:pointer;border:1.5px solid ${_issReq&&_issReq.id===r.id?'var(--acc)':'var(--bdr)'}" onclick="issSelectReq('${r.id}')">
         <div class="fbw"><div><div style="font-weight:700">${r.reqNo}</div><div class="tsm tmut">By ${r.requestedByName||'—'} · Needed by ${r.neededBy||r.date}</div></div>
         <span class="bdg ${r.status==='partial'?'bdg-a':'bdg-g'}">${r.status==='partial'?'Partial':'Approved'}</span></div>
         <div style="margin-top:6px">${(r.lines||[]).map(l=>{const issued=issLineIssued(r.id,l.lineNo);const rem=l.qtyApproved-issued;return rem>0?`<div class="tsm" style="padding:2px 0"><span style="font-weight:600">${l.partName}</span> · <span style="color:var(--acc);font-weight:700">${rem} pcs remaining</span></div>`:''}).join('')}</div>
@@ -2775,10 +2793,8 @@ function issSelectReq(id){
   _issReq=S.requisitions.find(r=>r.id===id);
   if(!_issReq)return;
   _issLine=null;_issTags=[];
-  // Highlight selected card in place — do NOT call renderStoreIssue() it resets _issReq
-  document.querySelectorAll('[data-req-id]').forEach(el=>{
-    el.style.border=el.dataset.reqId===id?'1.5px solid var(--acc)':'1.5px solid var(--bdr)';
-  });
+  // Re-render to highlight selected card
+  renderStoreIssue();
   // Show line selector
   const linesDiv=document.getElementById('iss-line-select');
   if(!linesDiv)return;
@@ -3534,10 +3550,7 @@ async function submitBreakdown(){
 // ── Breakdown List ───────────────────────
 let _bdFilt='active';
 function renderBreakdowns(){
-  const el=document.getElementById('s-maint-breakdowns');
-  if(!el){console.error('s-maint-breakdowns not found');return;}
-  const isViewOnly=S.sess&&S.sess.role==='production';
-  el.innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Breakdown Log</div><div class="hdr-sub">${S.breakdowns.length} records</div></div>${!isViewOnly?`<button class="hdr-act" onclick="go('maint-breakdown-new','maint-breakdowns');renderBreakdownNew()">+ Report</button>`:''}</div>
+  document.getElementById('s-maint-breakdowns').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Breakdown Log</div><div class="hdr-sub">${S.breakdowns.length} records</div></div></div>
   <div class="pad">
     <div class="mfilt"><select onchange="_bdFilt=this.value;applyBdFilter()">
       <option value="active">Active</option>
@@ -5683,39 +5696,6 @@ function renderTrackBody(){
     });
   });
   w.innerHTML=html;
-}
-
-// ── TEST MODE: Clear all test data ──────────────────────────
-async function clearTestData(){
-  if(!TEST_MODE){toast('Not in test mode');return;}
-  if(!confirm('Delete ALL test data?\n\nAll TEST_ records will be wiped. Masters (machines/parts/users etc) are NOT affected. Cannot be undone.'))return;
-  const cols=['TEST_plans','TEST_actuals','TEST_inward','TEST_routeCards','TEST_requisitions',
-    'TEST_setupApprovals','TEST_qcInspections','TEST_htCharges','TEST_breakdowns',
-    'TEST_machineStatus','TEST_pmLogs','TEST_sparesRequests','TEST_dispatches','TEST_pos',
-    'TEST_scrapLedger','TEST_batches','TEST_cards','TEST_pmSchedules'];
-  const btn=document.querySelector('#test-banner button');
-  if(btn){btn.disabled=true;btn.textContent='Deleting...';}
-  const rawDb=firebase.firestore();
-  let total=0;
-  try{
-    for(const col of cols){
-      let snap=await rawDb.collection(col).limit(200).get();
-      while(!snap.empty){
-        const wb=rawDb.batch();
-        snap.docs.forEach(d=>wb.delete(rawDb.collection(col).doc(d.id)));
-        await wb.commit();
-        total+=snap.docs.length;
-        snap=await rawDb.collection(col).limit(200).get();
-      }
-    }
-    toast('✅ Cleared '+total+' test records');
-    S.plans=[];S.actuals=[];S.inward=[];S.routeCards=[];S.requisitions=[];
-    S.setupApprovals=[];S.qcInspections=[];S.htCharges=[];S.breakdowns=[];
-    S.machineStatus={};S.pmLogs=[];S.sparesRequests=[];S.dispatches=[];S.pos=[];
-    S.batches=[];S.cards=[];S.pmSchedules=[];
-    go('home');renderHome();
-  }catch(e){toast('Error clearing: '+e.message);}
-  if(btn){btn.disabled=false;btn.textContent='🗑 Clear All Test Data';}
 }
 </script>
 </body>
