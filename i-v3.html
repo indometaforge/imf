@@ -557,6 +557,29 @@ let _prodReports={};     // machineId → report object
 let _prodEditId=null;    // editing existing actual id
 let _prodPlanEditId=null;// editing existing plan id
 
+async function bulkDeleteTestData(type){
+  if(!isTanmay()||!TEST_MODE){toast('TEST helper — Tanmay only');return;}
+  const col=type==='actuals'?'actuals':'plans';
+  const items=type==='actuals'?S.actuals:S.plans;
+  if(!items.length){toast('No '+type+' to delete');return;}
+  if(!confirm('Delete ALL '+items.length+' test '+type+'?\nThis cannot be undone.'))return;
+  const rawDb=firebase.firestore();
+  let count=0;
+  try{
+    let snap=await rawDb.collection('TEST_'+col).limit(200).get();
+    while(!snap.empty){
+      const wb=rawDb.batch();
+      snap.docs.forEach(d=>wb.delete(rawDb.collection('TEST_'+col).doc(d.id)));
+      await wb.commit();
+      count+=snap.docs.length;
+      snap=await rawDb.collection('TEST_'+col).limit(200).get();
+    }
+    toast('🗑 Deleted '+count+' '+type);
+    if(type==='actuals')S.actuals=[];else S.plans=[];
+    renderProductionHub();
+  }catch(e){toast('Error: '+e.message);}
+}
+
 function renderProductionHub(){
   const td=dateStr();
   const todayActs=S.actuals.filter(a=>a.date===td);
@@ -583,7 +606,11 @@ function renderProductionHub(){
       <div class="mtile" onclick="go('view-actuals','production');renderViewActuals()"><div class="mtic">📋</div><div class="mtnm">View Reports</div><div class="mtct">Browse submitted reports</div></div>
       <div class="mtile" onclick="go('view-plan','production');rvp()"><div class="mtic">📆</div><div class="mtnm">View Plans</div><div class="mtct">Browse submitted plans</div></div>
     </div>
-  </div>`;
+  </div>
+    ${isTanmay()&&TEST_MODE?`<div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-s" style="flex:1;background:#92400e;color:#fff;border-color:#92400e;font-size:12px" onclick="bulkDeleteTestData('actuals')">🗑 Delete all test actuals</button>
+      <button class="btn btn-s" style="flex:1;background:#92400e;color:#fff;border-color:#92400e;font-size:12px" onclick="bulkDeleteTestData('plans')">🗑 Delete all test plans</button>
+    </div>`:''}`;
 }
 
 function startProdEntry(mode, stage, editId){
@@ -631,9 +658,11 @@ function renderProdEntry(){
     <div id="prod-mach-list"></div>
     <div class="sub-bar-desktop" style="margin-top:12px">
       ${getPerm(isActual?'actual':'plan')==='full'?`<button class="btn btn-p" onclick="submitProdEntry()">${_prodEditId||_prodPlanEditId?'Update':'Submit'} ${isActual?'Shift Report':'Plan'}</button>`:`<div class="ibox">View only</div>`}
+      ${isTanmay()&&TEST_MODE?`<button class="btn btn-s" style="margin-top:8px;width:100%;background:#92400e;color:#fff;border-color:#92400e" onclick="markAllUnused()">⚡ Mark all empty machines as Not Used</button>`:''}
     </div>
     <div class="sub-bar">
       ${getPerm(isActual?'actual':'plan')==='full'?`<button class="btn btn-p" onclick="submitProdEntry()">${_prodEditId||_prodPlanEditId?'Update':'Submit'} ${isActual?'Shift Report':'Plan'}</button>`:''}
+      ${isTanmay()&&TEST_MODE?`<button class="btn btn-s" style="margin-top:8px;width:100%;background:#92400e;color:#fff;border-color:#92400e" onclick="markAllUnused()">⚡ Mark all empty machines as Not Used</button>`:''}
     </div>
   </div>`;
   renderProdMachines();
@@ -905,6 +934,29 @@ async function prodConfirmTagById(mid,idx,tagId){
     updProdMCBdg(mid);
     toast(`✅ ${tagId} — ${card.partName} (${card.currentQty} pcs)`);
   }catch(e){toast('Error fetching TAG: '+e.message)}
+}
+
+function markAllUnused(){
+  if(!isTanmay()){toast('TEST helper — Tanmay only');return;}
+  if(!TEST_MODE){toast('Only available in TEST MODE');return;}
+  let count=0;
+  Object.keys(_prodReports).forEach(mid=>{
+    const r=_prodReports[mid];
+    if(r.used===null||r.used===undefined||r.used===''){
+      r.used=false;
+      r.unusedReason='other';
+      r.unusedOther='No plan';
+      count++;
+      // Update the UI card badge
+      updProdMCBdg(mid);
+      // Collapse the card body visually
+      const body=document.getElementById('pmcb-'+mid);
+      if(body)body.style.display='none';
+      const chev=document.getElementById('pmcc-'+mid);
+      if(chev)chev.textContent='▸';
+    }
+  });
+  toast('✅ Marked '+count+' machines as Not Used (No plan)');
 }
 
 async function submitProdEntry(){
@@ -2490,8 +2542,44 @@ async function renderTagRegistry(){
       <div class="card-hd">Format</div>
       <div class="tsm tmut">TAGs are printed as <span class="mono" style="color:var(--acc)">TAG001, TAG002, TAG003...</span> with zero-padding to 3 digits. The QR code on each physical card contains only this UID.</div>
     </div>
+    ${isTanmay()&&TEST_MODE?`
+    <div class="card" style="margin-top:12px;border:1.5px solid #92400e">
+      <div class="card-hd" style="color:#92400e">⚡ Force Set TAG Status (TEST ONLY)</div>
+      <div class="ibox" style="margin-bottom:10px;font-size:11px">Jump any TAG to any stage without running the full flow. Useful for testing dispatch, QC etc in isolation.</div>
+      <div class="row2" style="margin-bottom:8px">
+        <div class="f"><label>TAG ID</label><input id="force-tag-id" type="text" placeholder="e.g. TAG001" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="f"><label>Set Status To</label><select id="force-tag-status">
+          <option value="unlinked">unlinked</option>
+          <option value="store_issued">store_issued</option>
+          <option value="soft_done">soft_done</option>
+          <option value="ht_done">ht_done</option>
+          <option value="hard_done">hard_done</option>
+          <option value="qc_cleared">qc_cleared</option>
+          <option value="dispatched">dispatched</option>
+        </select></div>
+      </div>
+      <button class="btn btn-p" style="width:100%;background:#92400e;border-color:#92400e" onclick="forceSetTagStatus(document.getElementById('force-tag-id').value.trim().toUpperCase(),document.getElementById('force-tag-status').value)">⚡ Force Set Status</button>
+      <div style="margin-top:10px">
+        ${S.routeCards.length?'<div class="slbl" style="font-size:11px">All TAGs in TEST_ registry:</div>'+S.routeCards.slice(0,20).map(rc=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:.5px solid var(--bdr);font-size:12px"><span style="font-family:monospace;font-weight:700;color:var(--acc)">${rc.tagId}</span><span class="bdg bdg-gr" style="font-size:10px">${rc.status||'unlinked'}</span><select onchange="forceSetTagStatus('${rc.tagId}',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--bdr);border-radius:4px"><option value="">change…</option><option value="unlinked">unlinked</option><option value="store_issued">store_issued</option><option value="soft_done">soft_done</option><option value="ht_done">ht_done</option><option value="hard_done">hard_done</option><option value="qc_cleared">qc_cleared</option><option value="dispatched">dispatched</option></select></div>`).join(''):'<div class="tsm tmut">No route cards in test registry yet.</div>'}
+      </div>
+    </div>
+    `:''}
   </div>`;
 }
+async function forceSetTagStatus(tagId,newStatus){
+  if(!isTanmay()||!TEST_MODE){toast('TEST helper — Tanmay only');return;}
+  const validStatuses=['unlinked','store_issued','soft_done','ht_done','hard_done','qc_cleared','dispatched'];
+  if(!validStatuses.includes(newStatus)){toast('Invalid status');return;}
+  try{
+    await db.collection('routeCards').doc(tagId).set({
+      tagId,status:newStatus,
+      _testForced:true,_testForcedAt:nowTS(),_testForcedBy:S.sess.name
+    },{merge:true});
+    toast(`✅ ${tagId} → ${newStatus}`);
+    renderTagRegistry();
+  }catch(e){toast('Error: '+e.message);}
+}
+
 async function saveTagConfig(){
   const total=parseInt(document.getElementById('tag-total').value);
   const last=parseInt(document.getElementById('tag-last').value);
@@ -2888,6 +2976,7 @@ function issRenderTagSection(remaining){
         <button class="scan-btn-lg" onclick="startScan('iss-tag-input')" title="Scan TAG">📷</button>
         <div class="tsm tmut" style="margin-top:6px">Scan physical TAG QR code</div>
       </div>
+      ${isTanmay()&&TEST_MODE?`<button class="btn btn-s" style="width:100%;margin-bottom:10px;background:#92400e;color:#fff;border-color:#92400e;font-size:12px" onclick="issQuickFillTags(${remaining})">⚡ Quick fill unlinked TAGs</button>`:''}
       <div class="bin-bc" style="margin-bottom:10px">
         <input id="iss-tag-input" type="text" placeholder="Or type TAG number (e.g. TAG042)..." oninput="this.value=this.value.toUpperCase()" autocomplete="off" autocorrect="off" spellcheck="false">
       </div>
@@ -2913,6 +3002,32 @@ function issRenderTagSection(remaining){
     const inp=document.getElementById('iss-tag-input');
     if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')issAddTag(remaining);});
   }
+}
+
+function issQuickFillTags(remaining){
+  if(!isTanmay()||!TEST_MODE){return;}
+  // Find all routeCards with status=unlinked from S.routeCards
+  // Also check the TEST_ collection records in memory
+  const unlinked=S.routeCards.filter(rc=>rc.status==='unlinked'||!rc.status);
+  if(!unlinked.length){toast('No unlinked TAGs found in registry');return;}
+  let added=0;
+  const sessionTotal=_issTags.reduce((s,t)=>s+(+t.qty||0),0);
+  let rem=remaining-sessionTotal;
+  for(const rc of unlinked){
+    if(rem<=0)break;
+    if(_issTags.find(t=>t.tagId===rc.tagId))continue;
+    const qty=Math.min(rc.currentQty||rc.issuedQty||25,rem);
+    _issTags.push({tagId:rc.tagId,qty,issueDate:dateStr()});
+    rem-=qty;added++;
+  }
+  if(!added){
+    // No route cards found — use TAG registry to guess
+    const cfg=S.routeCards;
+    toast('No unlinked route cards found. Type TAG IDs manually.');
+    return;
+  }
+  issRenderTagSection(remaining);
+  toast(`⚡ Added ${added} TAG(s) to session`);
 }
 
 async function issAddTag(remaining){
@@ -3990,6 +4105,7 @@ function renderQCSetups(){
   document.getElementById('s-qc-setups').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Setup Approvals</div><div class="hdr-sub">${pending.length} pending</div></div></div>
   <div class="pad">
     ${!isHOD?`<div class="ibox" style="margin-bottom:12px">View only — Setup approval requires HOD or Admin access</div>`:''}
+    ${isTanmay()&&TEST_MODE&&pending.length?`<button class="btn btn-s" style="width:100%;margin-bottom:12px;background:#92400e;color:#fff;border-color:#92400e" onclick="autoApproveAllSetups()">⚡ Auto-approve all ${pending.length} pending setup(s)</button>`:''}
     ${pending.length?`<div class="slbl">Pending Approval (${pending.length})</div>`+pending.map(s=>setupApprovalCard(s,isHOD)).join(''):`<div class="card" style="text-align:center;padding:24px"><div style="font-size:32px;margin-bottom:8px">✅</div><div style="font-weight:600">No pending setup approvals</div></div>`}
     ${recent.length?`<div class="slbl" style="margin-top:16px">Recently Processed (${recent.length})</div>`+recent.map(s=>setupApprovalCard(s,false)).join(''):''}
   </div>`;
@@ -4017,6 +4133,26 @@ function setupApprovalCard(s,canApprove){
     </div>`:`${s.approvedByName?`<div class="tsm tmut">${s.status==='approved'?'Approved':'Rejected'} by ${s.approvedByName}${s.remarks?' · '+s.remarks:''}</div>`:''}`}
   </div>`;
 }
+async function autoApproveAllSetups(){
+  if(!isTanmay()||!TEST_MODE){toast('TEST helper — Tanmay only');return;}
+  const pending=S.setupApprovals.filter(s=>s.status==='pending');
+  if(!pending.length){toast('No pending setups');return;}
+  const btn=document.querySelector('#s-qc-setups .btn-s');
+  if(btn){btn.disabled=true;btn.textContent='Approving...';}
+  let count=0;
+  try{
+    for(const s of pending){
+      await db.collection('setupApprovals').doc(s.id).update({
+        status:'approved',approvedBy:S.sess.userId,
+        approvedByName:S.sess.name+' (AUTO)',
+        remarks:'TEST MODE auto-approval',approvedAt:nowTS()
+      });
+      count++;
+    }
+    toast(`✅ Auto-approved ${count} setup(s)`);
+  }catch(e){toast('Error: '+e.message);}
+}
+
 async function approveSetup(id){
   const isHOD=S.sess&&(S.users.find(u=>u.id===S.sess.userId)?.isHOD||S.sess.role==='admin');
   if(!isHOD){toast('Only HOD or Admin can approve setups');return}
@@ -4415,6 +4551,7 @@ function renderHTNew(){
     </div>
 
     <button class="btn btn-p" onclick="htSaveStep1()">Next: Furnace Loading →</button>
+    ${isTanmay()&&TEST_MODE?`<button class="btn btn-s" style="margin-top:8px;width:100%;background:#92400e;color:#fff;border-color:#92400e" onclick="htQuickFill()">⚡ Quick fill all fields with test defaults</button>`:''}
     <div style="height:24px"></div>
   </div>`;
   S._htComps=[];
@@ -4457,6 +4594,67 @@ function renderHTCompList(){
   </div>`).join('');
 }
 
+function htQuickFill(){
+  if(!isTanmay()||!TEST_MODE){return;}
+  // Fill header defaults
+  const dpWho=document.getElementById('ht-dp-who');if(dpWho)dpWho.value='Test Operator';
+  const dpTime=document.getElementById('ht-dp-time');if(dpTime)dpTime.value='08:00';
+  const dpDone=document.getElementById('ht-dp-done');if(dpDone)dpDone.checked=true;
+  const washStart=document.getElementById('ht-wash-start');if(washStart)washStart.value='08:05';
+  const washEnd=document.getElementById('ht-wash-end');if(washEnd)washEnd.value='08:10';
+  const washTemp=document.getElementById('ht-wash-temp');if(washTemp)washTemp.value='62';
+  const washPh=document.getElementById('ht-wash-ph');if(washPh)washPh.value='10.5';
+  // Add a test component if none
+  if(!S._htComps||!S._htComps.length){
+    if(!S._htComps)S._htComps=[];
+    const part=S.parts&&S.parts[0];
+    S._htComps.push({name:part?part.name:'Test Gear Part',qty:50,material:'EN36',fixtureNo:'F-01',heatNo:'H-TEST',remarks:'TEST'});
+    renderHTCompList();
+  }
+  toast('⚡ Fields filled with test defaults');
+}
+
+// Quick fill the HT detail page (temp readings, quench, temper, inspection)
+async function htQuickFillDetail(id){
+  if(!isTanmay()||!TEST_MODE){return;}
+  const now=new Date();
+  const t=h=>String(h).padStart(2,'0')+':00';
+  // Loading
+  const loadDate=document.getElementById('ht-load-date');if(loadDate)loadDate.value=dateStr();
+  const loadTime=document.getElementById('ht-load-time');if(loadTime)loadTime.value=t(8);
+  const retort=document.getElementById('ht-retort-target');if(retort)retort.value=760;
+  await htSaveLoading(id);
+  // 7 temp readings
+  const readings=[];
+  for(let i=0;i<7;i++){
+    readings.push({time:t(9+i),retort:920,z1:915,z2:918,mv:1150,methanol:3.5,acetone:0.8,remarks:'TEST'});
+  }
+  try{
+    await db.collection('htCharges').doc(id).update({tempReadings:readings});
+    toast('✅ 7 temp readings added');
+  }catch(e){toast('Error: '+e.message);return;}
+  // Quenching
+  const fields={
+    'ht-unload-time':'16:00','ht-qstart':'16:05',
+    'ht-q-oil-before':'60','ht-q-oil-after':'75',
+    'ht-q-wash-temp':'62','ht-q-wash-ph':'10.5',
+    'ht-cool-start':'16:20'
+  };
+  Object.entries(fields).forEach(([id2,val])=>{const el=document.getElementById(id2);if(el)el.value=val;});
+  for(let i=0;i<7;i++){const el=document.getElementById('ht-sqhrc-'+i);if(el)el.value=58+Math.round(Math.random()*3);}
+  await htSaveQuenching(id);
+  // Tempering
+  const tmpFields={'ht-tmp-temp':'180','ht-tmp-load':'17:00','ht-tmp-atnd':'17:30','ht-tmp-unload':'19:00'};
+  Object.entries(tmpFields).forEach(([id2,val])=>{const el=document.getElementById(id2);if(el)el.value=val;});
+  await htSaveTempering(id);
+  // Inspection
+  for(let i=0;i<4;i++){const el=document.getElementById('ht-insp-shrc-'+i);if(el)el.value=58;}
+  const inspFields={'ht-insp-chrc':'35','ht-insp-cpcd':'320','ht-insp-mcd':'0.85','ht-insp-ecd':'0.65 (685Hv1)','ht-insp-ms':'Martensite','ht-insp-ra':'<20%','ht-insp-by':'Test QC'};
+  Object.entries(inspFields).forEach(([id2,val])=>{const el=document.getElementById(id2);if(el)el.value=val;});
+  await htSaveInspection(id);
+  toast('⚡ All HT detail fields filled — tap Complete Charge to finish!');
+}
+
 async function htSaveStep1(){
   if(!S._htComps||!S._htComps.length){toast('Add at least one component');return}
   const chargeNo=document.getElementById('s-ht-new').querySelector('.hdr-sub').textContent;
@@ -4493,6 +4691,7 @@ function renderHTDetail(id){
   <div class="hdr-info"><div class="hdr-title">${c.chargeNo}</div>
   <div class="hdr-sub">${c.furnaceNo} · ${c.date} · ${S.shifts[c.shift]?S.shifts[c.shift].label:c.shift}</div></div>
   ${!isClosed?`<button class="hdr-act" style="background:var(--ok);color:#fff" onclick="htCompleteCharge('${id}')">✓ Complete</button>`:`<span class="bdg bdg-g" style="margin-right:12px">Complete</span>`}
+  ${isTanmay()&&TEST_MODE&&!isClosed?`<button class="hdr-act" style="background:#92400e;color:#fff;font-size:11px;padding:6px 8px" onclick="htQuickFillDetail('${id}')">⚡ Fill All</button>`:''}
   ${isTanmay()?`<button class="hdr-act" style="background:var(--er);color:#fff;padding:7px 9px;font-size:16px" onclick="htDeleteCharge('${id}')">🗑</button>`:''}
   </div>
   <div class="pad">
