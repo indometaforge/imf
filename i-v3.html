@@ -2797,13 +2797,14 @@ let _issTags=[];        // [{tagId, qty}] — tags scanned this session
 let _issBatchCode='';   // shared batchCode for this session
 
 function renderStoreIssue(){
+  _issReq=null;_issLine=null;_issTags=[];
   const approved=S.requisitions.filter(r=>r.status==='approved'||r.status==='partial');
   document.getElementById('s-store-issue').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Issue to WIP</div><div class="hdr-sub">Scan TAGs to issue</div></div></div>
   <div class="pad">
     ${!approved.length?`<div class="card" style="text-align:center;padding:24px"><div style="font-size:32px;margin-bottom:8px">📋</div><div style="font-weight:600;margin-bottom:4px">No approved requisitions</div><div class="tsm tmut">Requisitions must be approved by Admin before issuing</div></div>`:`
     <div class="slbl">Select Requisition to Fulfill</div>
     ${approved.map(r=>`
-      <div class="card" style="margin-bottom:8px;cursor:pointer;border:1.5px solid ${_issReq&&_issReq.id===r.id?'var(--acc)':'var(--bdr)'}" onclick="issSelectReq('${r.id}')">
+      <div class="card" style="margin-bottom:8px;cursor:pointer;data-req-id="${r.id}" style="margin-bottom:8px;cursor:pointer;border:1.5px solid var(--bdr)" onclick="issSelectReq('${r.id}')">
         <div class="fbw"><div><div style="font-weight:700">${r.reqNo}</div><div class="tsm tmut">By ${r.requestedByName||'—'} · Needed by ${r.neededBy||r.date}</div></div>
         <span class="bdg ${r.status==='partial'?'bdg-a':'bdg-g'}">${r.status==='partial'?'Partial':'Approved'}</span></div>
         <div style="margin-top:6px">${(r.lines||[]).map(l=>{const issued=issLineIssued(r.id,l.lineNo);const rem=l.qtyApproved-issued;return rem>0?`<div class="tsm" style="padding:2px 0"><span style="font-weight:600">${l.partName}</span> · <span style="color:var(--acc);font-weight:700">${rem} pcs remaining</span></div>`:''}).join('')}</div>
@@ -2811,7 +2812,6 @@ function renderStoreIssue(){
     <div id="iss-line-select" style="display:none"></div>
     <div id="iss-tag-section" style="display:none"></div>`}
   </div>`;
-  _issReq=null;_issLine=null;_issTags=[];
 }
 
 function issLineIssued(reqId,lineNo){
@@ -2822,8 +2822,10 @@ function issSelectReq(id){
   _issReq=S.requisitions.find(r=>r.id===id);
   if(!_issReq)return;
   _issLine=null;_issTags=[];
-  // Re-render to highlight selected card
-  renderStoreIssue();
+  // Highlight card in place — do NOT call renderStoreIssue(), it resets _issReq
+  document.querySelectorAll('[data-req-id]').forEach(function(el){
+    el.style.border=el.dataset.reqId===id?'1.5px solid var(--acc)':'1.5px solid var(--bdr)';
+  });
   // Show line selector
   const linesDiv=document.getElementById('iss-line-select');
   if(!linesDiv)return;
@@ -3469,10 +3471,9 @@ function htChargeNo(){
   const now=new Date();
   const yr=String(now.getFullYear()).slice(-2);
   const mo=MONTH_CODES[now.getMonth()];
-  const prefix=`I-${yr}-${mo}-`;
-  const existing=S.htCharges.filter(c=>c.chargeNo&&c.chargeNo.startsWith(prefix));
-  const next=String(existing.length+1).padStart(3,'0');
-  return prefix+next;
+  // Global sequential: total charges ever + 1 (continuous across months/years)
+  const next=String(S.htCharges.length+1).padStart(4,'0');
+  return 'I'+yr+mo+next; // e.g. I26F0026
 }
 
 // ══════════════════════════════════════════
@@ -4434,9 +4435,6 @@ function htAddComp(){
     <div class="f"><label>Fixture No.</label><input id="htc-fix" type="text" placeholder="e.g. F-12"></div>
     <div class="f"><label>Heat No.</label><input id="htc-heat" type="text" placeholder="e.g. H-2601"></div>
   </div>
-  <div class="f"><label>Customer</label><input id="htc-cust" type="text" placeholder="e.g. Bajaj Auto" list="ht-cust-dl">
-    <datalist id="ht-cust-dl">${[...new Set(S.parts.map(p=>p.cust).filter(Boolean))].map(c=>`<option value="${c}">`).join('')}</datalist>
-  </div>
   <div class="f"><label>Remarks</label><input id="htc-rem" type="text" placeholder="Optional"></div>
   <button class="btn btn-p mt12" onclick="htConfirmComp()">Add Component</button>
   <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
@@ -4446,14 +4444,14 @@ function htConfirmComp(){
   const qty=document.getElementById('htc-qty').value;
   if(!n||!qty){toast('Name and qty required');return}
   if(!S._htComps)S._htComps=[];
-  S._htComps.push({name:n,qty:+qty,material:document.getElementById('htc-mat').value.trim(),fixtureNo:document.getElementById('htc-fix').value.trim(),heatNo:document.getElementById('htc-heat').value.trim(),customer:document.getElementById('htc-cust').value.trim(),remarks:document.getElementById('htc-rem').value.trim()});
+  S._htComps.push({name:n,qty:+qty,material:document.getElementById('htc-mat').value.trim(),fixtureNo:document.getElementById('htc-fix').value.trim(),heatNo:document.getElementById('htc-heat').value.trim(),customer:remarks:document.getElementById('htc-rem').value.trim()});
   closeModal();renderHTCompList();
 }
 function renderHTCompList(){
   const w=document.getElementById('ht-comp-list');if(!w)return;
   if(!S._htComps||!S._htComps.length){w.innerHTML=`<div class="tsm tmut" style="padding:8px 0">No components added yet.</div>`;return}
   w.innerHTML=S._htComps.map((c,i)=>`<div class="rrow" style="padding:8px 0;border-bottom:.5px solid var(--bdr)">
-    <div><div style="font-weight:600">${c.name}</div><div class="tsm tmut">${c.qty} pcs · ${c.material||'—'} · ${c.customer||'—'}</div>
+    <div><div style="font-weight:600">${c.name}</div><div class="tsm tmut">${c.qty} pcs · ${c.material||'—'}</div>
     <div class="tsm tmut">${c.fixtureNo?'Fix: '+c.fixtureNo:''}${c.heatNo?' · Heat: '+c.heatNo:''}</div></div>
     <button class="btn btn-d btn-sm" onclick="S._htComps.splice(${i},1);renderHTCompList()">✕</button>
   </div>`).join('');
