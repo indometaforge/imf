@@ -5477,42 +5477,61 @@ function dspAddItem(){
   <div style="background:var(--bg);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:.5px solid var(--bdr)">
     <div style="font-weight:700;font-size:13px;margin-bottom:2px">${ln.partName}</div>
     <div style="font-size:11px;color:var(--mut);margin-bottom:8px">${ln.partNo||'—'} · <strong style="color:var(--wa)">${ln.pending} ${ln.unit||'pcs'} pending</strong></div>
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-      <div style="flex:1;border:.5px solid var(--bdr);border-radius:6px;padding:6px 8px;background:#fff;min-height:32px;display:flex;align-items:center">
-        <span id="dsp-tag-lbl-${ln.id}" style="font-family:monospace;font-size:12px;color:var(--mut)">No TAG scanned</span>
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <div class="bin-bc" style="flex:1">
+        <input id="dsp-tag-input-${ln.id}" type="text" placeholder="Type or scan TAG (e.g. TAG001)..." oninput="this.value=this.value.toUpperCase()" autocomplete="off" spellcheck="false"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();dspLoadTag('${ln.id}','${streamType}',${ln.pending},'${poId}');}">
         <input type="hidden" id="dsp-tag-id-${ln.id}">
       </div>
-      <button class="scan-btn" onclick="dspScanTag('${ln.id}','${streamType}',${ln.pending},'${poId}')" title="Scan TAG">📷</button>
+      <button class="scan-btn" onclick="dspInlineScan('${ln.id}','${streamType}',${ln.pending},'${poId}')" title="Scan TAG">📷</button>
+      <button class="btn btn-s btn-sm" onclick="dspLoadTag('${ln.id}','${streamType}',${ln.pending},'${poId}')">Load</button>
     </div>
-    <div id="dsp-tag-info-${ln.id}" style="display:none;font-size:11px;color:var(--ok);margin-bottom:6px"></div>
+    <div id="dsp-tag-info-${ln.id}" style="display:none;font-size:12px;padding:6px 8px;background:var(--acc3);border-radius:6px;margin-bottom:8px"></div>
+    <div id="dsp-scan-area-${ln.id}" style="display:none;margin-bottom:8px"></div>
     <div style="display:flex;align-items:center;gap:8px">
-      <input id="dsp-qty-${ln.id}" type="number" min="1" max="${ln.pending}" value="1" style="width:80px;padding:7px 10px;font-size:15px;font-weight:700;border:1.5px solid var(--bdr);border-radius:6px;text-align:center">
-      <button class="btn btn-p btn-sm" style="flex:1" onclick="dspConfirmTagItem('${ln.id}','${poId}','${streamType}')">Add ✓</button>
+      <input id="dsp-qty-${ln.id}" type="number" min="1" max="${ln.pending}" value="" placeholder="Qty" style="width:80px;padding:7px 10px;font-size:15px;font-weight:700;border:1.5px solid var(--bdr);border-radius:6px;text-align:center">
+      <button class="btn btn-p btn-sm" style="flex:1" onclick="dspConfirmTagItem('${ln.id}','${poId}','${streamType}')">Add to Invoice ✓</button>
     </div>
   </div>`).join('')}
   <button class="btn btn-s mt8" onclick="closeModal()">Done</button>`);
 }
-function dspScanTag(lineId,streamType,maxQty,poId){
-  openModal(`<div class="mtit">📷 Scan Route Card TAG</div>
-  <div id="qr-reader-dsp" style="width:100%;border-radius:8px;overflow:hidden"></div>
-  <div class="tsm tmut" style="margin:8px 0;text-align:center">Scan TAG on the physical container</div>
-  <div class="bin-bc" style="margin-bottom:10px"><input id="dsp-tag-manual" type="text" placeholder="Or type TAG number (e.g. TAG042)..." oninput="this.value=this.value.toUpperCase()" autocomplete="off"></div>
-  <button class="btn btn-p mt8" style="width:100%" onclick="dspConfirmTagScan('${lineId}','${streamType}',${maxQty},'${poId}')">Use this TAG</button>
-  <button class="btn btn-s mt8" onclick="stopDspScan()">Cancel</button>`);
+// Load TAG inline without closing the modal
+async function dspLoadTag(lineId,streamType,maxQty,poId){
+  const input=document.getElementById('dsp-tag-input-'+lineId);
+  const tagId=(input?.value||'').trim().toUpperCase();
+  if(!tagId){toast('Type a TAG number first');return}
+  await dspConfirmTagById(lineId,streamType,maxQty,poId,tagId);
+}
+// Inline QR scanner — opens a scan area within the same modal
+function dspInlineScan(lineId,streamType,maxQty,poId){
+  const scanArea=document.getElementById('dsp-scan-area-'+lineId);
+  if(!scanArea)return;
+  if(scanArea.style.display==='block'){
+    // Toggle off
+    scanArea.style.display='none';
+    scanArea.innerHTML='';
+    if(_html5Qr){_html5Qr.stop().catch(()=>{}).finally(()=>{_html5Qr.clear();_html5Qr=null;});}
+    return;
+  }
+  scanArea.style.display='block';
+  scanArea.innerHTML='<div id="qr-dsp-inline-'+lineId+'" style="width:100%;border-radius:8px;overflow:hidden;max-height:180px"></div>'
+    +'<div class="tsm tmut" style="text-align:center;padding:4px">Scanning... tap 📷 again to cancel</div>';
   setTimeout(()=>{
     try{
-      _html5Qr=new Html5Qrcode('qr-reader-dsp');
-      _html5Qr.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:120},aspectRatio:1.5},
-        (decoded)=>{stopDspScan();dspConfirmTagById(lineId,streamType,maxQty,poId,decoded.toUpperCase());},()=>{}).catch(()=>{});
-    }catch(e){}
+      if(_html5Qr){_html5Qr.stop().catch(()=>{});}
+      _html5Qr=new Html5Qrcode('qr-dsp-inline-'+lineId);
+      _html5Qr.start({facingMode:'environment'},{fps:10,qrbox:{width:200,height:100},aspectRatio:1.6},
+        (decoded)=>{
+          if(_html5Qr){_html5Qr.stop().catch(()=>{}).finally(()=>{_html5Qr.clear();_html5Qr=null;});}
+          scanArea.style.display='none';scanArea.innerHTML='';
+          const inp=document.getElementById('dsp-tag-input-'+lineId);
+          if(inp)inp.value=decoded.toUpperCase();
+          dspConfirmTagById(lineId,streamType,maxQty,poId,decoded.toUpperCase());
+        },()=>{}).catch(()=>{});
+    }catch(e){scanArea.innerHTML='<div class="tsm tmut" style="color:var(--er);padding:4px">Camera not available — type TAG manually</div>';}
   },200);
 }
-function stopDspScan(){if(_html5Qr){_html5Qr.stop().catch(()=>{}).finally(()=>{_html5Qr.clear();_html5Qr=null;});}closeModal();}
-async function dspConfirmTagScan(lineId,streamType,maxQty,poId){
-  const tagId=(document.getElementById('dsp-tag-manual')?.value||'').trim().toUpperCase();
-  stopDspScan();
-  if(tagId)await dspConfirmTagById(lineId,streamType,maxQty,poId,tagId);
-}
+function stopDspScan(){if(_html5Qr){_html5Qr.stop().catch(()=>{}).finally(()=>{_html5Qr.clear();_html5Qr=null;});}}
 async function dspConfirmTagById(lineId,streamType,maxQty,poId,tagId){
   if(!tagId.match(/^TAG\d+$/)){toast('Invalid TAG format');return}
   // Check not already used in this session for same line
@@ -5535,18 +5554,27 @@ async function dspConfirmTagById(lineId,streamType,maxQty,poId,tagId){
       // Warn but don't hard block — customer names might differ slightly
       console.warn(`TAG customer ${card.customerName} vs PO customer ${poCustomer}`);
     }
-    // Update TAG scan display in modal
-    const lbl=document.getElementById(`dsp-tag-lbl-${lineId}`);
-    const hiddenInput=document.getElementById(`dsp-tag-id-${lineId}`);
-    const infoDiv=document.getElementById(`dsp-tag-info-${lineId}`);
-    const qtyInput=document.getElementById(`dsp-qty-${lineId}`);
-    if(lbl){lbl.style.color='var(--ok)';lbl.style.fontWeight='700';lbl.textContent=tagId;}
+    // Update TAG info display inline in the modal
+    const tagInput=document.getElementById('dsp-tag-input-'+lineId);
+    const hiddenInput=document.getElementById('dsp-tag-id-'+lineId);
+    const infoDiv=document.getElementById('dsp-tag-info-'+lineId);
+    const qtyInput=document.getElementById('dsp-qty-'+lineId);
+    if(tagInput){tagInput.value=tagId;tagInput.style.borderColor='var(--ok)';}
     if(hiddenInput)hiddenInput.value=tagId;
     if(infoDiv){
       infoDiv.style.display='block';
-      infoDiv.innerHTML=`✅ ${card.partName} · Batch: ${card.batchCode||'—'}${card.heatCode?' · 🔥 '+card.heatCode:''} · ${streamType.toUpperCase()} available: <strong>${available} pcs</strong>`;
+      infoDiv.innerHTML='<span style="color:var(--ok);font-weight:700">✅ '+tagId+'</span>'
+        +' · '+card.partName
+        +' · Batch: '+(card.batchCode||'—')
+        +(card.heatCode?' · 🔥 '+card.heatCode:'')
+        +' · <strong>'+available+' '+streamType.toUpperCase()+' pcs available</strong>';
     }
-    if(qtyInput){qtyInput.max=Math.min(maxQty,available);qtyInput.value=Math.min(1,available);}
+    if(qtyInput){
+      const maxAllowed=Math.min(maxQty,available);
+      qtyInput.max=maxAllowed;
+      qtyInput.value=maxAllowed>0?maxAllowed:'';
+      qtyInput.style.borderColor='var(--ok)';
+    }
     // Store TAG data temporarily
     if(!window._dspTagCache)window._dspTagCache={};
     window._dspTagCache[lineId]={tagId,batchCode:card.batchCode||'',heatCode:card.heatCode||'',partName:card.partName,partNo:card.partNo,streamType,streamField,available};
@@ -5583,10 +5611,11 @@ async function dspConfirmTagItem(lineId,poId,streamType){
   const hiddenInput=document.getElementById(`dsp-tag-id-${lineId}`);
   const infoDiv=document.getElementById(`dsp-tag-info-${lineId}`);
   const qtyInput=document.getElementById(`dsp-qty-${lineId}`);
-  if(lbl){lbl.style.color='var(--mut)';lbl.style.fontWeight='400';lbl.textContent='No TAG scanned';}
+  const tagInputEl=document.getElementById('dsp-tag-input-'+lineId);
+  if(tagInputEl){tagInputEl.value='';tagInputEl.style.borderColor='';}
   if(hiddenInput)hiddenInput.value='';
   if(infoDiv)infoDiv.style.display='none';
-  if(qtyInput)qtyInput.value=1;
+  if(qtyInput){qtyInput.value='';qtyInput.style.borderColor='';}
   if(window._dspTagCache)delete window._dspTagCache[lineId];
   renderDspItemsList();
   toast(`${tagData.partName} (${qty} pcs) added ✓`);
