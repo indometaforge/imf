@@ -2519,6 +2519,40 @@ async function migrateCustFromParts(){
 // ══════════════════════════════════════════
 // TAG REGISTRY
 // ══════════════════════════════════════════
+function buildTagForcePanel(){
+  var rows='';
+  S.routeCards.slice(0,30).forEach(function(rc){
+    rows+='<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:.5px solid var(--bdr);font-size:12px">';
+    rows+='<span style="font-family:monospace;font-weight:700;color:var(--acc)">'+rc.tagId+'</span>';
+    rows+='<span class="bdg bdg-gr" style="font-size:10px">'+(rc.status||'unlinked')+'</span>';
+    rows+='<select onchange="forceSetTagStatus(\''+rc.tagId+'\',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--bdr);border-radius:4px">';
+    rows+='<option value="">change…</option>';
+    ['unlinked','store_issued','soft_done','ht_done','hard_done','qc_cleared','dispatched'].forEach(function(s){
+      rows+='<option value="'+s+'">'+s+'</option>';
+    });
+    rows+='</select></div>';
+  });
+  var list=S.routeCards.length
+    ?'<div class="slbl" style="font-size:11px">All TAGs in TEST_ registry ('+S.routeCards.length+'):</div>'+rows
+    :'<div class="tsm tmut">No route cards in test registry yet.</div>';
+  return '<div class="card" style="margin-top:12px;border:1.5px solid #92400e">'
+    +'<div class="card-hd" style="color:#92400e">⚡ Force Set TAG Status (TEST ONLY)</div>'
+    +'<div class="ibox" style="margin-bottom:10px;font-size:11px">Jump any TAG to any stage without running the full flow.</div>'
+    +'<div class="row2" style="margin-bottom:8px">'
+    +'<div class="f"><label>TAG ID</label><input id="force-tag-id" type="text" placeholder="e.g. TAG001" oninput="this.value=this.value.toUpperCase()"></div>'
+    +'<div class="f"><label>Set Status To</label><select id="force-tag-status">'
+    +'<option value="unlinked">unlinked</option><option value="store_issued">store_issued</option>'
+    +'<option value="soft_done">soft_done</option><option value="ht_done">ht_done</option>'
+    +'<option value="hard_done">hard_done</option><option value="qc_cleared">qc_cleared</option>'
+    +'<option value="dispatched">dispatched</option>'
+    +'</select></div></div>'
+    +'<button class="btn btn-p" style="width:100%;background:#92400e;border-color:#92400e" '
+    +'onclick="forceSetTagStatus(document.getElementById('force-tag-id').value.trim().toUpperCase(),document.getElementById('force-tag-status').value)">'
+    +'⚡ Force Set Status</button>'
+    +'<div style="margin-top:10px">'+list+'</div>'
+    +'</div>';
+}
+
 async function renderTagRegistry(){
   const cfg=await db.collection('config').doc('tags').get();
   const tagCfg=cfg.exists?cfg.data():{totalPrinted:0,lastTagNum:0};
@@ -2542,28 +2576,7 @@ async function renderTagRegistry(){
       <div class="card-hd">Format</div>
       <div class="tsm tmut">TAGs are printed as <span class="mono" style="color:var(--acc)">TAG001, TAG002, TAG003...</span> with zero-padding to 3 digits. The QR code on each physical card contains only this UID.</div>
     </div>
-    ${isTanmay()&&TEST_MODE?`
-    <div class="card" style="margin-top:12px;border:1.5px solid #92400e">
-      <div class="card-hd" style="color:#92400e">⚡ Force Set TAG Status (TEST ONLY)</div>
-      <div class="ibox" style="margin-bottom:10px;font-size:11px">Jump any TAG to any stage without running the full flow. Useful for testing dispatch, QC etc in isolation.</div>
-      <div class="row2" style="margin-bottom:8px">
-        <div class="f"><label>TAG ID</label><input id="force-tag-id" type="text" placeholder="e.g. TAG001" oninput="this.value=this.value.toUpperCase()"></div>
-        <div class="f"><label>Set Status To</label><select id="force-tag-status">
-          <option value="unlinked">unlinked</option>
-          <option value="store_issued">store_issued</option>
-          <option value="soft_done">soft_done</option>
-          <option value="ht_done">ht_done</option>
-          <option value="hard_done">hard_done</option>
-          <option value="qc_cleared">qc_cleared</option>
-          <option value="dispatched">dispatched</option>
-        </select></div>
-      </div>
-      <button class="btn btn-p" style="width:100%;background:#92400e;border-color:#92400e" onclick="forceSetTagStatus(document.getElementById('force-tag-id').value.trim().toUpperCase(),document.getElementById('force-tag-status').value)">⚡ Force Set Status</button>
-      <div style="margin-top:10px">
-        ${S.routeCards.length?'<div class="slbl" style="font-size:11px">All TAGs in TEST_ registry:</div>'+S.routeCards.slice(0,20).map(rc=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:.5px solid var(--bdr);font-size:12px"><span style="font-family:monospace;font-weight:700;color:var(--acc)">${rc.tagId}</span><span class="bdg bdg-gr" style="font-size:10px">${rc.status||'unlinked'}</span><select onchange="forceSetTagStatus('${rc.tagId}',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--bdr);border-radius:4px"><option value="">change…</option><option value="unlinked">unlinked</option><option value="store_issued">store_issued</option><option value="soft_done">soft_done</option><option value="ht_done">ht_done</option><option value="hard_done">hard_done</option><option value="qc_cleared">qc_cleared</option><option value="dispatched">dispatched</option></select></div>`).join(''):'<div class="tsm tmut">No route cards in test registry yet.</div>'}
-      </div>
-    </div>
-    `:''}
+    ${isTanmay()&&TEST_MODE?buildTagForcePanel():''}
   </div>`;
 }
 async function forceSetTagStatus(tagId,newStatus){
