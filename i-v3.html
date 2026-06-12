@@ -892,11 +892,17 @@ async function prodConfirmTagById(mid,idx,tagId){
   // Fetch from Firestore
   try{
     const doc=await db.collection('routeCards').doc(tagId).get();
-    if(!doc.exists){toast(tagId+' not found — has it been issued?');return}
+    if(!doc.exists){toast(tagId+' not found in registry — issue it from Store first');return}
     const card=doc.data();
-    // Validate status
-    const validStatuses=_prodStage==='soft'?['store_issued','soft_wip']:['hard_wip'];
-    if(!validStatuses.includes(card.status)){toast(`${tagId} status is "${card.status}" — not valid for ${slbl(_prodStage)} stage`);return}
+    // Validate status — accept store_issued, soft_wip, ht_done for soft; hard_wip or ht_done for hard
+    // soft stage accepts store_issued (fresh from store) or soft_done (partial re-run)
+    // hard stage accepts ht_done (came through HT with heatCode)
+    const validStatuses=_prodStage==='soft'
+      ?['store_issued','soft_wip','soft_done']
+      :['ht_done'];
+    if(!validStatuses.includes(card.status)){
+      toast(tagId+' status is "'+card.status+'" — expected store_issued or soft_wip for '+slbl(_prodStage));return
+    }
     // Hard stage: heatCode required
     if(_prodStage==='hard'&&!card.heatCode){toast(tagId+' has no heat code — must go through HT first');return}
     // Find next operation in sequence
@@ -907,7 +913,9 @@ async function prodConfirmTagById(mid,idx,tagId){
     const opId=nextOp?nextOp.opId:'';
     const opName=nextOp?(S.operations.find(o=>o.id===nextOp.opId)?.name||''):'';
     // Update run
-    const r=_prodReports[mid];if(!r||!r.runs||!r.runs[idx])return;
+    const r=_prodReports[mid];
+    if(!r){toast('Machine report not found — try closing and reopening the form');return}
+    if(!r.runs||!r.runs[idx]){toast('Run slot lost — tap + Add TAG again');return}
     r.runs[idx]={...r.runs[idx],tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,customerName:card.customerName||'',customerId:card.customerId||'',tagQty:card.currentQty,opId,opName,batchCode:card.batchCode,masterLotCode:card.masterLotCode,heatCode:card.heatCode||'',setupApprovalId:'',setupApproved:false};
     // Create setup approval token — but only if one doesn't already exist for this TAG+machine+stage
     if(_prodMode==='actual'){
@@ -1017,7 +1025,9 @@ async function submitProdEntry(){
           if(!run.tagId||!run.actualQty)return;
           const ref=db.collection('routeCards').doc(run.tagId);
           const histEntry={opId:run.opId,opName:run.opName,stage:_prodStage,qtyIn:run.tagQty,qtyOut:+run.actualQty,qtyScrap:+run.rejectionQty||0,machineId:r.machineId,machineName:r.machineName,operatorId:r.operatorId,date,shiftKey:shift,completedAt:nowTS()};
-          fbBatch.update(ref,{opHistory:firebase.firestore.FieldValue.arrayUnion(histEntry),currentQty:firebase.firestore.FieldValue.increment(-(+run.rejectionQty||0)),status:_prodStage==='soft'?'soft_wip':'hard_wip',currentOpId:run.opId,updatedAt:nowTS()});
+          // After soft stage: set to soft_done so HT can accept. After hard: hard_done so QC can accept.
+          const nextStatus=_prodStage==='soft'?'soft_done':'hard_done';
+          fbBatch.update(ref,{opHistory:firebase.firestore.FieldValue.arrayUnion(histEntry),currentQty:firebase.firestore.FieldValue.increment(-(+run.rejectionQty||0)),status:nextStatus,currentOpId:run.opId,updatedAt:nowTS()});
         });
       });
       await fbBatch.commit();
@@ -4225,7 +4235,7 @@ async function qcFetchTag(){
     if(!doc.exists){infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)"><div style="color:var(--er);font-weight:600">❌ TAG ${tagId} not found</div></div>`;return}
     const card={id:doc.id,...doc.data()};
     // Validate: must be qc_pending status
-    if(card.status!=='qc_pending'&&card.status!=='hard_wip'){
+    if(card.status!=='qc_pending'&&card.status!=='hard_wip'&&card.status!=='hard_done'){
       infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)">
         <div style="color:var(--er);font-weight:600">❌ Cannot inspect this TAG</div>
         <div class="tsm tmut" style="margin-top:4px">Status: <strong>${card.status}</strong></div>
@@ -4573,36 +4583,104 @@ function renderHTNew(){
 
 let S_htComps=[];
 function htAddComp(){
-  openModal(`<div class="mtit">Add Component</div>
-  <div class="f"><label>Component Name *</label><input id="htc-n" type="text" placeholder="e.g. Gear Shaft 32mm" list="ht-part-dl">
-    <datalist id="ht-part-dl">${S.parts.map(p=>`<option value="${p.name}">`).join('')}</datalist>
+  openModal(`<div class="mtit">🏷 Scan Route Card for HT</div>
+  <div class="ibox" style="margin-bottom:10px;font-size:12px">Scan or type the TAG on the physical trolley going into the furnace. Part info loads automatically.</div>
+  <div id="qr-reader-ht" style="width:100%;border-radius:8px;overflow:hidden;margin-bottom:8px"></div>
+  <div class="bin-bc" style="margin-bottom:10px">
+    <input id="htc-tag-input" type="text" placeholder="Type TAG number (e.g. TAG001)..." oninput="this.value=this.value.toUpperCase()" autocomplete="off">
   </div>
-  <div class="row2">
-    <div class="f"><label>Qty *</label><input id="htc-qty" type="number" min="1" placeholder="e.g. 50"></div>
-    <div class="f"><label>Material</label><input id="htc-mat" type="text" placeholder="e.g. EN8"></div>
-  </div>
+  <div id="htc-tag-info" style="display:none;background:var(--acc3);border-radius:var(--rs);padding:10px 12px;margin-bottom:10px;font-size:13px"></div>
+  <div class="f"><label>Qty loading into furnace *</label><input id="htc-qty" type="number" min="1" placeholder="e.g. 50"></div>
   <div class="row2">
     <div class="f"><label>Fixture No.</label><input id="htc-fix" type="text" placeholder="e.g. F-12"></div>
-    <div class="f"><label>Heat No.</label><input id="htc-heat" type="text" placeholder="e.g. H-2601"></div>
+    <div class="f"><label>Remarks</label><input id="htc-rem" type="text" placeholder="Optional"></div>
   </div>
-  <div class="f"><label>Remarks</label><input id="htc-rem" type="text" placeholder="Optional"></div>
-  <button class="btn btn-p mt12" onclick="htConfirmComp()">Add Component</button>
-  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
+  <button class="btn btn-s mt8" style="width:100%" onclick="htLookupTag()">🔍 Load TAG Info</button>
+  <button class="btn btn-p mt8" id="htc-confirm-btn" style="width:100%;display:none" onclick="htConfirmComp()">✓ Add to Charge</button>
+  <button class="btn btn-s mt8" onclick="htStopTagScan();closeModal()">Cancel</button>`);
+  // Start QR scanner
+  setTimeout(()=>{
+    try{
+      _html5Qr=new Html5Qrcode('qr-reader-ht');
+      _html5Qr.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:120},aspectRatio:1.5},
+        (decoded)=>{
+          const el=document.getElementById('htc-tag-input');
+          if(el){el.value=decoded.toUpperCase();htLookupTag();}
+          htStopTagScan();
+        },()=>{}).catch(()=>{});
+    }catch(e){}
+  },200);
+}
+function htStopTagScan(){if(_html5Qr){_html5Qr.stop().catch(()=>{}).finally(()=>{_html5Qr.clear();_html5Qr=null;});}}
+async function htLookupTag(){
+  const tagId=(document.getElementById('htc-tag-input')?.value||'').trim().toUpperCase();
+  if(!tagId){toast('Enter a TAG number');return}
+  if(!tagId.match(/^TAG\d+$/)){toast('Invalid TAG format — expected TAG001, TAG042 etc.');return}
+  // Check not already added
+  if(!S._htComps)S._htComps=[];
+  if(S._htComps.find(c=>c.tagId===tagId)){toast(tagId+' already added to this charge');return}
+  try{
+    const doc=await db.collection('routeCards').doc(tagId).get();
+    if(!doc.exists){toast(tagId+' not found — has it been issued from Store?');return}
+    const card=doc.data();
+    // Accept soft_wip or store_issued TAGs
+    const valid=['store_issued','soft_wip','soft_done'];
+    if(!valid.includes(card.status)){
+      toast(tagId+' status is "'+card.status+'" — must be soft_wip or store_issued to enter HT');return;
+    }
+    // Show info
+    const info=document.getElementById('htc-tag-info');
+    if(info){
+      info.style.display='block';
+      info.innerHTML='<div style="font-weight:700;font-family:monospace;color:var(--acc)">'+tagId+'</div>'
+        +'<div style="font-weight:600">'+card.partName+'</div>'
+        +'<div class="tsm tmut">'+card.partNo+' · Batch: '+card.batchCode+'</div>'
+        +'<div class="tsm tmut">Qty on card: <strong>'+card.currentQty+'</strong></div>';
+    }
+    // Pre-fill qty
+    const qtyEl=document.getElementById('htc-qty');
+    if(qtyEl&&!qtyEl.value)qtyEl.value=card.currentQty||'';
+    // Store card data for confirm
+    window._htcCardData={
+      tagId,partId:card.partId,partNo:card.partNo,partName:card.partName,
+      batchCode:card.batchCode,masterLotCode:card.masterLotCode,
+      currentQty:card.currentQty,customerName:card.customerName||''
+    };
+    const btn=document.getElementById('htc-confirm-btn');
+    if(btn)btn.style.display='block';
+    htStopTagScan();
+  }catch(e){toast('Error fetching TAG: '+e.message);}
 }
 function htConfirmComp(){
-  const n=document.getElementById('htc-n').value.trim();
-  const qty=document.getElementById('htc-qty').value;
-  if(!n||!qty){toast('Name and qty required');return}
+  const qty=parseInt(document.getElementById('htc-qty')?.value)||0;
+  if(!qty||qty<1){toast('Enter quantity');return}
+  if(!window._htcCardData){toast('Load a TAG first');return}
   if(!S._htComps)S._htComps=[];
-  S._htComps.push({name:n,qty:+qty,material:document.getElementById('htc-mat').value.trim(),fixtureNo:document.getElementById('htc-fix').value.trim(),heatNo:document.getElementById('htc-heat').value.trim(),remarks:document.getElementById('htc-rem').value.trim()});
+  S._htComps.push({
+    tagId:window._htcCardData.tagId,
+    name:window._htcCardData.partName,
+    partId:window._htcCardData.partId,
+    partNo:window._htcCardData.partNo,
+    batchCode:window._htcCardData.batchCode,
+    masterLotCode:window._htcCardData.masterLotCode,
+    customerName:window._htcCardData.customerName,
+    qty,
+    maxQty:window._htcCardData.currentQty,
+    fixtureNo:document.getElementById('htc-fix')?.value.trim()||'',
+    remarks:document.getElementById('htc-rem')?.value.trim()||''
+  });
+  window._htcCardData=null;
   closeModal();renderHTCompList();
 }
 function renderHTCompList(){
   const w=document.getElementById('ht-comp-list');if(!w)return;
   if(!S._htComps||!S._htComps.length){w.innerHTML=`<div class="tsm tmut" style="padding:8px 0">No components added yet.</div>`;return}
   w.innerHTML=S._htComps.map((c,i)=>`<div class="rrow" style="padding:8px 0;border-bottom:.5px solid var(--bdr)">
-    <div><div style="font-weight:600">${c.name}</div><div class="tsm tmut">${c.qty} pcs · ${c.material||'—'}</div>
-    <div class="tsm tmut">${c.fixtureNo?'Fix: '+c.fixtureNo:''}${c.heatNo?' · Heat: '+c.heatNo:''}</div></div>
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700;font-family:monospace;color:var(--acc);font-size:12px">${c.tagId||'—'}</div>
+      <div style="font-weight:600">${c.name}</div>
+      <div class="tsm tmut">${c.qty} pcs · Batch: ${c.batchCode||'—'}${c.fixtureNo?' · Fix: '+c.fixtureNo:''}</div>
+    </div>
     <button class="btn btn-d btn-sm" onclick="S._htComps.splice(${i},1);renderHTCompList()">✕</button>
   </div>`).join('');
 }
@@ -4992,8 +5070,32 @@ async function htCompleteCharge(id){
 }
 async function htForceComplete(id){
   try{
+    const c=S.htCharges.find(x=>x.id===id);
+    if(!c){toast('Charge not found');return;}
     await db.collection('htCharges').doc(id).update({status:'complete',completedAt:nowTS(),completedBy:S.sess.userId});
-    toast('Charge completed ✓');
+    // THE HEAT CODE MARRIAGE — push heatCode to every participating Route Card
+    const components=c.components||[];
+    const tagComponents=components.filter(comp=>comp.tagId);
+    if(tagComponents.length){
+      const heatCode=c.chargeNo; // chargeNo IS the heatCode (e.g. I26F0001)
+      let updated=0;
+      const rawDb=firebase.firestore();
+      for(const comp of tagComponents){
+        try{
+          await db.collection('routeCards').doc(comp.tagId).update({
+            heatCode,
+            htChargeId:id,
+            status:'ht_done',
+            currentStage:'hard',
+            updatedAt:nowTS()
+          });
+          updated++;
+        }catch(e2){console.warn('Failed to update TAG '+comp.tagId+':',e2.message);}
+      }
+      toast('Charge completed ✓ — heatCode "'+heatCode+'" written to '+updated+' TAG(s)');
+    } else {
+      toast('Charge completed ✓ (no TAGs linked — scan TAGs when adding components)');
+    }
     renderHTDetail(id);
   }catch(e){toast('Error: '+e.message)}
 }
