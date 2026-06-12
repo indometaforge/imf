@@ -5582,43 +5582,56 @@ async function dspConfirmTagById(lineId,streamType,maxQty,poId,tagId){
   }catch(e){toast('Error fetching TAG: '+e.message)}
 }
 async function dspConfirmTagItem(lineId,poId,streamType){
-  const tagId=document.getElementById(`dsp-tag-id-${lineId}`)?.value||'';
-  const qty=parseInt(document.getElementById(`dsp-qty-${lineId}`)?.value)||0;
-  if(!tagId){toast('Scan a TAG first');return}
-  if(!qty||qty<1){toast('Enter a valid quantity');return}
+  // Read qty from input
+  const qtyInput=document.getElementById('dsp-qty-'+lineId);
+  const qty=parseInt(qtyInput?.value)||0;
+  // Get TAG data from cache (most reliable — set by dspConfirmTagById)
   const tagData=window._dspTagCache?.[lineId];
-  if(!tagData){toast('TAG data not loaded — scan again');return}
-  if(qty>tagData.available){toast(`Only ${tagData.available} ${streamType.toUpperCase()} pcs available on this TAG`);return}
+  // Also try hidden input as fallback
+  const hiddenInput=document.getElementById('dsp-tag-id-'+lineId);
+  const tagId=(tagData?.tagId)||(hiddenInput?.value)||'';
+  if(!tagId){toast('Load a TAG first — type TAG number and tap Load');return}
+  if(!qty||qty<1){toast('Enter quantity to dispatch');return}
+  if(!tagData){toast('TAG info missing — tap Load again');return}
+  if(qty>tagData.available){toast('Only '+tagData.available+' '+streamType.toUpperCase()+' pcs available on this TAG');return}
   const po=S.pos.find(p=>p.id===poId);
   const ln=(po?.lines||[]).find(l=>l.id===lineId);
-  if(!ln){toast('Line not found');return}
+  if(!ln){toast('PO line not found');return}
   // Check PO pending qty
   const dispatched=S.dispatches.filter(d=>d.poId===poId).reduce((s,d)=>{
     const li=(d.items||[]).find(i=>i.lineId===lineId);return s+(li?+li.qty:0);
   },0);
-  const alreadyInThisInv=(_dspItems.filter(i=>i.lineId===lineId).reduce((s,i)=>s+(+i.qty||0),0));
+  const alreadyInThisInv=_dspItems.filter(i=>i.lineId===lineId).reduce((s,i)=>s+(+i.qty||0),0);
   const maxPOQty=(+ln.qty||0)-dispatched-alreadyInThisInv;
-  if(qty>maxPOQty){toast(`PO allows max ${maxPOQty} more pcs for this line`);return}
+  if(qty>maxPOQty){toast('PO allows max '+maxPOQty+' more pcs for this line');return}
+  // Add to session items
   _dspItems.push({
-    lineId,partId:ln.partId,partNo:ln.partNo||tagData.partNo,
+    lineId,
+    partId:ln.partId||tagData.partId,
+    partNo:ln.partNo||tagData.partNo,
     partName:ln.partName||tagData.partName,
-    qty,unit:ln.unit||'pcs',rate:ln.rate||0,
-    tagId,batchCode:tagData.batchCode,heatCode:tagData.heatCode,
-    streamType,streamField:tagData.streamField
+    qty,
+    unit:ln.unit||'pcs',
+    rate:ln.rate||0,
+    tagId,
+    batchCode:tagData.batchCode||'',
+    heatCode:tagData.heatCode||'',
+    streamType,
+    streamField:tagData.streamField||'qty_oem'
   });
-  // Reset this line's TAG state
-  const lbl=document.getElementById(`dsp-tag-lbl-${lineId}`);
-  const hiddenInput=document.getElementById(`dsp-tag-id-${lineId}`);
-  const infoDiv=document.getElementById(`dsp-tag-info-${lineId}`);
-  const qtyInput=document.getElementById(`dsp-qty-${lineId}`);
+  // Clean up this line's state
   const tagInputEl=document.getElementById('dsp-tag-input-'+lineId);
+  const infoDiv=document.getElementById('dsp-tag-info-'+lineId);
   if(tagInputEl){tagInputEl.value='';tagInputEl.style.borderColor='';}
   if(hiddenInput)hiddenInput.value='';
   if(infoDiv)infoDiv.style.display='none';
   if(qtyInput){qtyInput.value='';qtyInput.style.borderColor='';}
   if(window._dspTagCache)delete window._dspTagCache[lineId];
+  // Update the items list in the background screen
   renderDspItemsList();
-  toast(`${tagData.partName} (${qty} pcs) added ✓`);
+  toast(tagData.partName+' ('+qty+' pcs) added to invoice ✓');
+  // Close modal so user can see the items list and save
+  closeModal();
 }
 
 function renderDspItemsList(){
