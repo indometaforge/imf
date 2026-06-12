@@ -2547,7 +2547,7 @@ function buildTagForcePanel(){
     +'<option value="dispatched">dispatched</option>'
     +'</select></div></div>'
     +'<button class="btn btn-p" style="width:100%;background:#92400e;border-color:#92400e" '
-    +'onclick="forceSetTagStatus(document.getElementById('force-tag-id').value.trim().toUpperCase(),document.getElementById('force-tag-status').value)">'
+    +'onclick="forceSetTagStatus(document.getElementById(\'force-tag-id\').value.trim().toUpperCase(),document.getElementById(\'force-tag-status\').value)">'
     +'⚡ Force Set Status</button>'
     +'<div style="margin-top:10px">'+list+'</div>'
     +'</div>';
@@ -4594,7 +4594,7 @@ function htConfirmComp(){
   const qty=document.getElementById('htc-qty').value;
   if(!n||!qty){toast('Name and qty required');return}
   if(!S._htComps)S._htComps=[];
-  S._htComps.push({name:n,qty:+qty,material:document.getElementById('htc-mat').value.trim(),fixtureNo:document.getElementById('htc-fix').value.trim(),heatNo:document.getElementById('htc-heat').value.trim(),customer:remarks:document.getElementById('htc-rem').value.trim()});
+  S._htComps.push({name:n,qty:+qty,material:document.getElementById('htc-mat').value.trim(),fixtureNo:document.getElementById('htc-fix').value.trim(),heatNo:document.getElementById('htc-heat').value.trim(),remarks:document.getElementById('htc-rem').value.trim()});
   closeModal();renderHTCompList();
 }
 function renderHTCompList(){
