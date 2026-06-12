@@ -521,7 +521,7 @@ function renderApp(){
     {id:'reports',svg:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',l:'Reports',s:getPerm('reports')!=='hidden'},
     {id:'masters',svg:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',l:'Masters',s:isA}
   ].filter(n=>n.s);
-  document.getElementById('app').innerHTML=`${TEST_MODE?'<div id="test-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#d97706;color:#fff;text-align:center;font-size:12px;font-weight:700;padding:5px;letter-spacing:.05em">⚠ TEST MODE — writes go to TEST_ collections, not live  <button onclick="clearTestData()" style=\"margin-left:10px;background:rgba(0,0,0,.25);border:none;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;cursor:pointer\">🗑 Clear All Test Data</button></div>':''}<div class="shell"><aside class="sidebar"><div class="sb-logo"><img class="sb-logo-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABGCAYAAABL0p+yAAAM5klEQVR42u1d/2tcxxGf8ZkzVxRcXBwcVGwcElxcUhpSElISHCiEloQGSk1NTUoCIaX5gxwUDAouMTIyCgoyKgoJLjYqCgoyMldOyMgoqCjISEjoOPGOe0x/uFlrbjz7vtydFD1lBx7v7r399nY/O7MzO7sLsI9ERMNEtNRl3FUiGoFAgXICZ5aINqmTVnOmsaTibxPRfKjdQGnAucaAaYmrwc+WM6ZRFaCL+Grxs69CLRebjuxx+if4HotnZQDYAYDTDKThBPBtA8B5AGgCQAUASny59I6HJiw24R5zwDUAOMkAKqnXsQAUAMAjBmaZ47jnTb7r+CUAaCLisdCMAYA+AJLifhpAsQFECToLeDJMBQA+RsSPQlMGAGrwbbKIbCaACBIACinxAhc8BHR0j8C3kgA+KVLLGUAWqziaU5aJaBMRfxqa80fAAYloDhFfTHjfcpxJgCUWCoikDQDY4vHflhDHA6zAnODxoA/AmlN+iojve8pVQ8RfhCYvtllF0joRzbGdrybMK8SmElLPiI3J4z2YdJZVepEy8Tha4bLVDBvk1dCSxQZfQwBMUkvY6aStLiKisT6X5Sp3AAlEnS8Z7x1dCS1aTPC11BUpLiQbupXW0EQ0w1wxMsC8SUSLaeDl+KTKEhllc9c2a+eBCgK+CcH5Wp6LFIgmPGlNifBrRDSVkveImAkhIqp5wg0pDt1KuFw5Z0PrFosDtlIu4pkLUyvm99UeyzElgDZsvF9SwwEvAEOrFguAc55Bv5zbrSYAYnwPymQCiYjGFUe2OspyaNViAXDcA8DIErlCJM7sE3dezMi1g/g9YJTVEN30PKsAwA1EvCTtbQBwDhFxPz4AEdGNE2We/JzAP5ccqEAccNrggBbna+T19etjGT/ziGSr3CuhVYsFwG0l0kg7hHIjVw9AWUn9HxUgbDgtObRq8bTgDjubAdDqQSqv+j9vGKenQ8sWA3wtPZug3ld95pdAgXoF36Yy8JI2HgebWqA9G9CrATzpsVMAX6Be6agA0zKbKgb5kfRWdvfrclwFAP89BJ1tGABKiPg33QkBABDxsicOaNcvjrPj6g8R/56zLJPAfpSI+EZepsHxfO5oI9B2eSvLMByvDp1rbVz7D8h6YU8i6cEei7BlK2+ehIi5Pi6mmVkoYZqtkYf7GW5Qj71QqDta5Lg1491EjwoW8foVrTlTgmmnw5xDRHcSyt4iotsZymDRcIZvGEkp77zvfYZ6n8rRZlXdUa32l+RWxZ2DTs9jUD0BAOCuSHgOAL5NqZcNvu84ruDWbgiD8Q7n2VS/3VXn/OuI+DzHqet0uWf3Shvi95Ysn9b6RT3JfOvi3TcsLb6EXcfcC0S0rhpoSKybaQLALa6bWyKt9zL4MNbFvSlBxhzuBVG/FjUBYIHz/hja62wQ2g6+b4o2uwEAnwLAQ4GLb/jZ54j4S5Xun0VbAgD8I83M0vLN9eYd+wnn0UgoMFeMcWbHGNNyMFXpzhrxNpkDzQonWXdNJ+3GoDmsp+d2SADLO0c6Shh5SI+eIZVOy2eXFO/TpM2wYaet+jiX5/vHckiNId+3Gmk32CegZTkEHyGia/y75OF+FdHDgEG0kaGcFb6XxW93d2Orh/w+TuC819Vza3nncQB4DQBeAoBf891drwLA2S65Yiy+tSJEbq7pPcUZXjW+564n6tcZ84hFub7j3+cFQL6H9rIHSOCAb3FHdtd6whBgIIsFxeWNiM+KevyLFsHnE9IpCTbr6I8A8HmGSlngynjA1yM9SOWCNQ0QxvxswVIC9pFKiPgzFjEAAIMsjpt9zqeZ87m303Od3hRDCEDEZwQwk9q6oi5IYQ5Jit1x0cYAAF848EpJeBQRf8PjhL+KhDvW7CLi70T6g4j4QYZe/3pG7nDMx8ozLiIqcQ+/Lzms1uZ6QQcivk9ELzBHdVw9j6IzK7THbw2QXfBEvSA6KGRgFK68F3nYcVaMtysJ8csA8AUivtOnDvWuG/vyuFd+Q5Pff/TYDIOIl4moDgAf7kHvzkLfA8ApkXc5gcvGykxUAYCv+8Ap46Qezh11EQCe4yFJ2RMnJqI7iPg6d+zX2LRVYmVKSoFbAPAWAOzwbNJNBvsQALwnzB3Xc5T9sXRR47pmCkc73WVd6c52RZlo3BAsZo5c8jIE4Xja4WovE5fmipRev2aMf696wtaMxUNXPGEX98gMs2qZNRKUK22GuZ1iopj35D+REm80z8RBQpilLs0wE0ZaoxlMVK00k1OHIZp7zYtGonXx+yyP57JQHdpreneECIhz9KiSRxw+32fu+yXn9T+RxyUiGvTkf4aNq6cA4J54/gYR3VHmmB3pK+lJ721hLjnHY6c6ANzzGZWNNC4TURoH+ze3na7Xu6qNtSH6bSO/iwl2zf8kGdLZT/O2FwtC+4mMXj6T1b1emWEibYLwmClSwwY6XGR5RD8AgJc9HHDA01t6pTgLoMUYIikN3y5aYVeEggCwlFXb2mc6LTTJQIcYgKcNFR2EXWngByprnfPeyQnCUhYOG+jgAPCkMsXIXUgf5VTX+yaCEfEpYa/Uu27FKWmXE0T7pDLtyHgVRPyDJ95XsLtx0pbP7slj2bNCGYuFSeZymnbLZp8BjvcAEf9khJviOok9isSbhUCjsf5Xm2GGsi46yqmEzOYIu27MG6fRSAYzjI/GM5iXSNeVCL+Skv66EWc4Jc5kzm+YLAL4rhoNG3XjiLDHAJwzwlZ7+G73zSseo6r8v2m5HmlXrAQNf1R05KroPHOedmg4v0SR1lrCNxTz5ABheNVeKUUB4Gc9ApDYhpcoDkXY2wl1qAG1mGK0bSlfxEweMJ5vyGoii7i8M87QLDmx8vKp6m9Saa3q4QC3/bqrJyKa5E2kJp9YP8SFICXK9E4CUzJD4UHTLwBO9wjA0T5wwG2ekZkXLl1LslHSgCHSWk8DoALsjJHGnCHKp3nGZdHIt+GTYLqDKtsu8X1ePNtW4bcTvnnJkhxS7OudKGR6R6HtJfGyZzDvBvoviWe3oO0R00/qdf457kP8AWjPROjKHOdJ+lJG7bvkUXqaBnhjaHsJvWLZLpUyMgi7yyUscsdfbEHnzrTHDWXnFIO+5JwVEPFXDMIFaM8OSarkrM9KSpzY6rmZd5PqwiE1javd7pEDjvTIAVPHkcrpc94CqrXmWMxzt7jsiykKSCPLXGqPInja87xmcTs1Tz5vtMcSS4wx8XxM1c2K2w/yibTErqdRwoY+4yrT6ZSPXNpHAI72AYB3MoSVSsiyWOMy75uEF2OoliGWoxRlsCEdQrkBowQAVtMUqYOqhEwbW+0+wQ3zcEFj59K9AGBjvzigNaYzaDVBEpChCPiUk6spZpWVw2KGcf6Av+XKi2HXd62pZhLKRDQklhouEFHVWIjiDMfPcOVmmYnoZgzofAFTPU5S6Ca0lxRmcsZ03jjMdd2YbMPyGuHwZ6z1FuyIOwFtX8AR+Q3s8PuBMDIPcB19p5ePMv0L7IVZzhD9DhSJlIbW08J0pWH7uNpUFxzwiaWigYpHRzy99hJrR49g1/PXuVhPinCYBkJOp9knbVWm8RARfxKa8BACUIDnaSGGnVj+vQp2P81LmoGyAP452Twi2K1feDY034+EDPHYMEwHtR7SHxPG1EavDqkJ02FkGX8DHVAOKMgdo+q4YEVat5nDPdfDnOxxw4BZ6RZ8cqte1pDPw+7OAG6p4iuh+YvDAWeUQhJ5PEUo66KlPSjjtYT51obynFkNrVosAI4asyUOhNcscbfP5atl3B86CuK3mCLYUh6cOH5XzkSwXfBG1tmFfoxPhbatn/vOKi6Hpi8WB5z37DYvD6qZMeKt9jpVllCm7QwH1fi2mlsLrVosAKYd0xUlHX8gvIjn+jAUiBKO6qqlgC8c1VVA8GU5rLClDisc86Qldw9YS/PeYMVCbki57Ak3lHCGcDgt6RCA0OekkOQ9E6WkOcSifc1z/vB2xuNa11MOU9RbjfRsZwz0w4Iw7cBqzQ3Xe/FWSSjPmsH1It9iobDrwuEBoeRQNXblWlQu/ZFnxdpyt2BkF6WaAXrrvOJl4fzZUHEC+A4QYRdAqPm2uWDnxw+FicbaJkPSFrS3ZtvgyzkaDADACWhvAHQSnlwDrHdIcL9v+nZiJ6KlMH98CACYEaQr0PaVS1pAnnWNRWzE06COEfFoaM4AQAnCbdh1pCxlANljMHmA5qPSfh0NG6j/dGTPkI34VMagDqBldY8zxvskNGPggF5Nlcdw1nLPphLDj2B346FBA2hgpYGIx0IzBg7oo3vG2A+g073rn9impxHxDCL+nEXqJyJc7BHZ90MTBkrigKPKRihXsq1kTGNRGJAjtUblTqjlQGkAmjPOjVvLmcayPrXoIB2QHag4YLzWrTMoz6iMhVo8XPR/OTxGhZZ+9MEAAAAASUVORK5CYII=" alt="Indo Metaforge Pvt Ltd"><div class="sb-tag">ProTrack MES</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-production"></div><div class="screen" id="s-prod-entry"></div><div class="screen" id="s-prod-setup"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-actual-hub"></div><div class="screen" id="s-actual"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-store-req-new"></div><div class="screen" id="s-store-req-list"></div><div class="screen" id="s-store-approvals"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div><div class="screen" id="s-m-suppliers"></div><div class="screen" id="s-m-customers"></div><div class="screen" id="s-m-tags"></div><div class="screen" id="s-m-pm-schedules"></div><div class="screen" id="s-maint-hub"></div><div class="screen" id="s-maint-breakdown-new"></div><div class="screen" id="s-maint-breakdown-detail"></div><div class="screen" id="s-maint-breakdowns"></div><div class="screen" id="s-maint-pm"></div><div class="screen" id="s-maint-pm-machine"></div><div class="screen" id="s-maint-health"></div><div class="screen" id="s-maint-spares-approval"></div><div class="screen" id="s-qc-hub"></div><div class="screen" id="s-qc-inspect"></div><div class="screen" id="s-qc-history"></div><div class="screen" id="s-qc-setups"></div><div class="screen" id="s-ht-hub"></div><div class="screen" id="s-ht-new"></div><div class="screen" id="s-ht-view"></div><div class="screen" id="s-ht-detail"></div><div class="screen" id="s-dsp-hub"></div><div class="screen" id="s-dsp-po-list"></div><div class="screen" id="s-dsp-po-new"></div><div class="screen" id="s-dsp-po-detail"></div><div class="screen" id="s-dsp-new"></div><div class="screen" id="s-dsp-track"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
+  document.getElementById('app').innerHTML=`${TEST_MODE?'<div id="test-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#d97706;color:#fff;text-align:center;font-size:12px;font-weight:700;padding:5px;letter-spacing:.05em">⚠ TEST MODE — writes go to TEST_ collections, not live  <button onclick="clearTestData()" style=\"margin-left:10px;background:rgba(0,0,0,.25);border:none;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;cursor:pointer\">🗑 Clear All Test Data</button></div>':''}<div class="shell"><aside class="sidebar"><div class="sb-logo"><img class="sb-logo-img" src="data:image/png;base64,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" alt="Indo Metaforge Pvt Ltd"><div class="sb-tag">ProTrack MES</div></div><nav class="sb-nav">${nav.map(n=>`<button class="sbi ${n.id==='home'?'on':''}" id="sb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg>${n.l}</button>`).join('')}</nav><div class="sb-foot"><div class="sb-user"><div class="sb-av">${S.sess.name.charAt(0).toUpperCase()}</div><div><div class="sb-uname">${S.sess.name}</div><div class="sb-urole">${rlbl(S.sess.role)}</div></div></div><button class="sb-out" onclick="logout()">Sign Out</button></div></aside><div class="main"><div class="screen on" id="s-home"></div><div class="screen" id="s-production"></div><div class="screen" id="s-prod-entry"></div><div class="screen" id="s-prod-setup"></div><div class="screen" id="s-plan"></div><div class="screen" id="s-plan-today"></div><div class="screen" id="s-plan-day"></div><div class="screen" id="s-plan-next"></div><div class="screen" id="s-view-plan"></div><div class="screen" id="s-view-actuals"></div><div class="screen" id="s-store-hub"></div><div class="screen" id="s-store-inward"></div><div class="screen" id="s-store-stock"></div><div class="screen" id="s-store-issue"></div><div class="screen" id="s-store-batches"></div><div class="screen" id="s-store-req-new"></div><div class="screen" id="s-store-req-list"></div><div class="screen" id="s-store-approvals"></div><div class="screen" id="s-reports"></div><div class="screen" id="s-masters"></div><div class="screen" id="s-m-machine-hist"></div><div class="screen" id="s-m-machines"></div><div class="screen" id="s-m-people"></div><div class="screen" id="s-m-parts"></div><div class="screen" id="s-m-ops"></div><div class="screen" id="s-m-partops"></div><div class="screen" id="s-m-shifts"></div><div class="screen" id="s-m-suppliers"></div><div class="screen" id="s-m-customers"></div><div class="screen" id="s-m-tags"></div><div class="screen" id="s-m-pm-schedules"></div><div class="screen" id="s-maint-hub"></div><div class="screen" id="s-maint-breakdown-new"></div><div class="screen" id="s-maint-breakdown-detail"></div><div class="screen" id="s-maint-breakdowns"></div><div class="screen" id="s-maint-pm"></div><div class="screen" id="s-maint-pm-machine"></div><div class="screen" id="s-maint-health"></div><div class="screen" id="s-maint-spares-approval"></div><div class="screen" id="s-qc-hub"></div><div class="screen" id="s-qc-inspect"></div><div class="screen" id="s-qc-history"></div><div class="screen" id="s-qc-setups"></div><div class="screen" id="s-ht-hub"></div><div class="screen" id="s-ht-new"></div><div class="screen" id="s-ht-view"></div><div class="screen" id="s-ht-detail"></div><div class="screen" id="s-dsp-hub"></div><div class="screen" id="s-dsp-po-list"></div><div class="screen" id="s-dsp-po-new"></div><div class="screen" id="s-dsp-po-detail"></div><div class="screen" id="s-dsp-new"></div><div class="screen" id="s-dsp-track"></div></div><div class="offline-bar" id="offline-bar">📶 No connection — data will sync when reconnected</div><nav class="bnav">${nav.map(n=>`<button class="bni ${n.id==='home'?'on':''}" id="nb-${n.id}" onclick="snav('${n.id}')"><svg viewBox="0 0 24 24">${n.svg}</svg><span>${n.l}</span></button>`).join('')}</nav></div>`;
   renderHome();
   initBackBtn();
   applyTestModeStyles();
@@ -1137,13 +1137,19 @@ async function setupFetchTag(){
       return;
     }
     const card={id:doc.id,...doc.data()};
-    const validStatuses=['store_issued','soft_wip','hard_wip'];
+    // soft setup: store_issued, soft_wip, soft_done
+    // hard setup: ht_done (came through HT with heat code)
+    const validStatuses=['store_issued','soft_wip','soft_done','ht_done','hard_wip'];
     if(!validStatuses.includes(card.status)){
-      infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)"><div style="color:var(--er);font-weight:600">❌ TAG status is "${card.status}"</div><div class="tsm tmut">Only store-issued or WIP TAGs can have a setup logged.</div></div>`;
+      infoDiv.innerHTML=`<div class="card" style="border:1.5px solid var(--er)"><div style="color:var(--er);font-weight:600">❌ TAG status is "${card.status}"</div><div class="tsm tmut">Expected: store_issued / soft_done / ht_done. Check the TAG has completed the previous stage.</div></div>`;
       return;
     }
     _setupCard=card;_setupTagId=tagId;
-    if(!_setupStage)_setupStage=card.status==='hard_wip'?'hard':'soft';
+    // Infer stage from status
+    if(!_setupStage){
+      if(card.status==='ht_done'||card.status==='hard_wip')_setupStage='hard';
+      else _setupStage='soft';
+    }
     // Get ops for this part + stage
     const partOpsForStage=S.partOps.filter(po=>po.partId===card.partId&&po.stage===_setupStage)
       .sort((a,b)=>(a.seqNo||0)-(b.seqNo||0));
@@ -1559,283 +1565,6 @@ function rfvp(){const plans=S.plans.filter(p=>p.date>=(_vpDFrom||_vpD)&&p.date<=
         <button class="btn btn-s btn-sm" style="flex:1;font-size:11px;color:var(--mut)" disabled>🕐 ${p.createdAt?new Date(p.createdAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'—'}</button>
       </div>
     </div>`}).join('')}
-
-function renderActual(){
-  S.actStage='';S.actReports={};
-  document.getElementById('s-actual').innerHTML=`<div class="hdr"><button class="hdr-back" onclick="goBack()">←</button><div class="hdr-info"><div class="hdr-title">Actual Output</div><div class="hdr-sub">End of Shift Report</div></div></div>
-  <div class="pad">${viewOnlyBanner("actual")}<div class="card"><div class="card-hd">Step 1 — Select Stage &amp; Shift</div>
-  <div class="stage-sel"><button class="stbtn" onclick="selActStage('soft')" id="as-soft"><span class="si">⚙️</span><span class="sn">Soft</span></button><button class="stbtn" onclick="selActStage('ht')" id="as-ht"><span class="si">🔥</span><span class="sn">HT</span></button><button class="stbtn" onclick="selActStage('hard')" id="as-hard"><span class="si">💎</span><span class="sn">Hard</span></button></div>
-  <div class="f" style="margin-bottom:0"><label>Shift</label><select id="act-sh" onchange="saveDraft('actual')">${Object.entries(S.shifts).map(([k,v])=>`<option value="${k}">${v.label} (${v.start}–${v.end})</option>`).join('')}</select></div><div class="f" style="margin-top:10px;margin-bottom:0;display:${canBackdate()?'block':'none'}"><label>📅 Report Date <span style="font-size:11px;color:var(--acc);font-weight:500">(Backdated entry)</span></label><input type="date" id="act-date-inp" value="${dateStr()}"></div></div>
-  <div id="act-mach"></div>
-  <div id="act-sub" class="sub-bar-desktop" style="display:none">${getPerm("actual")==="full"?`<button class="btn btn-p" onclick="${S.editingActualId?'submitActual':'showActualConfirmation'}()">${S.editingActualId?"Update Report":"Submit Shift Report"}</button>`:`<div class="ibox">View only — you cannot submit reports</div>`}</div><div id="act-sub-bar" class="sub-bar">${getPerm("actual")==="full"?`<button class="btn btn-p" onclick="${S.editingActualId?'submitActual':'showActualConfirmation'}()">${S.editingActualId?"Update Report":"Submit Shift Report"}</button>`:""}</div></div>`;
-}
-function selActStage(st){
-  S.actStage=st;S.actReports={};
-  ['soft','ht','hard'].forEach(s=>{const b=document.getElementById('as-'+s);if(b){b.className='stbtn';if(s===st)b.classList.add('on-'+st)}});
-  renderActMachines();
-}
-function renderActMachines(){
-  const mach=[...S.machines].filter(m=>m.stage===S.actStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
-  const w=document.getElementById('act-mach');if(!w)return;
-  if(mach.length===0){w.innerHTML=`<div class="empty"><div class="empty-ic">⚙️</div><h3>No machines in ${slbl(S.actStage)}</h3><p>Go to Masters → Machines and add machines for this stage.</p></div>`;document.getElementById('act-sub').style.display='none';const _asb2=document.getElementById('act-sub-bar');if(_asb2)_asb2.style.display='none';return}
-  const hadDraft=loadDraft('actual');
-  mach.forEach(m=>{if(!S.actReports[m.id])S.actReports[m.id]={machineId:m.id,machineName:m.name,used:null,unusedReason:'',unusedOther:'',runs:[{partId:'',partNo:'',partName:'',customer:'',opId:'',opName:'',hoursRun:'',targetQty:'',actualQty:'',rejectionQty:0,rejectionReason:''}],setupTimes:[],operatorId:'',hasOtherDowntime:false,otherDowntimeReason:'material',otherDowntimeOther:'',otherDowntimeMins:''}});
-  w.innerHTML=`${isTanmay()?'<button class="btn btn-s" style="font-size:12px;margin-bottom:10px;width:100%" onclick="fillSampleActual()">⚡ Fill Sample (Top 5 Machines)</button>':''}<div class="slbl">Step 2 — Report for each machine (${mach.length})</div>`+mach.map(m=>buildMC(m)).join('');
-  document.getElementById('act-sub').style.display='block';const _asb=document.getElementById('act-sub-bar');if(_asb&&getPerm('actual')==='full')_asb.style.display='block';
-  if(hadDraft)toast('Draft restored — continue from where you left off',3500);
-}
-function mcStat(r){if(r.used===null||r.used===undefined)return['Not filled','bdg-gr'];if(!r.used)return['Not Used','bdg-r'];const runs=r.runs||[];const filled=runs.filter(ru=>ru.actualQty!==''&&ru.actualQty!==undefined);if(filled.length===runs.length&&runs.length>0)return['Filled ✓','bdg-g'];if(filled.length>0)return['In Progress','bdg-a'];return['In Progress','bdg-a']}
-function buildActRunsHTML(mid,r,ops){const runs=r.runs||[{}];const setups=r.setupTimes||[];const tot=runs.length;let h='';runs.forEach((run,idx)=>{h+=buildActRunBlock(mid,idx,run,ops,tot);if(idx<runs.length-1)h+=`<div class="setup-blk" id="mc-setup-${mid}-${idx}"><span class="setup-lbl">🔧 Setup Change ${idx+1}→${idx+2}</span><input type="number" min="0" value="${setups[idx]||''}" placeholder="mins" style="width:80px;padding:7px 10px;font-size:14px;font-weight:600;text-align:center;background:#fff;border:1.5px solid var(--bdr);border-radius:6px" onchange="setActSetup('${mid}',${idx},this.value)"><span style="font-size:12px;color:#92400e;font-weight:500">mins</span></div>`;});return h;}
-function buildActRunBlock(mid,idx,run,ops,tot){const eff=run.targetQty&&run.actualQty?Math.round(+run.actualQty/+run.targetQty*100):0;const multi=tot>1;return`<div class="run-block" id="mc-run-${mid}-${idx}"><div class="run-hd"><span class="run-hd-lbl">Run ${idx+1}</span></div><div class="f"><input type="text" placeholder="Search part..." value="${run.partName||''}" oninput="spActRun(this,'${mid}',${idx})" onblur="setTimeout(hideGlobalDrop,150)" autocomplete="off" style="font-size:14px"></div><div class="${multi?'row2':'f' }"><div class="f"><label>Operation</label><select onchange="setActRunOp('${mid}',${idx},this.value,this.options[this.selectedIndex].text)"><option value="">— Select —</option>${ops.map(o=>`<option value="${o.id}" ${run.opId===o.id?'selected':''}>${o.name}</option>`).join('')}</select></div>${multi?`<div class="f"><label>Hours run</label><input type="number" min="0" step="0.5" value="${run.hoursRun||''}" placeholder="e.g. 3.5" onchange="setActRun('${mid}',${idx},'hoursRun',this.value);updActRunTarget('${mid}',${idx})"></div>`:''}</div><div class="row2"><div class="f"><label>Target Qty</label><input type="number" id="mc-tgt-${mid}-${idx}" min="0" value="${run.targetQty||''}" placeholder="Auto" onchange="setActRun('${mid}',${idx},'targetQty',this.value);updActRunEff('${mid}',${idx})"></div><div class="f"><label>Actual Qty</label><input type="number" min="0" value="${run.actualQty||''}" placeholder="0" onchange="setActRun('${mid}',${idx},'actualQty',this.value);updActRunEff('${mid}',${idx})"></div></div><div id="mc-run-eff-${mid}-${idx}" style="margin-bottom:10px;display:${run.targetQty&&run.actualQty?'block':'none'}"><div class="prog"><div class="pf ${effcls(eff)}" id="mc-run-pf-${mid}-${idx}" style="width:${Math.min(eff,100)}%"></div></div><div class="tsm tmut" id="mc-run-el-${mid}-${idx}">Efficiency: ${eff}%</div></div><div class="row2"><div class="f"><label>Rejection Qty</label><input type="number" min="0" value="${run.rejectionQty||0}" onchange="setActRun('${mid}',${idx},'rejectionQty',this.value)"></div><div class="f"><label>Rejection Reason</label><input type="text" value="${run.rejectionReason||''}" placeholder="Type reason..." onchange="setActRun('${mid}',${idx},'rejectionReason',this.value)"></div></div></div>`;}
-function buildMC(m){
-  const r=S.actReports[m.id]||{};const[stat,scls]=mcStat(r);
-  const ops=S.operations.filter(o=>o.stage===S.actStage);
-  const usrs=S.users.filter(u=>u.role==='operator'&&(u.stage===S.actStage||u.stage==='general'));
-  const totalSetup=(r.setupTimes||[]).reduce((s,v)=>s+(+v||0),0);
-  const otherDT=r.hasOtherDowntime?(+r.otherDowntimeMins||0):0;
-  const totalDT=totalSetup+otherDT;
-  return`<div class="mc" id="mc-${m.id}">
-  <div class="mc-hd" onclick="toggleMC('${m.id}')">
-    <div class="mc-ic">⚙️</div>
-    <div style="flex:1;min-width:0"><div class="mc-nm">${m.name}</div><div class="mc-mt">${m.id_code||''} ${m.type?'· '+m.type:''}</div></div>
-    <span class="bdg ${scls}" id="mcs-${m.id}" style="margin-right:8px;flex-shrink:0">${stat}</span>
-    <span class="mc-cv" id="mcc-${m.id}">▾</span>
-  </div>
-  <div class="mc-body" id="mcb-${m.id}">
-    <div class="utog"><label for="mcu-${m.id}">Machine was used this shift</label><label class="tsw"><input type="checkbox" id="mcu-${m.id}" ${r.used?'checked':''} onchange="togMCUsed('${m.id}',this.checked)"><span class="tsl"></span></label></div>
-    <div id="mcu-form-${m.id}" style="display:${r.used===true?'block':'none'}">
-      <div class="f"><label>Operator</label><select id="mcop-${m.id}" onchange="handleOpSel('${m.id}',this.value,this)"><option value="">— Select —</option><option value="_add" style="color:var(--acc);font-weight:600">+ Add new operator...</option>${usrs.map(u=>`<option value="${u.id}" ${r.operatorId===u.id?'selected':''}>${u.name}</option>`).join('')}</select></div>
-      <div class="run-ctrl"><span class="run-ctrl-lbl">Varieties of components processed</span><div class="run-ctrl-btns"><button class="rc-btn" onclick="removeActRun('${m.id}')">−</button><span class="rc-num" id="mc-rcount-${m.id}">${(r.runs||[]).length||1}</span><button class="rc-btn" onclick="addActRun('${m.id}')">+</button></div></div>
-      <div id="mc-runs-${m.id}">${buildActRunsHTML(m.id,r,ops)}</div>
-      <div class="totals-bar"><span>⚙️ Setup: <strong id="mc-setup-total-${m.id}">${totalSetup}</strong> mins</span><span>⏱ Total downtime: <strong id="mc-dt-total-${m.id}">${totalDT}</strong> mins</span></div>
-      <div class="utog" style="margin-top:10px"><label>Other downtime (apart from setups)?</label><label class="tsw"><input type="checkbox" ${r.hasOtherDowntime?'checked':''} onchange="togOtherDT('${m.id}',this.checked)"><span class="tsl"></span></label></div>
-      <div id="mc-odt-${m.id}" style="display:${r.hasOtherDowntime?'block':'none'}">
-        <div class="row2"><div class="f"><label>Reason</label><select id="mc-odtr-${m.id}" onchange="setActMach('${m.id}','otherDowntimeReason',this.value);togOtherDTO('${m.id}',this.value)"><option value="setup" ${r.otherDowntimeReason==='setup'?'selected':''}>Setup / Changeover</option><option value="material" ${r.otherDowntimeReason==='material'?'selected':''}>Material not available</option><option value="operator" ${r.otherDowntimeReason==='operator'?'selected':''}>Operator / Manpower</option><option value="maintenance" ${r.otherDowntimeReason==='maintenance'?'selected':''}>Maintenance</option><option value="electricity" ${r.otherDowntimeReason==='electricity'?'selected':''}>Electricity</option><option value="other" ${r.otherDowntimeReason==='other'?'selected':''}>Other</option></select></div><div class="f"><label>Duration (mins)</label><input type="number" id="mc-odtm-${m.id}" min="0" value="${r.otherDowntimeMins||''}" placeholder="0" onchange="setActMach('${m.id}','otherDowntimeMins',this.value);updActTotals('${m.id}')"></div></div>
-        <div id="mc-odto-${m.id}" style="display:${r.otherDowntimeReason==='other'?'block':'none'}"><div class="f"><label>Specify reason</label><input type="text" value="${r.otherDowntimeOther||''}" placeholder="Describe..." onchange="setActMach('${m.id}','otherDowntimeOther',this.value)"></div></div>
-      </div>
-    </div>
-    <div id="mcun-form-${m.id}" style="display:${r.used===true?'none':'block'}">
-      <div class="f"><label>Why was this machine not used?</label><select id="mcunr-${m.id}" onchange="setActMach('${m.id}','unusedReason',this.value);togUO('${m.id}',this.value)"><option value="">— Select reason —</option><option value="material" ${r.unusedReason==='material'?'selected':''}>Material not available</option><option value="operator" ${r.unusedReason==='operator'?'selected':''}>Operator / Manpower</option><option value="maintenance" ${r.unusedReason==='maintenance'?'selected':''}>Maintenance</option><option value="electricity" ${r.unusedReason==='electricity'?'selected':''}>Electricity</option><option value="other" ${r.unusedReason==='other'?'selected':''}>Other</option></select></div>
-      <div id="mcuo-${m.id}" style="display:${r.unusedReason==='other'?'block':'none'}"><div class="f"><label>Specify reason</label><input type="text" value="${r.unusedOther||''}" placeholder="Describe..." onchange="setActMach('${m.id}','unusedOther',this.value)"></div></div>
-    </div>
-  </div></div>`;
-}
-function toggleMC(id){const b=document.getElementById('mcb-'+id),c=document.getElementById('mcc-'+id);if(b){b.classList.toggle('op');if(c)c.classList.toggle('op',b.classList.contains('op'))}}
-function togMCUsed(id,used){if(!S.actReports[id])return;S.actReports[id].used=used;const ec=document.getElementById('mc-'+id);if(ec)ec.classList.remove('has-err');const eb=ec?.querySelector('.mc-err-banner');if(eb)eb.remove();document.getElementById('mcu-form-'+id).style.display=used?'block':'none';document.getElementById('mcun-form-'+id).style.display=used?'none':'block';updMCBdg(id);saveDraft('actual');}
-function togUO(id,v){const el=document.getElementById('mcuo-'+id);if(el)el.style.display=v==='other'?'block':'none'}
-function togOtherDT(id,has){if(!S.actReports[id])return;S.actReports[id].hasOtherDowntime=has;const el=document.getElementById('mc-odt-'+id);if(el)el.style.display=has?'block':'none';updActTotals(id);saveDraft('actual');}
-function togOtherDTO(id,v){const el=document.getElementById('mc-odto-'+id);if(el)el.style.display=v==='other'?'block':'none'}
-function setActMach(id,f,v){if(!S.actReports[id])return;S.actReports[id][f]=v;updMCBdg(id);saveDraft('actual');}
-function setActRun(mid,idx,f,v){const r=S.actReports[mid];if(!r||!r.runs||!r.runs[idx])return;r.runs[idx][f]=v;updMCBdg(mid);saveDraft('actual');}
-function setActRunOp(mid,idx,opId,opName){const r=S.actReports[mid];if(!r||!r.runs||!r.runs[idx])return;r.runs[idx].opId=opId;r.runs[idx].opName=opName;updActRunTarget(mid,idx)}
-function setActSetup(mid,idx,val){const r=S.actReports[mid];if(!r)return;if(!r.setupTimes)r.setupTimes=[];r.setupTimes[idx]=val;updActTotals(mid);saveDraft('actual');}
-function addActRun(mid){const r=S.actReports[mid];if(!r)return;if(!r.runs)r.runs=[{}];r.runs.push({partId:'',partNo:'',partName:'',customer:'',opId:'',opName:'',hoursRun:'',targetQty:'',actualQty:'',rejectionQty:0,rejectionReason:''});if(!r.setupTimes)r.setupTimes=[];r.setupTimes.push('');const cnt=document.getElementById('mc-rcount-'+mid);if(cnt)cnt.textContent=r.runs.length;const ops=S.operations.filter(o=>o.stage===S.actStage);const runsDiv=document.getElementById('mc-runs-'+mid);if(runsDiv)runsDiv.innerHTML=buildActRunsHTML(mid,r,ops);saveDraft('actual');}
-function removeActRun(mid){const r=S.actReports[mid];if(!r||!r.runs||r.runs.length<=1)return;r.runs.pop();if(r.setupTimes&&r.setupTimes.length>0)r.setupTimes.pop();const cnt=document.getElementById('mc-rcount-'+mid);if(cnt)cnt.textContent=r.runs.length;const ops=S.operations.filter(o=>o.stage===S.actStage);const runsDiv=document.getElementById('mc-runs-'+mid);if(runsDiv)runsDiv.innerHTML=buildActRunsHTML(mid,r,ops);updActTotals(mid);saveDraft('actual');}
-function updActRunTarget(mid,idx){const r=S.actReports[mid];if(!r||!r.runs||!r.runs[idx])return;const run=r.runs[idx];const multi=r.runs.length>1;if(!run.opId||!run.partId)return;const po=S.partOps.find(p=>p.partId===run.partId&&p.opId===run.opId);if(!po||po.cycleTime<=0)return;let tgt;if(multi){if(!run.hoursRun)return;tgt=Math.round(+run.hoursRun*60/po.cycleTime);}else{const dtMins=r.hasOtherDowntime?(+r.otherDowntimeMins||0):0;tgt=Math.round((450-dtMins)/po.cycleTime);}run.targetQty=tgt;const el=document.getElementById('mc-tgt-'+mid+'-'+idx);if(el)el.value=tgt;updActRunEff(mid,idx);}
-function updActRunEff(mid,idx){const r=S.actReports[mid];if(!r||!r.runs||!r.runs[idx])return;const run=r.runs[idx];const eff=run.targetQty&&run.actualQty?Math.round(+run.actualQty/+run.targetQty*100):0;const d=document.getElementById('mc-run-eff-'+mid+'-'+idx);if(d){d.style.display=run.targetQty&&run.actualQty?'block':'none';const pf=document.getElementById('mc-run-pf-'+mid+'-'+idx);if(pf){pf.style.width=Math.min(eff,100)+'%';pf.className='pf '+effcls(eff)}const lb=document.getElementById('mc-run-el-'+mid+'-'+idx);if(lb)lb.textContent='Efficiency: '+eff+'%'}updMCBdg(mid)}
-function updActTotals(mid){const r=S.actReports[mid];if(!r)return;const ts=(r.setupTimes||[]).reduce((s,v)=>s+(+v||0),0);const od=r.hasOtherDowntime?(+r.otherDowntimeMins||0):0;const td=ts+od;const se=document.getElementById('mc-setup-total-'+mid);const de=document.getElementById('mc-dt-total-'+mid);if(se)se.textContent=ts;if(de)de.textContent=td}
-function spActRun(inp,mid,idx){const q=inp.value.toLowerCase();if(!q){hideGlobalDrop();return}const m=S.parts.filter(p=>p.name.toLowerCase().includes(q)||p.no.toLowerCase().includes(q)).slice(0,15);showGDrop(inp,m,p=>{const r=S.actReports[mid];if(!r||!r.runs||!r.runs[idx])return;r.runs[idx].partId=p.id;r.runs[idx].partNo=p.no;r.runs[idx].partName=p.name;r.runs[idx].customer=p.cust;inp.value=p.name;updActRunTarget(mid,idx);saveDraft('actual');})}
-function updMCBdg(id){const r=S.actReports[id];if(!r)return;const[stat,scls]=mcStat(r);const b=document.getElementById('mcs-'+id);if(b){b.textContent=stat;b.className='bdg '+scls}}
-function fillSampleActual(){
-  if(!isTanmay()){toast('Only Tanmay can use this feature');return}
-  const allMach=[...S.machines].filter(m=>m.stage===S.actStage&&m.active!==false).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
-  const ops=S.operations.filter(o=>o.stage===S.actStage);
-  const parts=S.parts.slice(0,5);
-  const opId=S.users.filter(u=>u.role==='operator'&&(u.stage===S.actStage||u.stage==='general'))[0]?.id||'';
-  allMach.forEach((m,i)=>{
-    const r=S.actReports[m.id];if(!r)return;
-    if(i<5){
-      r.used=true;r.operatorId=opId;
-      r.runs=[{partId:parts[i%parts.length]?.id||'',partNo:parts[i%parts.length]?.no||'',partName:parts[i%parts.length]?.name||'Sample',customer:parts[i%parts.length]?.cust||'',opId:ops[0]?.id||'',opName:ops[0]?.name||'',hoursRun:'',targetQty:'100',actualQty:'95',rejectionQty:0,rejectionReason:''}];
-      r.setupTimes=[];r.hasOtherDowntime=false;
-    }else{r.used=false;r.unusedReason='other';r.unusedOther='Sample — not used';}
-    const card=document.getElementById('mc-'+m.id);
-    if(card)card.outerHTML=buildMC(m);
-  });
-  saveDraft('actual');
-  toast('⚡ Top 5 filled, rest marked Not Used — ready to submit',3000);
-}
-function handleOpSel(mid,val,sel){if(val==='_add'){sel.value='';quickAddOpModal(mid);}else{setActMach(mid,'operatorId',val);}}
-function quickAddOpModal(mid){
-  openModal(`<div class="mtit">Quick Add Operator</div>
-  <div class="ibox" style="margin-bottom:14px">This operator won't need app login — added for tracking only.</div>
-  <div class="f"><label>Operator Name *</label><input id="qao-n" type="text" placeholder="e.g. Ramesh Kumar" autocomplete="off"></div>
-  <div class="f"><label>Stage</label>
-    <select id="qao-s">
-      <option value="soft">Soft</option><option value="ht">HT</option>
-      <option value="hard">Hard</option><option value="general">General</option>
-    </select>
-  </div>
-  <button class="btn btn-p mt12" onclick="saveQuickOp('${mid}')">Add Operator</button>
-  <button class="btn btn-s mt8" onclick="closeModal()">Cancel</button>`);
-}
-async function saveQuickOp(mid){
-  const n=document.getElementById('qao-n').value.trim();
-  const st=document.getElementById('qao-s').value;
-  if(!n){toast('Name required');return}
-  const btn=document.querySelector('#mcont .btn-p');if(btn){btn.disabled=true;btn.textContent='Adding...';}
-  try{
-    const ref=await db.collection('users').add({name:n,role:'operator',stage:st,appUser:false,permissions:{plan:'hidden',actual:'hidden',reports:'hidden'},createdAt:nowTS()});
-    if(S.actReports[mid])S.actReports[mid].operatorId=ref.id;
-    S.users=[...S.users,{id:ref.id,name:n,role:'operator',stage:st,appUser:false}];
-    updateAllOpDropdowns();
-    setTimeout(()=>{const sel=document.getElementById('mcop-'+mid);if(sel)sel.value=ref.id;},30);
-    saveDraft('actual');
-    closeModal();toast(n+' added as operator ✓');
-  }catch(e){
-    toast('Error: '+e.message);
-    const btn2=document.querySelector('#mcont .btn-p');if(btn2){btn2.disabled=false;btn2.textContent='Add Operator';}
-  }
-}
-function showActualConfirmation(){
-  if(!S.actStage){toast('Please select a stage');return}
-  const actErrs=validateActualReports();if(actErrs.length>0){highlightActErrs(actErrs);return}
-  const shift=document.getElementById('act-sh').value;const reports=Object.values(S.actReports);if(!reports.length){toast('No data to submit');return}
-  const sh=S.shifts[shift];const used=reports.filter(r=>r.used);const notUsed=reports.filter(r=>!r.used);
-  const totalAct=used.reduce((s,r)=>s+(r.runs||[]).reduce((ss,run)=>ss+(+run.actualQty||0),0),0);
-  const totalRej=used.reduce((s,r)=>s+(r.runs||[]).reduce((ss,run)=>ss+(+run.rejectionQty||0),0),0);
-  openModal(`<div class="mtit">Confirm Shift Report</div>
-  <div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:14px;font-size:13px">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-      <div><div style="font-size:11px;color:var(--mut)">Stage</div><div style="font-weight:700">${slbl(S.actStage)}</div></div>
-      <div><div style="font-size:11px;color:var(--mut)">Shift</div><div style="font-weight:700">${sh?sh.label:shift}</div></div>
-      <div><div style="font-size:11px;color:var(--mut)">Total Produced</div><div style="font-weight:700;color:var(--ok)">${totalAct} pcs</div></div>
-      <div><div style="font-size:11px;color:var(--mut)">Rejections</div><div style="font-weight:700;color:${totalRej>0?'var(--er)':'var(--ok)'}">${totalRej} pcs</div></div>
-    </div>
-    <div style="border-top:.5px solid var(--bdr);padding-top:10px">
-      ${used.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px">
-        <span style="font-weight:600">${r.machineName}</span>
-        <span>${(r.runs||[]).reduce((s,run)=>s+(+run.actualQty||0),0)} pcs · ${(r.runs||[]).length} run${(r.runs||[]).length!==1?'s':''}</span>
-      </div>`).join('')}
-      ${notUsed.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;color:var(--mut)">
-        <span>${r.machineName}</span><span>Not used</span>
-      </div>`).join('')}
-    </div>
-  </div>
-  <button class="btn btn-p" onclick="closeModal();submitActual()">✓ Confirm & Submit</button>
-  <button class="btn btn-s mt8" onclick="closeModal()">← Edit Report</button>`);
-}
-async function submitActual(){
-  if(!S.actStage){toast('Please select a stage');return}
-  const shift=document.getElementById('act-sh').value;const reports=Object.values(S.actReports);if(!reports.length){toast('No data to submit');return}
-  const btn=document.querySelector('#s-actual .btn-p');if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>Submitting...'}
-  try{
-    if(S.editingActualId){
-      await db.collection('actuals').doc(S.editingActualId).update({shift,stage:S.actStage,machineReports:reports,updatedBy:S.sess.userId,updatedAt:nowTS()});
-      clearDraft('actual');S.actReports={};S.editingActualId=null;toast('Report updated ✓');go('view-actuals');renderViewActuals();
-    }else{
-      const repDate=document.getElementById('act-date-inp')?.value||dateStr();await db.collection('actuals').add({date:repDate,shift,stage:S.actStage,supervisorId:S.sess.userId,machineReports:reports,createdBy:S.sess.userId,createdAt:nowTS()});clearDraft('actual');
-      S.actReports={};toast('Shift report submitted ✓');go('home');renderHome();
-    }
-  }catch(e){toast('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent=S.editingActualId?'Update Report':'Submit Shift Report'}}
-}
-
-let _rd='',_rdTo='',_rs='all',_rst='all';
-function renderReports(){
-  _rd=dateStr();_rdTo=dateStr();
-  document.getElementById('s-reports').innerHTML=`<div class="hdr"><div class="hdr-info"><div class="hdr-title">Reports</div><div class="hdr-sub">Production Analysis</div></div></div><div class="pad">${viewOnlyBanner("reports")}
-  <div class="card">
-    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-      <button class="btn btn-s btn-sm" onclick="setRepRange('today')">Today</button>
-      <button class="btn btn-s btn-sm" onclick="setRepRange('week')">This Week</button>
-      <button class="btn btn-s btn-sm" onclick="setRepRange('month')">This Month</button>
-    </div>
-    <div class="row2">
-      <div class="f" style="margin:0"><label>From</label><input type="date" id="rep-d-from" value="${_rd}" onchange="_rd=this.value;rfr()"></div>
-      <div class="f" style="margin:0"><label>To</label><input type="date" id="rep-d-to" value="${_rdTo}" onchange="_rdTo=this.value;rfr()"></div>
-    </div>
-    <div class="row2" style="margin-top:10px">
-      <div class="f" style="margin:0"><label>Shift</label><select onchange="_rs=this.value;rfr()"><option value="all">All Shifts</option>${Object.entries(S.shifts).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}</select></div>
-      <div class="f" style="margin:0"><label>Stage</label><select onchange="_rst=this.value;rfr()"><option value="all">All Stages</option><option value="soft">Soft</option><option value="ht">HT</option><option value="hard">Hard</option></select></div>
-    </div>
-  </div>
-  ${getPerm("reports")==="full"?`<button class="print-btn" style="margin-top:12px;width:100%;justify-content:center" onclick="downloadReport()">🖨️ Download / Print Report</button>`:''}<div id="rep-body"></div></div>`;
-  rfr();
-}
-function setRepRange(type){
-  const today=new Date();
-  if(type==='today'){_rd=_rdTo=dateStr();}
-  else if(type==='week'){const mon=new Date(today);const day=today.getDay()||7;mon.setDate(today.getDate()-day+1);_rd=mon.toISOString().slice(0,10);_rdTo=dateStr();}
-  else if(type==='month'){_rd=today.toISOString().slice(0,8)+'01';_rdTo=dateStr();}
-  const f=document.getElementById('rep-d-from'),t=document.getElementById('rep-d-to');
-  if(f)f.value=_rd;if(t)t.value=_rdTo;rfr();
-}
-function rfr(){
-  const acts=S.actuals.filter(a=>a.date>=_rd&&a.date<=(_rdTo||_rd)&&(_rs==='all'||a.shift===_rs)&&(_rst==='all'||a.stage===_rst));
-  let tt=0,ta=0,tr=0;const mm={},om={};
-  acts.forEach(a=>{(a.machineReports||[]).forEach(r=>{if(r.used){(r.runs||[]).forEach(run=>{tt+=(+run.targetQty||0);ta+=(+run.actualQty||0);tr+=(+run.rejectionQty||0);const mn=r.machineName||'Unknown';if(!mm[mn])mm[mn]={name:mn,t:0,a:0,r:0};mm[mn].t+=(+run.targetQty||0);mm[mn].a+=(+run.actualQty||0);mm[mn].r+=(+run.rejectionQty||0);const op=S.users.find(u=>u.id===r.operatorId);const on=op?op.name:'Unknown';if(!om[on])om[on]={name:on,t:0,a:0};om[on].t+=(+run.targetQty||0);om[on].a+=(+run.actualQty||0);});}})});
-  const te=tt>0?Math.round(ta/tt*100):0;
-  const w=document.getElementById('rep-body');if(!w)return;
-  w.innerHTML=`<div class="slbl">Summary</div><div class="s2"><div class="sc"><div class="sl">Target</div><div class="sv">${tt}<span class="su"> pcs</span></div></div><div class="sc"><div class="sl">Produced</div><div class="sv">${ta}<span class="su"> pcs</span></div></div><div class="sc"><div class="sl">Efficiency</div><div class="sv" style="color:var(--${te>=90?'ok':te>=70?'wa':'er'})">${te}<span class="su">%</span></div></div><div class="sc"><div class="sl">Rejections</div><div class="sv" style="color:${tr>0?'var(--er)':'var(--ok)'}">${tr}</div></div></div>
-  ${Object.keys(mm).length?`<div class="slbl">Machine-wise</div>${Object.values(mm).map(m=>{const e=m.t>0?Math.round(m.a/m.t*100):0;return`<div class="card" style="margin-bottom:8px;padding:12px 14px"><div class="fbw" style="margin-bottom:4px"><span style="font-size:13px;font-weight:700">${m.name}</span><span class="bdg ${effb(e)}">${e}%</span></div><div class="prog"><div class="pf ${effcls(e)}" style="width:${Math.min(e,100)}%"></div></div><div class="tsm tmut" style="margin-top:3px">${m.a}/${m.t} pcs · ${m.r} rej</div></div>`}).join('')}`:''}
-  ${Object.keys(om).length?`<div class="slbl">Operator-wise</div><div class="card" style="padding:0 14px">${Object.values(om).map(o=>{const e=o.t>0?Math.round(o.a/o.t*100):0;return`<div class="rrow"><div><div class="tsm" style="font-weight:600">${o.name}</div><div style="font-size:11px;color:var(--mut)">${o.a}/${o.t} pcs</div></div><span class="bdg ${effb(e)}">${e}%</span></div>`}).join('')}</div>`:''}
-  ${acts.length===0?`<div class="empty"><div class="empty-ic">📊</div><h3>No data yet</h3><p>Submit actual output reports to see analytics here.</p></div>`:''}
-  ${buildPlanActualLink()}`;
-}
-function buildPlanActualLink(){
-  const dayPlans=S.plans.filter(p=>p.date===_rd&&(_rst==='all'||p.stage===_rst));
-  const dayActs=S.actuals.filter(a=>a.date===_rd&&(_rst==='all'||a.stage===_rst));
-  if(!dayPlans.length&&!dayActs.length)return'';
-  const map={};
-  dayPlans.forEach(p=>{(p.machineReports||[]).forEach(r=>{if(!r.used)return;(r.runs||[]).forEach(run=>{if(!run.partId||!r.machineId)return;const k=r.machineId+'_'+run.partId;if(!map[k])map[k]={machineName:r.machineName||'—',partName:run.partName||'—',planned:0,target:0,actual:0};map[k].planned+=(+run.plannedQty||0);});});});
-  dayActs.forEach(a=>{(a.machineReports||[]).forEach(r=>{if(!r.used)return;(r.runs||[]).forEach(run=>{if(!run.partId||!r.machineId)return;const k=r.machineId+'_'+run.partId;if(!map[k])map[k]={machineName:r.machineName||'—',partName:run.partName||'—',planned:0,target:0,actual:0};map[k].target+=(+run.targetQty||0);map[k].actual+=(+run.actualQty||0);});});});
-  if(!Object.keys(map).length)return'';
-  return`<div class="slbl" style="margin-top:4px">Plan vs Target vs Actual — Daily</div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead><tr style="background:var(--bg)">
-        <th style="padding:9px 12px;text-align:left;font-weight:600;color:var(--mut);white-space:nowrap">Machine · Part</th>
-        <th style="padding:9px 8px;text-align:right;font-weight:600;color:var(--mut)">Planned</th>
-        <th style="padding:9px 8px;text-align:right;font-weight:600;color:var(--mut)">Target</th>
-        <th style="padding:9px 8px;text-align:right;font-weight:600;color:var(--mut)">Actual</th>
-        <th style="padding:9px 8px;text-align:right;font-weight:600;color:var(--mut)">Eff%</th>
-      </tr></thead>
-      <tbody>${Object.values(map).map(r=>{
-        const eff=r.target>0?Math.round(r.actual/r.target*100):0;
-        return`<tr style="border-top:.5px solid var(--bdr)">
-          <td style="padding:9px 12px"><div style="font-size:12px;font-weight:600">${r.machineName}</div><div style="font-size:11px;color:var(--mut)">${r.partName}</div></td>
-          <td style="padding:9px 8px;text-align:right;font-weight:600">${r.planned||'—'}</td>
-          <td style="padding:9px 8px;text-align:right;font-weight:600">${r.target||'—'}</td>
-          <td style="padding:9px 8px;text-align:right;font-weight:700;color:var(--${eff>=90?'ok':eff>=70?'wa':'er'})">${r.actual||'—'}</td>
-          <td style="padding:9px 8px;text-align:right"><span class="bdg ${effb(eff)}">${r.target?eff+'%':'—'}</span></td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table></div>
-    <div style="padding:8px 12px;background:var(--bg);font-size:11px;color:var(--mut)">Planned = supervisor's plan &nbsp;·&nbsp; Target = cycle time standard &nbsp;·&nbsp; Actual = produced</div>
-  </div>`;
-}
-
-async function deletePlan(id){
-  if(!isTanmay())return;
-  if(!confirm('Delete this plan permanently? This cannot be undone.'))return;
-  try{await db.collection('plans').doc(id).delete();toast('Plan deleted');rfvp();}
-  catch(e){toast('Error: '+e.message);}
-}
-async function deleteActual(id){
-  if(!isTanmay())return;
-  if(!confirm('Delete this report permanently? This cannot be undone.'))return;
-  try{await db.collection('actuals').doc(id).delete();toast('Report deleted');rfva();}
-  catch(e){toast('Error: '+e.message);}
-}
-function editPlan(id){
-  const p=S.plans.find(x=>x.id===id);if(!p)return;
-  S.editingPlanId=id;S.planStage=p.stage;S.planType=p.type||'today';S.planReports={};
-  (p.machineReports||[]).forEach(r=>{if(!r.machineId)return;const n={...r};if(!n.runs){n.runs=[{partId:r.partId||'',partNo:r.partNo||'',partName:r.partName||'',customer:r.customer||'',opId:r.opId||'',opName:r.opName||'',hoursPlanned:'',plannedQty:r.plannedQty||''}];n.setupTimes=[];}S.planReports[r.machineId]=n;});
-  const sid=S.planType==='next'?'plan-next':'plan-today';
-  go(sid,'view-plan');renderPlanForm(S.planType);
-  setTimeout(()=>{
-    ['soft','ht','hard'].forEach(s=>{const b=document.getElementById('ps-'+s);if(b){b.className='stbtn';if(s===p.stage)b.classList.add('on-'+p.stage)}});
-    const dateEl=document.getElementById('pf-date');if(dateEl)dateEl.value=p.date;
-    const shiftEl=document.getElementById('pf-shift');if(shiftEl)shiftEl.value=p.shift;
-    const supEl=document.getElementById('pf-sup');
-    if(supEl){supEl.innerHTML=`<option value="">— Select —</option>`+S.users.filter(u=>(u.role==='supervisor'||u.role==='manager')&&(u.stage===p.stage||u.stage==='general')).map(u=>`<option value="${u.id}" ${u.id===p.supervisorId?'selected':''}>${u.name}</option>`).join('');}
-    const notesEl=document.getElementById('pf-notes');if(notesEl)notesEl.value=p.notes||'';
-    const matEl=document.getElementById('pf-mat');if(matEl)matEl.value=p.matStatus||'ready';
-    S.planStage=p.stage;document.getElementById('plan-rest').style.display='block';renderPlanMachines();
-    toast('Editing existing plan — make changes and save');
-  },150);
-}
 
 let _vad='',_vadFrom='',_vas='all',_vast='all';
 function renderViewActuals(){
